@@ -567,7 +567,9 @@ s32 java_lang_Object_clone(Runtime *runtime, JClass *clazz) {
 s32 java_lang_Object_hashCode(Runtime *runtime, JClass *clazz) {
     RuntimeStack *stack = runtime->stack;
     Instance *ins = (Instance *) localvar_getRefer(runtime->localvar, 0);
-    push_int(stack, (s32) (intptr_t) ins);
+    u64 a = (u64) (intptr_t) ins;
+    s32 h = (s32) (a ^ (a >> 32));
+    push_int(stack, h);
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
     invoke_deepth(runtime);
     jvm_printf("java_lang_Object_hashCode %llx\n", (s32) (intptr_t) ins);
