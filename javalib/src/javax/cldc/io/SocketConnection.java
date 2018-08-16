@@ -32,7 +32,7 @@ import java.io.IOException;
  *
  * @author gust
  */
-public interface NBSocket extends StreamConnection {
+public interface SocketConnection extends StreamConnection {
 
     /**
      * 非阻塞写，返回写长度
@@ -45,7 +45,8 @@ public interface NBSocket extends StreamConnection {
      */
     public int write(byte b[], int off, int len)
             throws IOException;
-
+    
+    
     /**
      * 非阻塞读，返回读长度
      *

@@ -5,6 +5,8 @@
  */
 package org.mini.net;
 
+import java.io.IOException;
+
 /**
  *
  * @author Gust
@@ -33,11 +35,11 @@ public class SocketNative {
 
     public static native int accept0(int handle);
 
-    public static native int readBuf(int handle, byte b[], int off, int len);
+    private static native int readBuf(int handle, byte b[], int off, int len);
 
     public static native int readByte(int handle);
 
-    public static native int writeBuf(int handle, byte b[], int off, int len);
+    private static native int writeBuf(int handle, byte b[], int off, int len);
 
     public static native int writeByte(int handle, int b);
 
@@ -53,4 +55,20 @@ public class SocketNative {
 
     //mode=0 get peername , mode=1 getlocalname
     public static native String getSockAddr(int handle, int mode);
+
+    static public int write(int handle, byte[] b, int off, int len) throws IOException {
+        int w = SocketNative.writeBuf(handle, b, off, len);
+        if (w == -2) {
+            w = 0;
+        }
+        return w;
+    }
+
+    static public int read(int handle, byte[] b, int off, int len) throws IOException {
+        int r = SocketNative.readBuf(handle, b, off, len);
+        if (r == -2) {
+            r = 0;
+        }
+        return r;
+    }
 }

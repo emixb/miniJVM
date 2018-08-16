@@ -30,16 +30,16 @@ import javax.cldc.io.Connection;
 import java.io.*;
 import com.sun.cldc.io.*;
 import java.net.SocketTimeoutException;
-import javax.cldc.io.NBSocket;
 import static org.mini.fs.InnerFile.available0;
 import org.mini.net.SocketNative;
+import javax.cldc.io.SocketConnection;
 
 /**
  * Connection to the J2ME socket API.
  *
  * @version 1.0 1/16/2000
  */
-public class Protocol implements ConnectionBaseInterface, NBSocket {
+public class Protocol implements ConnectionBaseInterface, SocketConnection {
 
     /**
      * Socket object used by native code
@@ -251,19 +251,13 @@ public class Protocol implements ConnectionBaseInterface, NBSocket {
      */
     @Override
     public int write(byte[] b, int off, int len) throws IOException {
-        int w = SocketNative.writeBuf(handle, b, off, len);
-        if (w == -2) {
-            w = 0;
-        }
+        int w = SocketNative.write(handle, b, off, len);
         return w;
     }
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
-        int r = SocketNative.readBuf(handle, b, off, len);
-        if (r == -2) {
-            r = 0;
-        }
+        int r = SocketNative.read(handle, b, off, len);
         return r;
     }
 
@@ -382,7 +376,7 @@ class PrivateInputStream extends InputStream {
 
         int n = 0;
         while (n < len) {
-            int count = SocketNative.readBuf(parent.handle, b, off + n, len - n);
+            int count = SocketNative.read(parent.handle, b, off + n, len - n);
             if (count == -1) {
                 eof = true;
                 if (n == 0) {
@@ -517,7 +511,7 @@ class PrivateOutputStream extends OutputStream {
 
         int n = 0;
         while (true) {
-            n += SocketNative.writeBuf(parent.handle, b, off + n, len - n);
+            n += SocketNative.write(parent.handle, b, off + n, len - n);
             if (n == len) {
                 break;
             }

@@ -11,8 +11,8 @@ import com.sun.cldc.io.ConnectionBaseInterface;
 import java.io.IOException;
 import javax.cldc.io.Connection;
 import javax.cldc.io.Connector;
-import javax.cldc.io.NBServerSocket;
 import org.mini.net.SocketNative;
+import javax.cldc.io.ServerSocketConnection;
 
 
 /*
@@ -27,7 +27,7 @@ import org.mini.net.SocketNative;
  * @author Nik Shaylor
  * @version 1.0 10/08/99
  */
-public class Protocol implements ConnectionBaseInterface, NBServerSocket {
+public class Protocol implements ConnectionBaseInterface, ServerSocketConnection {
 
     /**
      * Socket object used by native code, for now must be the first field.
@@ -103,7 +103,7 @@ public class Protocol implements ConnectionBaseInterface, NBServerSocket {
      * @exception IOException if an I/O error occurs when creating the input
      * stream
      */
-    synchronized public javax.cldc.io.NBSocket accept()
+    synchronized public javax.cldc.io.SocketConnection accept()
             throws IOException {
 
         org.mini.net.socket.Protocol con;

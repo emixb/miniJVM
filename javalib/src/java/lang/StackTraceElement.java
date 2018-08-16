@@ -5,6 +5,9 @@
  */
 package java.lang;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author gust
@@ -48,5 +51,16 @@ public class StackTraceElement {
      */
     public int getLineNumber() {
         return lineNumber;
+    }
+
+    public String toString() {
+
+        StringBuilder stack = new StringBuilder();
+        stack.append(getDeclaringClass());
+        stack.append(".").append(getMethodName());
+        stack.append("(").append(getFileName());
+        stack.append(":").append(getLineNumber()).append(")");
+        return stack.toString();
+
     }
 }

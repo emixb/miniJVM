@@ -6,8 +6,6 @@
 package javax.cldc.io;
 
 import java.io.IOException;
-import javax.cldc.io.Connection;
-import javax.cldc.io.NBSocket;
 
 /**
  *
@@ -72,7 +70,7 @@ import javax.cldc.io.NBSocket;
  *
  * @author gust
  */
-public interface NBServerSocket extends Connection {
+public interface ServerSocketConnection extends Connection {
 
     /**
      * 开始监听
@@ -87,5 +85,5 @@ public interface NBServerSocket extends Connection {
      * @return
      * @throws IOException
      */
-    NBSocket accept() throws IOException;
+    SocketConnection accept() throws IOException;
 }

@@ -1981,15 +1981,21 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                     label_idiv:
                     case op_idiv: {
 
-                        s32 value2 = pop_int(stack);
                         s32 value1 = pop_int(stack);
-                        s32 result = value1 / value2;
+                        s32 value2 = pop_int(stack);
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
                         invoke_deepth(runtime);
-                    jvm_printf("idiv: %d / %d = %d\n", value1, value2, result);
+                    jvm_printf("idiv: %d / %d = %d\n", value1, value2, value2 / value1);
 #endif
-                        push_int(stack, result);
-                        opCode += 1;
+                        if (!value1) {
+                            Instance *exception = exception_create(JVM_EXCEPTION_ARRITHMETIC, runtime);
+                            push_ref(stack, (__refer) exception);
+                            ret = RUNTIME_STATUS_EXCEPTION;
+                        } else {
+                            s32 result = value2 / value1;
+                            push_int(stack, result);
+                            opCode += 1;
+                        }
 
                         break;
                     }
@@ -1998,14 +2004,19 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                     case op_ldiv: {
                         s64 value1 = pop_long(stack);
                         s64 value2 = pop_long(stack);
-                        s64 result = value2 / value1;
-
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
                         invoke_deepth(runtime);
-                    jvm_printf("ldiv: %lld / %lld = %lld\n", value2, value1, result);
+                        jvm_printf("ldiv: %lld / %lld = %lld\n", value2, value1, value2 / value1);
 #endif
-                        push_long(stack, result);
-                        opCode += 1;
+                        if (!value1) {
+                            Instance *exception = exception_create(JVM_EXCEPTION_ARRITHMETIC, runtime);
+                            push_ref(stack, (__refer) exception);
+                            ret = RUNTIME_STATUS_EXCEPTION;
+                        } else {
+                            s64 result = value2 / value1;
+                            push_long(stack, result);
+                            opCode += 1;
+                        }
 
                         break;
                     }

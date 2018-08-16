@@ -406,7 +406,7 @@ public abstract class Calendar {
      *
      * @see #setTimeInMillis
      */
-    protected long getTimeInMillis() {
+    public long getTimeInMillis() {
         if (!isTimeSet) {
             computeTime();
             isTimeSet = true;
@@ -420,7 +420,7 @@ public abstract class Calendar {
      *
      * @see #getTimeInMillis
      */
-    protected void setTimeInMillis( long millis ) {
+    public void setTimeInMillis( long millis ) {
         isTimeSet = true;
         this.fields[DAY_OF_WEEK] = 0;
         this.time = millis;

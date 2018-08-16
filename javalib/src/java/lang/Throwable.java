@@ -156,14 +156,26 @@ public class Throwable {
             int count = 0;
             StackTraceElement sf = (StackTraceElement) backtrace;
             while (sf != null) {
-                count++;
+                try {
+                    Class clazz = Class.forName(sf.getDeclaringClass());
+                    if (!clazz.isAssignableFrom(Throwable.class)) {
+                        count++;
+                    }
+                } catch (ClassNotFoundException ex) {
+                }
                 sf = sf.parent;
             }
             StackTraceElement[] arr = new StackTraceElement[count];
             sf = (StackTraceElement) backtrace;
             count = 0;
             while (sf != null) {
-                arr[count++] = sf;
+                try {
+                    Class clazz = Class.forName(sf.getDeclaringClass());
+                    if (!clazz.isAssignableFrom(Throwable.class)) {
+                        arr[count++] = sf;
+                    }
+                } catch (ClassNotFoundException ex) {
+                }
                 sf = sf.parent;
             }
             return arr;
