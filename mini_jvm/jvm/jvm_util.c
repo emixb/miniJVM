@@ -895,6 +895,7 @@ s32 check_suspend_and_pause(Runtime *runtime) {
 
 //===============================    实例化数组  ==================================
 Instance *jarray_create_by_class(Runtime *runtime, s32 count, JClass *clazz) {
+    if(count < 0)return NULL;
     s32 typeIdx = clazz->mb.arr_type_index;
     s32 width = data_type_bytes[typeIdx];
     Instance *arr = jvm_calloc(sizeof(Instance) + (width * count));

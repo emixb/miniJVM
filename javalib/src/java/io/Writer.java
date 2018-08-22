@@ -3,23 +3,21 @@
  * SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
  * 
  */
-
 package java.io;
 
 /**
- * Abstract class for writing to character streams.  The only methods that a
+ * Abstract class for writing to character streams. The only methods that a
  * subclass must implement are write(char[], int, int), flush(), and close().
  * Most subclasses, however, will override some of the methods defined here in
  * order to provide higher efficiency, additional functionality, or both.
  *
  * @version 12/17/01 (CLDC 1.1)
- * @author  Mark Reinhold
- * @since   JDK1.1, CLDC 1.0
- * @see     java.io.OutputStreamWriter
- * @see     java.io.Reader
+ * @author Mark Reinhold
+ * @since JDK1.1, CLDC 1.0
+ * @see java.io.OutputStreamWriter
+ * @see java.io.Reader
  */
-
-public abstract class Writer implements Appendable{
+public abstract class Writer implements Appendable {
 
     /**
      * Temporary buffer used to hold writes of strings and single characters
@@ -32,11 +30,10 @@ public abstract class Writer implements Appendable{
     private final int writeBufferSize = 1024;
 
     /**
-     * The object used to synchronize operations on this stream.  For
-     * efficiency, a character-stream object may use an object other than
-     * itself to protect critical sections.  A subclass should therefore use
-     * the object in this field rather than <tt>this</tt> or a synchronized
-     * method.
+     * The object used to synchronize operations on this stream. For efficiency,
+     * a character-stream object may use an object other than itself to protect
+     * critical sections. A subclass should therefore use the object in this
+     * field rather than <tt>this</tt> or a synchronized method.
      */
     protected Object lock;
 
@@ -52,7 +49,7 @@ public abstract class Writer implements Appendable{
      * Create a new character-stream writer whose critical sections will
      * synchronize on the given object.
      *
-     * @param lock  Object to synchronize on.
+     * @param lock Object to synchronize on.
      */
     protected Writer(Object lock) {
         if (lock == null) {
@@ -62,19 +59,20 @@ public abstract class Writer implements Appendable{
     }
 
     /**
-     * Write a single character.  The character to be written is contained in
-     * the 16 low-order bits of the given integer value; the 16 high-order bits
-     * are ignored.
+     * Write a single character. The character to be written is contained in the
+     * 16 low-order bits of the given integer value; the 16 high-order bits are
+     * ignored.
      *
-     * <p> Subclasses that intend to support efficient single-character output
+     * <p>
+     * Subclasses that intend to support efficient single-character output
      * should override this method.
      *
-     * @param c  int specifying a character to be written.
-     * @exception  IOException  If an I/O error occurs
+     * @param c int specifying a character to be written.
+     * @exception IOException If an I/O error occurs
      */
     public void write(int c) throws IOException {
         synchronized (lock) {
-            if (writeBuffer == null){
+            if (writeBuffer == null) {
                 writeBuffer = new char[writeBufferSize];
             }
             writeBuffer[0] = (char) c;
@@ -85,9 +83,9 @@ public abstract class Writer implements Appendable{
     /**
      * Write an array of characters.
      *
-     * @param  cbuf  Array of characters to be written
-     * 
-     * @exception  IOException  If an I/O error occurs
+     * @param cbuf Array of characters to be written
+     *
+     * @exception IOException If an I/O error occurs
      */
     public void write(char cbuf[]) throws IOException {
         write(cbuf, 0, cbuf.length);
@@ -96,20 +94,20 @@ public abstract class Writer implements Appendable{
     /**
      * Write a portion of an array of characters.
      *
-     * @param  cbuf  Array of characters
-     * @param  off   Offset from which to start writing characters
-     * @param  len   Number of characters to write
+     * @param cbuf Array of characters
+     * @param off Offset from which to start writing characters
+     * @param len Number of characters to write
      *
-     * @exception  IOException  If an I/O error occurs
+     * @exception IOException If an I/O error occurs
      */
     abstract public void write(char cbuf[], int off, int len) throws IOException;
 
     /**
      * Write a string.
      *
-     * @param  str  String to be written
+     * @param str String to be written
      *
-     * @exception  IOException  If an I/O error occurs
+     * @exception IOException If an I/O error occurs
      */
     public void write(String str) throws IOException {
         write(str, 0, str.length());
@@ -118,11 +116,11 @@ public abstract class Writer implements Appendable{
     /**
      * Write a portion of a string.
      *
-     * @param  str  A String
-     * @param  off  Offset from which to start writing characters
-     * @param  len  Number of characters to write
+     * @param str A String
+     * @param off Offset from which to start writing characters
+     * @param len Number of characters to write
      *
-     * @exception  IOException  If an I/O error occurs
+     * @exception IOException If an I/O error occurs
      */
     public void write(String str, int off, int len) throws IOException {
         synchronized (lock) {
@@ -141,35 +139,35 @@ public abstract class Writer implements Appendable{
     }
 
     /**
-     * Flush the stream.  If the stream has saved any characters from the
-     * various write() methods in a buffer, write them immediately to their
-     * intended destination.  Then, if that destination is another character or
-     * byte stream, flush it.  Thus one flush() invocation will flush all the
-     * buffers in a chain of Writers and OutputStreams.
+     * Flush the stream. If the stream has saved any characters from the various
+     * write() methods in a buffer, write them immediately to their intended
+     * destination. Then, if that destination is another character or byte
+     * stream, flush it. Thus one flush() invocation will flush all the buffers
+     * in a chain of Writers and OutputStreams.
      *
-     * @exception  IOException  If an I/O error occurs
+     * @exception IOException If an I/O error occurs
      */
     abstract public void flush() throws IOException;
 
     /**
-     * Close the stream, flushing it first.  Once a stream has been closed,
+     * Close the stream, flushing it first. Once a stream has been closed,
      * further write() or flush() invocations will cause an IOException to be
-     * thrown.  Closing a previously-closed stream, however, has no effect.
+     * thrown. Closing a previously-closed stream, however, has no effect.
      *
-     * @exception  IOException  If an I/O error occurs
+     * @exception IOException If an I/O error occurs
      */
     abstract public void close() throws IOException;
 
-    public Appendable append(final char c) throws IOException {
+    public Writer append(final char c) throws IOException {
         write((int) c);
         return this;
     }
 
-    public Appendable append(final CharSequence sequence) throws IOException {
+    public Writer append(final CharSequence sequence) throws IOException {
         return append(sequence, 0, sequence.length());
     }
 
-    public Appendable append(CharSequence sequence, int start, int end)
+    public Writer append(CharSequence sequence, int start, int end)
             throws IOException {
         final int length = end - start;
         if (sequence instanceof String) {
@@ -185,4 +183,3 @@ public abstract class Writer implements Appendable{
     }
 
 }
-
