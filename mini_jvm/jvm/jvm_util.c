@@ -1252,7 +1252,7 @@ Instance *jstring_get_value_array(Instance *jstr) {
     return arr;
 }
 
-s16 jstring_char_at(Instance *jstr, s32 index) {
+u16 jstring_char_at(Instance *jstr, s32 index) {
     Instance *ptr = jstring_get_value_array(jstr);
     s32 offset = jstring_get_offset(jstr);
     s32 count = jstring_get_count(jstr);

@@ -721,7 +721,7 @@ s32 java_lang_String_charAt0(Runtime *runtime, JClass *clazz) {
     RuntimeStack *stack = runtime->stack;
     Instance *jstr = (Instance *) localvar_getRefer(runtime->localvar, 0);
     s32 index = localvar_getInt(runtime->localvar, 1);
-    s16 ch = jstring_char_at(jstr, index);
+    u16 ch = jstring_char_at(jstr, index);
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
     invoke_deepth(runtime);
     jvm_printf("java_lang_String_charAt ch = %d\n", ch);

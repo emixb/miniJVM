@@ -236,7 +236,7 @@ c8 *jstring_get_value_ptr(Instance *jstr);
 
 Instance *jstring_get_value_array(Instance *jstr);
 
-s16 jstring_char_at(Instance *jstr, s32 index);
+u16 jstring_char_at(Instance *jstr, s32 index);
 
 s32 jstring_index_of(Instance *jstr, uni_char ch, s32 startAt);
 
