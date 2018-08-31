@@ -50,17 +50,21 @@ public class InnerRandomAccessFile extends InnerFile {
         if ("r".equals(pmode)) {
             this.mode = "rb";
         } else if ("rw".equals(pmode)) {
-            this.mode = "w+b";
+            this.mode = "rb+";
         } else if ("rws".equals(pmode)) {
-            this.mode = "w+b";
+            this.mode = "rb+";
             flush = true;
         } else if ("rwd".equals(pmode)) {
-            this.mode = "w+b";
+            this.mode = "rb+";
             flush = true;
         } else {
-            this.mode = "rb";
+            this.mode = "rb+";
         }
         filePointer = openFile(InnerFile.getPathBytesForNative(path), mode.getBytes());
+        if (filePointer == 0 && "rb+".equals(this.mode)) {// file not exists , create new 
+            this.mode = "wb+";
+            filePointer = openFile(InnerFile.getPathBytesForNative(path), mode.getBytes());
+        }
         if (filePointer == 0) {
             throw new RuntimeException("open file error:" + path);
         }

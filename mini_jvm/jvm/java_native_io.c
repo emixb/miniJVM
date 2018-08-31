@@ -321,7 +321,7 @@ s32 sock_bind(s32 sockfd, Utf8String *local_ip, s32 local_port) {
             ret = -1;
         }
 #if __JVM_OS_VS__ || __JVM_OS_MINGW__ || __JVM_OS_CYGWIN__
-		addr.sin_addr = *((struct in_addr *) host->h_addr);
+        addr.sin_addr = *((struct in_addr *) host->h_addr);
 #else
         //server_addr.sin_len = sizeof(struct sockaddr_in);
         addr.sin_addr = *((struct in_addr *) host->h_addr_list[0]);
@@ -654,7 +654,7 @@ s32 org_mini_net_SocketNative_registerCleanup(Runtime *runtime, JClass *clazz) {
 s32 org_mini_net_SocketNative_finalize(Runtime *runtime, JClass *clazz) {
     s32 sockfd = localvar_getInt(runtime->localvar, 0);
     if (sockfd) {
-		close(sockfd);
+        close(sockfd);
     }
 
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
@@ -671,9 +671,9 @@ s32 org_mini_net_SocketNative_getSockAddr(Runtime *runtime, JClass *clazz) {
         struct sockaddr_in sock;
         socklen_t slen = sizeof(sock);
         if (mode == 0) {
-            getpeername(sockfd, (struct sockaddr *)&sock, &slen);
+            getpeername(sockfd, (struct sockaddr *) &sock, &slen);
         } else if (mode == 1) {
-            getsockname(sockfd, (struct sockaddr *)&sock, &slen);
+            getsockname(sockfd, (struct sockaddr *) &sock, &slen);
         }
 #if __JVM_OS_MAC__ || __JVM_OS_LINUX__
 #else
@@ -681,12 +681,12 @@ s32 org_mini_net_SocketNative_getSockAddr(Runtime *runtime, JClass *clazz) {
         char ipAddr[INET_ADDRSTRLEN];//保存点分十进制的地址
         Utf8String *ustr = utf8_create();
         inet_ntop(AF_INET, &sock.sin_addr, ipAddr, sizeof(ipAddr));
-        int port=ntohs(sock.sin_port);
+        int port = ntohs(sock.sin_port);
         utf8_append_c(ustr, ipAddr);
         utf8_append_c(ustr, ":");
-        utf8_append_s64(ustr,port,10);
+        utf8_append_s64(ustr, port, 10);
         Instance *jstr = jstring_create(ustr, runtime);
-		utf8_destory(ustr);
+        utf8_destory(ustr);
         push_ref(runtime->stack, jstr);
     }
 
@@ -899,9 +899,27 @@ s32 org_mini_fs_InnerFile_setLength0(Runtime *runtime, JClass *clazz) {
     s64 filelen = l2d.l;
     s32 ret = 0;
     if (fd) {
-#ifndef __C99
-        ret = ftruncate((s32) (intptr_t) fd, filelen);
+        fpos_t pos = 0;
+        ret = fseek(fd, 0, SEEK_END);
+        if (!ret) {
+            ret = fgetpos(fd, &pos);
+            if (!ret) {
+                if (filelen < pos) {
+#if __JVM_OS_VS__ || __JVM_OS_MINGW__ || __JVM_OS_CYGWIN__
+                    SetEndOfFile(hFile);
+#else
+                    ret = ftruncate(fileno(fd), (off_t) filelen);
 #endif
+                } else {
+                    u8 d = 0;
+                    s32 i, imax = filelen - pos;
+                    for (i = 0; i < imax; i++) {
+                        fwrite(&d, 1, 1, fd);
+                    }
+                    fflush(fd);
+                }
+            }
+        }
     }
     push_int(runtime->stack, ret);
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
