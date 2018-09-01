@@ -899,10 +899,10 @@ s32 org_mini_fs_InnerFile_setLength0(Runtime *runtime, JClass *clazz) {
     s64 filelen = l2d.l;
     s32 ret = 0;
     if (fd) {
-        fpos_t pos;
+        long pos;
         ret = fseek(fd, 0, SEEK_END);
         if (!ret) {
-            ret = fgetpos(fd, &pos);
+            ret = ftell(fd);
             if (!ret) {
                 if (filelen < pos) {
 #if __JVM_OS_VS__ || __JVM_OS_MINGW__ || __JVM_OS_CYGWIN__
