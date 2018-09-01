@@ -899,7 +899,7 @@ s32 org_mini_fs_InnerFile_setLength0(Runtime *runtime, JClass *clazz) {
     s64 filelen = l2d.l;
     s32 ret = 0;
     if (fd) {
-        fpos_t pos = 0;
+        fpos_t pos;
         ret = fseek(fd, 0, SEEK_END);
         if (!ret) {
             ret = fgetpos(fd, &pos);
