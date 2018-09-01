@@ -530,6 +530,8 @@ s32 org_mini_reflect_vm_RefNative_defineClass(Runtime *runtime, JClass *clazz) {
     cl->jClassLoader = cloader;
     bytebuf_destory(bytebuf);
 
+    cl->source = cl->name;
+
     Instance *clIns = insOfJavaLangClass_create_get(runtime, cl);
 
     push_ref(runtime->stack, clIns);
@@ -927,7 +929,7 @@ static java_native_method method_jdwp_table[] = {
         {"org/mini/reflect/ReflectField",  "getFieldVal",           "(JJ)J",                                                            org_mini_reflect_ReflectField_getFieldVal},
         {"org/mini/reflect/ReflectField",  "setFieldVal",           "(JJJ)V",                                                           org_mini_reflect_ReflectField_setFieldVal},
         {"org/mini/reflect/ReflectMethod", "mapMethod",             "(J)V",                                                             org_mini_reflect_ReflectMethod_mapMethod},
-        {"org/mini/reflect/ReflectMethod", "invokeMethod",          "(JLjava/lang/Object;[J)Lorg/mini/reflect/DataWrap;",                                         org_mini_reflect_ReflectMethod_invokeMethod},
+        {"org/mini/reflect/ReflectMethod", "invokeMethod",          "(JLjava/lang/Object;[J)Lorg/mini/reflect/DataWrap;",               org_mini_reflect_ReflectMethod_invokeMethod},
         {"org/mini/reflect/ReflectMethod", "findMethod0",           "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)J",        org_mini_reflect_ReflectMethod_findMethod0},
         {"org/mini/reflect/StackFrame",    "mapRuntime",            "(J)V",                                                             org_mini_reflect_StackFrame_mapRuntime},
         {"org/mini/reflect/ReflectArray",  "mapArray",              "(J)V",                                                             org_mini_reflect_ReflectArray_mapArray},
