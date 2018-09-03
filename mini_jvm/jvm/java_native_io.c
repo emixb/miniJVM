@@ -906,6 +906,7 @@ s32 org_mini_fs_InnerFile_setLength0(Runtime *runtime, JClass *clazz) {
             if (!ret) {
                 if (filelen < pos) {
 #if __JVM_OS_VS__ || __JVM_OS_MINGW__ || __JVM_OS_CYGWIN__
+                    fseek(fd, (long) filelen, SEEK_SET);
                     SetEndOfFile(fd);
 #else
                     ret = ftruncate(fileno(fd), (off_t) filelen);
