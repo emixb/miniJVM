@@ -66,11 +66,11 @@ int main(int argc, char **argv) {
         classpath = "../../binary/lib/minijvm_rt.jar;../../binary/lib/glfw_gui.jar;./";
 //        main_name = "test/Gears";
 //        main_name = "test/TestGL";
-        main_name = "test/GuiTest";
+//        main_name = "test/GuiTest";
 //        main_name = "test/RenderTexure";
 //        main_name = "test/Alpha";
 //        main_name = "test/Light";
-//        main_name = "test/Shader";
+        main_name = "test/Shader";
 //        main_name = "test/Boing";
 //        main_name = "test/TestNanovg";
 
@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
 
 
         classpath = "../../binary/lib/minijvm_rt.jar;../../binary/lib/minijvm_test.jar;./";
-        main_name = "test/Hello";
+//        main_name = "test/Hello";
 //        main_name = "test/Foo1";
 //        main_name = "test/Foo2";
 //        main_name = "test/Foo3";
@@ -93,6 +93,7 @@ int main(int argc, char **argv) {
 //        main_name = "test/BpDeepTest";
 //        main_name = "test/ReflectTest";
 //        main_name = "test/LambdaTest";
+        main_name = "test/Rsa";
 
 
 
