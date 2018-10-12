@@ -528,230 +528,227 @@ static inline void _synchronized_unlock_method(MethodInfo *method, Runtime *runt
     }
 }
 
-
 #if __JVM_OS_VS__ || __JVM_OS_MINGW__ || __JVM_OS_CYGWIN__
 //#  define STORE_ADDRESS(index,label) __asm lea eax, label __asm mov edx,opcode_addr  __asm mov [edx][index * TYPE opcode_addr],eax
 //#  define JUMP_TO_IP(cur_inst) { void* addr = *opcode_addr[cur_inst]; __asm jmp addr }
-#  define STORE_ADDRESS(index,label) while(0){}
+#  define STORE_ADDRESS(label) while(0){}
+#  define GET_LABEL_ADDRESS(label) 0
 #  define JUMP_TO_IP(cur_inst) while(0){}
 #else
-#  define STORE_ADDRESS(index, label) opcode_addr[index] = &&label
+#  define STORE_ADDRESS(label) opcode_addr[index] = &&label
+#  define GET_LABEL_ADDRESS(label) &&label
 #  define JUMP_TO_IP(cur_inst) goto *opcode_addr[cur_inst]
 #endif
 
-static void *opcode_addr[0xff];
-static s32 init_addr = 0;
 
 s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
 
-    if (!init_addr) {
-        init_addr = 1;
-        STORE_ADDRESS(op_nop, label_nop);
-        STORE_ADDRESS(op_aconst_null, label_aconst_null);
-        STORE_ADDRESS(op_iconst_m1, label_iconst_m1);
-        STORE_ADDRESS(op_iconst_0, label_iconst_0);
-        STORE_ADDRESS(op_iconst_1, label_iconst_1);
-        STORE_ADDRESS(op_iconst_2, label_iconst_2);
-        STORE_ADDRESS(op_iconst_3, label_iconst_3);
-        STORE_ADDRESS(op_iconst_4, label_iconst_4);
-        STORE_ADDRESS(op_iconst_5, label_iconst_5);
-        STORE_ADDRESS(op_lconst_0, label_lconst_0);
-        STORE_ADDRESS(op_lconst_1, label_lconst_1);
-        STORE_ADDRESS(op_fconst_0, label_fconst_0);
-        STORE_ADDRESS(op_fconst_1, label_fconst_1);
-        STORE_ADDRESS(op_fconst_2, label_fconst_2);
-        STORE_ADDRESS(op_dconst_0, label_dconst_0);
-        STORE_ADDRESS(op_dconst_1, label_dconst_1);
-        STORE_ADDRESS(op_bipush, label_bipush);
-        STORE_ADDRESS(op_sipush, label_sipush);
-        STORE_ADDRESS(op_ldc, label_ldc);
-        STORE_ADDRESS(op_ldc_w, label_ldc_w);
-        STORE_ADDRESS(op_ldc2_w, label_ldc2_w);
-        STORE_ADDRESS(op_iload, label_iload);
-        STORE_ADDRESS(op_lload, label_lload);
-        STORE_ADDRESS(op_fload, label_fload);
-        STORE_ADDRESS(op_dload, label_dload);
-        STORE_ADDRESS(op_aload, label_aload);
-        STORE_ADDRESS(op_iload_0, label_iload_0);
-        STORE_ADDRESS(op_iload_1, label_iload_1);
-        STORE_ADDRESS(op_iload_2, label_iload_2);
-        STORE_ADDRESS(op_iload_3, label_iload_3);
-        STORE_ADDRESS(op_lload_0, label_lload_0);
-        STORE_ADDRESS(op_lload_1, label_lload_1);
-        STORE_ADDRESS(op_lload_2, label_lload_2);
-        STORE_ADDRESS(op_lload_3, label_lload_3);
-        STORE_ADDRESS(op_fload_0, label_fload_0);
-        STORE_ADDRESS(op_fload_1, label_fload_1);
-        STORE_ADDRESS(op_fload_2, label_fload_2);
-        STORE_ADDRESS(op_fload_3, label_fload_3);
-        STORE_ADDRESS(op_dload_0, label_dload_0);
-        STORE_ADDRESS(op_dload_1, label_dload_1);
-        STORE_ADDRESS(op_dload_2, label_dload_2);
-        STORE_ADDRESS(op_dload_3, label_dload_3);
-        STORE_ADDRESS(op_aload_0, label_aload_0);
-        STORE_ADDRESS(op_aload_1, label_aload_1);
-        STORE_ADDRESS(op_aload_2, label_aload_2);
-        STORE_ADDRESS(op_aload_3, label_aload_3);
-        STORE_ADDRESS(op_iaload, label_iaload);
-        STORE_ADDRESS(op_laload, label_laload);
-        STORE_ADDRESS(op_faload, label_faload);
-        STORE_ADDRESS(op_daload, label_daload);
-        STORE_ADDRESS(op_aaload, label_aaload);
-        STORE_ADDRESS(op_baload, label_baload);
-        STORE_ADDRESS(op_caload, label_caload);
-        STORE_ADDRESS(op_saload, label_saload);
-        STORE_ADDRESS(op_istore, label_istore);
-        STORE_ADDRESS(op_lstore, label_lstore);
-        STORE_ADDRESS(op_fstore, label_fstore);
-        STORE_ADDRESS(op_dstore, label_dstore);
-        STORE_ADDRESS(op_astore, label_astore);
-        STORE_ADDRESS(op_istore_0, label_istore_0);
-        STORE_ADDRESS(op_istore_1, label_istore_1);
-        STORE_ADDRESS(op_istore_2, label_istore_2);
-        STORE_ADDRESS(op_istore_3, label_istore_3);
-        STORE_ADDRESS(op_lstore_0, label_lstore_0);
-        STORE_ADDRESS(op_lstore_1, label_lstore_1);
-        STORE_ADDRESS(op_lstore_2, label_lstore_2);
-        STORE_ADDRESS(op_lstore_3, label_lstore_3);
-        STORE_ADDRESS(op_fstore_0, label_fstore_0);
-        STORE_ADDRESS(op_fstore_1, label_fstore_1);
-        STORE_ADDRESS(op_fstore_2, label_fstore_2);
-        STORE_ADDRESS(op_fstore_3, label_fstore_3);
-        STORE_ADDRESS(op_dstore_0, label_dstore_0);
-        STORE_ADDRESS(op_dstore_1, label_dstore_1);
-        STORE_ADDRESS(op_dstore_2, label_dstore_2);
-        STORE_ADDRESS(op_dstore_3, label_dstore_3);
-        STORE_ADDRESS(op_astore_0, label_astore_0);
-        STORE_ADDRESS(op_astore_1, label_astore_1);
-        STORE_ADDRESS(op_astore_2, label_astore_2);
-        STORE_ADDRESS(op_astore_3, label_astore_3);
-        STORE_ADDRESS(op_iastore, label_iastore);
-        STORE_ADDRESS(op_lastore, label_lastore);
-        STORE_ADDRESS(op_fastore, label_fastore);
-        STORE_ADDRESS(op_dastore, label_dastore);
-        STORE_ADDRESS(op_aastore, label_aastore);
-        STORE_ADDRESS(op_bastore, label_bastore);
-        STORE_ADDRESS(op_castore, label_castore);
-        STORE_ADDRESS(op_sastore, label_sastore);
-        STORE_ADDRESS(op_pop, label_pop);
-        STORE_ADDRESS(op_pop2, label_pop2);
-        STORE_ADDRESS(op_dup, label_dup);
-        STORE_ADDRESS(op_dup_x1, label_dup_x1);
-        STORE_ADDRESS(op_dup_x2, label_dup_x2);
-        STORE_ADDRESS(op_dup2, label_dup2);
-        STORE_ADDRESS(op_dup2_x1, label_dup2_x1);
-        STORE_ADDRESS(op_dup2_x2, label_dup2_x2);
-        STORE_ADDRESS(op_swap, label_swap);
-        STORE_ADDRESS(op_iadd, label_iadd);
-        STORE_ADDRESS(op_ladd, label_ladd);
-        STORE_ADDRESS(op_fadd, label_fadd);
-        STORE_ADDRESS(op_dadd, label_dadd);
-        STORE_ADDRESS(op_isub, label_isub);
-        STORE_ADDRESS(op_lsub, label_lsub);
-        STORE_ADDRESS(op_fsub, label_fsub);
-        STORE_ADDRESS(op_dsub, label_dsub);
-        STORE_ADDRESS(op_imul, label_imul);
-        STORE_ADDRESS(op_lmul, label_lmul);
-        STORE_ADDRESS(op_fmul, label_fmul);
-        STORE_ADDRESS(op_dmul, label_dmul);
-        STORE_ADDRESS(op_idiv, label_idiv);
-        STORE_ADDRESS(op_ldiv, label_ldiv);
-        STORE_ADDRESS(op_fdiv, label_fdiv);
-        STORE_ADDRESS(op_ddiv, label_ddiv);
-        STORE_ADDRESS(op_irem, label_irem);
-        STORE_ADDRESS(op_lrem, label_lrem);
-        STORE_ADDRESS(op_frem, label_frem);
-        STORE_ADDRESS(op_drem, label_drem);
-        STORE_ADDRESS(op_ineg, label_ineg);
-        STORE_ADDRESS(op_lneg, label_lneg);
-        STORE_ADDRESS(op_fneg, label_fneg);
-        STORE_ADDRESS(op_dneg, label_dneg);
-        STORE_ADDRESS(op_ishl, label_ishl);
-        STORE_ADDRESS(op_lshl, label_lshl);
-        STORE_ADDRESS(op_ishr, label_ishr);
-        STORE_ADDRESS(op_lshr, label_lshr);
-        STORE_ADDRESS(op_iushr, label_iushr);
-        STORE_ADDRESS(op_lushr, label_lushr);
-        STORE_ADDRESS(op_iand, label_iand);
-        STORE_ADDRESS(op_land, label_land);
-        STORE_ADDRESS(op_ior, label_ior);
-        STORE_ADDRESS(op_lor, label_lor);
-        STORE_ADDRESS(op_ixor, label_ixor);
-        STORE_ADDRESS(op_lxor, label_lxor);
-        STORE_ADDRESS(op_iinc, label_iinc);
-        STORE_ADDRESS(op_i2l, label_i2l);
-        STORE_ADDRESS(op_i2f, label_i2f);
-        STORE_ADDRESS(op_i2d, label_i2d);
-        STORE_ADDRESS(op_l2i, label_l2i);
-        STORE_ADDRESS(op_l2f, label_l2f);
-        STORE_ADDRESS(op_l2d, label_l2d);
-        STORE_ADDRESS(op_f2i, label_f2i);
-        STORE_ADDRESS(op_f2l, label_f2l);
-        STORE_ADDRESS(op_f2d, label_f2d);
-        STORE_ADDRESS(op_d2i, label_d2i);
-        STORE_ADDRESS(op_d2l, label_d2l);
-        STORE_ADDRESS(op_d2f, label_d2f);
-        STORE_ADDRESS(op_i2b, label_i2b);
-        STORE_ADDRESS(op_i2c, label_i2c);
-        STORE_ADDRESS(op_i2s, label_i2s);
-        STORE_ADDRESS(op_lcmp, label_lcmp);
-        STORE_ADDRESS(op_fcmpl, label_fcmpl);
-        STORE_ADDRESS(op_fcmpg, label_fcmpg);
-        STORE_ADDRESS(op_dcmpl, label_dcmpl);
-        STORE_ADDRESS(op_dcmpg, label_dcmpg);
-        STORE_ADDRESS(op_ifeq, label_ifeq);
-        STORE_ADDRESS(op_ifne, label_ifne);
-        STORE_ADDRESS(op_iflt, label_iflt);
-        STORE_ADDRESS(op_ifge, label_ifge);
-        STORE_ADDRESS(op_ifgt, label_ifgt);
-        STORE_ADDRESS(op_ifle, label_ifle);
-        STORE_ADDRESS(op_if_icmpeq, label_if_icmpeq);
-        STORE_ADDRESS(op_if_icmpne, label_if_icmpne);
-        STORE_ADDRESS(op_if_icmplt, label_if_icmplt);
-        STORE_ADDRESS(op_if_icmpge, label_if_icmpge);
-        STORE_ADDRESS(op_if_icmpgt, label_if_icmpgt);
-        STORE_ADDRESS(op_if_icmple, label_if_icmple);
-        STORE_ADDRESS(op_if_acmpeq, label_if_acmpeq);
-        STORE_ADDRESS(op_if_acmpne, label_if_acmpne);
-        STORE_ADDRESS(op_goto, label_goto);
-        STORE_ADDRESS(op_jsr, label_jsr);
-        STORE_ADDRESS(op_ret, label_ret);
-        STORE_ADDRESS(op_tableswitch, label_tableswitch);
-        STORE_ADDRESS(op_lookupswitch, label_lookupswitch);
-        STORE_ADDRESS(op_ireturn, label_ireturn);
-        STORE_ADDRESS(op_lreturn, label_lreturn);
-        STORE_ADDRESS(op_freturn, label_freturn);
-        STORE_ADDRESS(op_dreturn, label_dreturn);
-        STORE_ADDRESS(op_areturn, label_areturn);
-        STORE_ADDRESS(op_return, label_return);
-        STORE_ADDRESS(op_getstatic, label_getstatic);
-        STORE_ADDRESS(op_putstatic, label_putstatic);
-        STORE_ADDRESS(op_getfield, label_getfield);
-        STORE_ADDRESS(op_putfield, label_putfield);
-        STORE_ADDRESS(op_invokevirtual, label_invokevirtual);
-        STORE_ADDRESS(op_invokespecial, label_invokespecial);
-        STORE_ADDRESS(op_invokestatic, label_invokestatic);
-        STORE_ADDRESS(op_invokeinterface, label_invokeinterface);
-        STORE_ADDRESS(op_invokedynamic, label_invokedynamic);
-        STORE_ADDRESS(op_new, label_new);
-        STORE_ADDRESS(op_newarray, label_newarray);
-        STORE_ADDRESS(op_anewarray, label_anewarray);
-        STORE_ADDRESS(op_arraylength, label_arraylength);
-        STORE_ADDRESS(op_athrow, label_athrow);
-        STORE_ADDRESS(op_checkcast, label_checkcast);
-        STORE_ADDRESS(op_instanceof, label_instanceof);
-        STORE_ADDRESS(op_monitorenter, label_monitorenter);
-        STORE_ADDRESS(op_monitorexit, label_monitorexit);
-        STORE_ADDRESS(op_wide, label_wide);
-        STORE_ADDRESS(op_multianewarray, label_multianewarray);
-        STORE_ADDRESS(op_ifnull, label_ifnull);
-        STORE_ADDRESS(op_ifnonnull, label_ifnonnull);
-        STORE_ADDRESS(op_0xc8, label_0xc8);
-        STORE_ADDRESS(op_0xc9, label_0xc9);
-        STORE_ADDRESS(op_breakpoint, label_breakpoint);
+    static __refer opcode_addr[0xCB] = {
+            GET_LABEL_ADDRESS(label_nop),
+            GET_LABEL_ADDRESS(label_aconst_null),
+            GET_LABEL_ADDRESS(label_iconst_m1),
+            GET_LABEL_ADDRESS(label_iconst_0),
+            GET_LABEL_ADDRESS(label_iconst_1),
+            GET_LABEL_ADDRESS(label_iconst_2),
+            GET_LABEL_ADDRESS(label_iconst_3),
+            GET_LABEL_ADDRESS(label_iconst_4),
+            GET_LABEL_ADDRESS(label_iconst_5),
+            GET_LABEL_ADDRESS(label_lconst_0),
+            GET_LABEL_ADDRESS(label_lconst_1),
+            GET_LABEL_ADDRESS(label_fconst_0),
+            GET_LABEL_ADDRESS(label_fconst_1),
+            GET_LABEL_ADDRESS(label_fconst_2),
+            GET_LABEL_ADDRESS(label_dconst_0),
+            GET_LABEL_ADDRESS(label_dconst_1),
+            GET_LABEL_ADDRESS(label_bipush),
+            GET_LABEL_ADDRESS(label_sipush),
+            GET_LABEL_ADDRESS(label_ldc),
+            GET_LABEL_ADDRESS(label_ldc_w),
+            GET_LABEL_ADDRESS(label_ldc2_w),
+            GET_LABEL_ADDRESS(label_iload),
+            GET_LABEL_ADDRESS(label_lload),
+            GET_LABEL_ADDRESS(label_fload),
+            GET_LABEL_ADDRESS(label_dload),
+            GET_LABEL_ADDRESS(label_aload),
+            GET_LABEL_ADDRESS(label_iload_0),
+            GET_LABEL_ADDRESS(label_iload_1),
+            GET_LABEL_ADDRESS(label_iload_2),
+            GET_LABEL_ADDRESS(label_iload_3),
+            GET_LABEL_ADDRESS(label_lload_0),
+            GET_LABEL_ADDRESS(label_lload_1),
+            GET_LABEL_ADDRESS(label_lload_2),
+            GET_LABEL_ADDRESS(label_lload_3),
+            GET_LABEL_ADDRESS(label_fload_0),
+            GET_LABEL_ADDRESS(label_fload_1),
+            GET_LABEL_ADDRESS(label_fload_2),
+            GET_LABEL_ADDRESS(label_fload_3),
+            GET_LABEL_ADDRESS(label_dload_0),
+            GET_LABEL_ADDRESS(label_dload_1),
+            GET_LABEL_ADDRESS(label_dload_2),
+            GET_LABEL_ADDRESS(label_dload_3),
+            GET_LABEL_ADDRESS(label_aload_0),
+            GET_LABEL_ADDRESS(label_aload_1),
+            GET_LABEL_ADDRESS(label_aload_2),
+            GET_LABEL_ADDRESS(label_aload_3),
+            GET_LABEL_ADDRESS(label_iaload),
+            GET_LABEL_ADDRESS(label_laload),
+            GET_LABEL_ADDRESS(label_faload),
+            GET_LABEL_ADDRESS(label_daload),
+            GET_LABEL_ADDRESS(label_aaload),
+            GET_LABEL_ADDRESS(label_baload),
+            GET_LABEL_ADDRESS(label_caload),
+            GET_LABEL_ADDRESS(label_saload),
+            GET_LABEL_ADDRESS(label_istore),
+            GET_LABEL_ADDRESS(label_lstore),
+            GET_LABEL_ADDRESS(label_fstore),
+            GET_LABEL_ADDRESS(label_dstore),
+            GET_LABEL_ADDRESS(label_astore),
+            GET_LABEL_ADDRESS(label_istore_0),
+            GET_LABEL_ADDRESS(label_istore_1),
+            GET_LABEL_ADDRESS(label_istore_2),
+            GET_LABEL_ADDRESS(label_istore_3),
+            GET_LABEL_ADDRESS(label_lstore_0),
+            GET_LABEL_ADDRESS(label_lstore_1),
+            GET_LABEL_ADDRESS(label_lstore_2),
+            GET_LABEL_ADDRESS(label_lstore_3),
+            GET_LABEL_ADDRESS(label_fstore_0),
+            GET_LABEL_ADDRESS(label_fstore_1),
+            GET_LABEL_ADDRESS(label_fstore_2),
+            GET_LABEL_ADDRESS(label_fstore_3),
+            GET_LABEL_ADDRESS(label_dstore_0),
+            GET_LABEL_ADDRESS(label_dstore_1),
+            GET_LABEL_ADDRESS(label_dstore_2),
+            GET_LABEL_ADDRESS(label_dstore_3),
+            GET_LABEL_ADDRESS(label_astore_0),
+            GET_LABEL_ADDRESS(label_astore_1),
+            GET_LABEL_ADDRESS(label_astore_2),
+            GET_LABEL_ADDRESS(label_astore_3),
+            GET_LABEL_ADDRESS(label_iastore),
+            GET_LABEL_ADDRESS(label_lastore),
+            GET_LABEL_ADDRESS(label_fastore),
+            GET_LABEL_ADDRESS(label_dastore),
+            GET_LABEL_ADDRESS(label_aastore),
+            GET_LABEL_ADDRESS(label_bastore),
+            GET_LABEL_ADDRESS(label_castore),
+            GET_LABEL_ADDRESS(label_sastore),
+            GET_LABEL_ADDRESS(label_pop),
+            GET_LABEL_ADDRESS(label_pop2),
+            GET_LABEL_ADDRESS(label_dup),
+            GET_LABEL_ADDRESS(label_dup_x1),
+            GET_LABEL_ADDRESS(label_dup_x2),
+            GET_LABEL_ADDRESS(label_dup2),
+            GET_LABEL_ADDRESS(label_dup2_x1),
+            GET_LABEL_ADDRESS(label_dup2_x2),
+            GET_LABEL_ADDRESS(label_swap),
+            GET_LABEL_ADDRESS(label_iadd),
+            GET_LABEL_ADDRESS(label_ladd),
+            GET_LABEL_ADDRESS(label_fadd),
+            GET_LABEL_ADDRESS(label_dadd),
+            GET_LABEL_ADDRESS(label_isub),
+            GET_LABEL_ADDRESS(label_lsub),
+            GET_LABEL_ADDRESS(label_fsub),
+            GET_LABEL_ADDRESS(label_dsub),
+            GET_LABEL_ADDRESS(label_imul),
+            GET_LABEL_ADDRESS(label_lmul),
+            GET_LABEL_ADDRESS(label_fmul),
+            GET_LABEL_ADDRESS(label_dmul),
+            GET_LABEL_ADDRESS(label_idiv),
+            GET_LABEL_ADDRESS(label_ldiv),
+            GET_LABEL_ADDRESS(label_fdiv),
+            GET_LABEL_ADDRESS(label_ddiv),
+            GET_LABEL_ADDRESS(label_irem),
+            GET_LABEL_ADDRESS(label_lrem),
+            GET_LABEL_ADDRESS(label_frem),
+            GET_LABEL_ADDRESS(label_drem),
+            GET_LABEL_ADDRESS(label_ineg),
+            GET_LABEL_ADDRESS(label_lneg),
+            GET_LABEL_ADDRESS(label_fneg),
+            GET_LABEL_ADDRESS(label_dneg),
+            GET_LABEL_ADDRESS(label_ishl),
+            GET_LABEL_ADDRESS(label_lshl),
+            GET_LABEL_ADDRESS(label_ishr),
+            GET_LABEL_ADDRESS(label_lshr),
+            GET_LABEL_ADDRESS(label_iushr),
+            GET_LABEL_ADDRESS(label_lushr),
+            GET_LABEL_ADDRESS(label_iand),
+            GET_LABEL_ADDRESS(label_land),
+            GET_LABEL_ADDRESS(label_ior),
+            GET_LABEL_ADDRESS(label_lor),
+            GET_LABEL_ADDRESS(label_ixor),
+            GET_LABEL_ADDRESS(label_lxor),
+            GET_LABEL_ADDRESS(label_iinc),
+            GET_LABEL_ADDRESS(label_i2l),
+            GET_LABEL_ADDRESS(label_i2f),
+            GET_LABEL_ADDRESS(label_i2d),
+            GET_LABEL_ADDRESS(label_l2i),
+            GET_LABEL_ADDRESS(label_l2f),
+            GET_LABEL_ADDRESS(label_l2d),
+            GET_LABEL_ADDRESS(label_f2i),
+            GET_LABEL_ADDRESS(label_f2l),
+            GET_LABEL_ADDRESS(label_f2d),
+            GET_LABEL_ADDRESS(label_d2i),
+            GET_LABEL_ADDRESS(label_d2l),
+            GET_LABEL_ADDRESS(label_d2f),
+            GET_LABEL_ADDRESS(label_i2b),
+            GET_LABEL_ADDRESS(label_i2c),
+            GET_LABEL_ADDRESS(label_i2s),
+            GET_LABEL_ADDRESS(label_lcmp),
+            GET_LABEL_ADDRESS(label_fcmpl),
+            GET_LABEL_ADDRESS(label_fcmpg),
+            GET_LABEL_ADDRESS(label_dcmpl),
+            GET_LABEL_ADDRESS(label_dcmpg),
+            GET_LABEL_ADDRESS(label_ifeq),
+            GET_LABEL_ADDRESS(label_ifne),
+            GET_LABEL_ADDRESS(label_iflt),
+            GET_LABEL_ADDRESS(label_ifge),
+            GET_LABEL_ADDRESS(label_ifgt),
+            GET_LABEL_ADDRESS(label_ifle),
+            GET_LABEL_ADDRESS(label_if_icmpeq),
+            GET_LABEL_ADDRESS(label_if_icmpne),
+            GET_LABEL_ADDRESS(label_if_icmplt),
+            GET_LABEL_ADDRESS(label_if_icmpge),
+            GET_LABEL_ADDRESS(label_if_icmpgt),
+            GET_LABEL_ADDRESS(label_if_icmple),
+            GET_LABEL_ADDRESS(label_if_acmpeq),
+            GET_LABEL_ADDRESS(label_if_acmpne),
+            GET_LABEL_ADDRESS(label_goto),
+            GET_LABEL_ADDRESS(label_jsr),
+            GET_LABEL_ADDRESS(label_ret),
+            GET_LABEL_ADDRESS(label_tableswitch),
+            GET_LABEL_ADDRESS(label_lookupswitch),
+            GET_LABEL_ADDRESS(label_ireturn),
+            GET_LABEL_ADDRESS(label_lreturn),
+            GET_LABEL_ADDRESS(label_freturn),
+            GET_LABEL_ADDRESS(label_dreturn),
+            GET_LABEL_ADDRESS(label_areturn),
+            GET_LABEL_ADDRESS(label_return),
+            GET_LABEL_ADDRESS(label_getstatic),
+            GET_LABEL_ADDRESS(label_putstatic),
+            GET_LABEL_ADDRESS(label_getfield),
+            GET_LABEL_ADDRESS(label_putfield),
+            GET_LABEL_ADDRESS(label_invokevirtual),
+            GET_LABEL_ADDRESS(label_invokespecial),
+            GET_LABEL_ADDRESS(label_invokestatic),
+            GET_LABEL_ADDRESS(label_invokeinterface),
+            GET_LABEL_ADDRESS(label_invokedynamic),
+            GET_LABEL_ADDRESS(label_new),
+            GET_LABEL_ADDRESS(label_newarray),
+            GET_LABEL_ADDRESS(label_anewarray),
+            GET_LABEL_ADDRESS(label_arraylength),
+            GET_LABEL_ADDRESS(label_athrow),
+            GET_LABEL_ADDRESS(label_checkcast),
+            GET_LABEL_ADDRESS(label_instanceof),
+            GET_LABEL_ADDRESS(label_monitorenter),
+            GET_LABEL_ADDRESS(label_monitorexit),
+            GET_LABEL_ADDRESS(label_wide),
+            GET_LABEL_ADDRESS(label_multianewarray),
+            GET_LABEL_ADDRESS(label_ifnull),
+            GET_LABEL_ADDRESS(label_ifnonnull),
+            GET_LABEL_ADDRESS(label_0xc8),
+            GET_LABEL_ADDRESS(label_0xc9),
+            GET_LABEL_ADDRESS(label_breakpoint)
+    };
 
-
-    }
 
     s32 ret = RUNTIME_STATUS_NORMAL;
 
@@ -806,14 +803,14 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                 }
 
 #if _JVM_DEBUG_PROFILE
-                u8 instruct_code = runtime->pc[0];
-            s64 start_at = nanoTime();
+                    u8 instruct_code = runtime->pc[0];
+                s64 start_at = nanoTime();
 #endif
 
 
-                /* ==================================opcode start =============================*/
+                    /* ==================================opcode start =============================*/
 #ifdef __JVM_DEBUG__
-                s64 inst_pc = runtime->pc - ca->code;
+                    s64 inst_pc = runtime->pc - ca->code;
 #endif
                 JUMP_TO_IP(cur_inst);
                 switch (cur_inst) {
@@ -4028,7 +4025,9 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                 s64 spent = nanoTime() - start_at;
                 profile_put(instruct_code, spent, 1);
 #endif
-                if (ret == RUNTIME_STATUS_RETURN) {
+                if (!ret) {
+                    continue;
+                } else if (ret == RUNTIME_STATUS_RETURN) {
                     ret = RUNTIME_STATUS_NORMAL;
                     break;
                 } else if (ret == RUNTIME_STATUS_INTERRUPT) {
