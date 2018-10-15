@@ -5,6 +5,8 @@
  */
 package org.mini.zip;
 
+import java.io.UnsupportedEncodingException;
+
 /**
  *
  * byte[] b = javax.mini.zip.Zip.getEntry("../lib/minijvm_rt.jar",
@@ -83,17 +85,25 @@ public class Zip {
         return null;
     }
 
-    public static boolean isDirectory0(String zipFile, int index) {
+    public static boolean isDirectory(String zipFile, int index) {
         try {
             String z = zipFile + "\0";
             byte[] zpath = z.getBytes("utf-8");
 
-            return isDirectory0(zpath, index);
-        } catch (Exception ex) {
+            int ret = isDirectory0(zpath, index);
+            if (ret == -1) {
+                throw new RuntimeException();
+            }
+            return ret != 0;
+        } catch (UnsupportedEncodingException ex) {
             ex.printStackTrace();
         }
         return true;
     }
+
+    public native static byte[] extract0(byte[] zipData);
+
+    public native static byte[] compress0(byte[] data);
 
     static native byte[] getEntry0(byte[] zippath, byte[] path);
 
@@ -103,5 +113,5 @@ public class Zip {
 
     static native String[] listFiles0(byte[] zippath);
 
-    static native boolean isDirectory0(byte[] zippath, int index);
+    static native int isDirectory0(byte[] zippath, int index);
 }

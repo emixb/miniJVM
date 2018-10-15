@@ -19,4 +19,8 @@ s32 zip_filecount(char *jarpath);
 
 s32 zip_is_directory(char *jarpath, int index);
 
+s32 zip_compress(char *data, int size, ByteBuf *zip_data);
+
+s32 zip_extract(char *zip_data, int size, ByteBuf *data);
+
 #endif

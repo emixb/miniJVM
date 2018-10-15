@@ -57,41 +57,53 @@ set(SOURCE_FILES
         utils/dirent_win.h
         utils/ltalloc.c
         utils/ltalloc.h
+        utils/miniz.c
+        utils/miniz.h
         )
 
 MESSAGE(STATUS "platform: ${CMAKE_SYSTEM_NAME}")
 
 
 #if (MINI_JVM_BUILD_LIB)
-    add_library(mini_jvm_lib SHARED ${SOURCE_FILES} )
-    TARGET_LINK_LIBRARIES(mini_jvm_lib pthread m)
-    #Set link library.
-    IF (APPLE)
-    ELSEIF (UNIX)
-        TARGET_LINK_LIBRARIES(mini_jvm_lib dl)
-    ELSEIF (MINGW)
-        TARGET_LINK_LIBRARIES(mini_jvm_lib ws2_32)
-        IF (CMAKE_SIZEOF_VOID_P EQUAL 4)
-        elseif (CMAKE_SIZEOF_VOID_P EQUAL 8)
-        endif ()
-    ENDIF ()
+add_library(mini_jvm_lib SHARED ${SOURCE_FILES})
+TARGET_LINK_LIBRARIES(mini_jvm_lib pthread m)
+#Set link library.
+IF (APPLE)
+ELSEIF (UNIX)
+    TARGET_LINK_LIBRARIES(mini_jvm_lib dl)
+ELSEIF (MINGW)
+    TARGET_LINK_LIBRARIES(mini_jvm_lib ws2_32)
+    IF (CMAKE_SIZEOF_VOID_P EQUAL 4)
+    elseif (CMAKE_SIZEOF_VOID_P EQUAL 8)
+    endif ()
+ENDIF ()
 #else ()
 
-    add_executable(mini_jvm ${SOURCE_FILES} main.c )
-    TARGET_LINK_LIBRARIES(mini_jvm pthread m)
-    #Set link library.
-    IF (APPLE)
-        SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/../binary/macos)
-    ELSEIF (UNIX)
-        TARGET_LINK_LIBRARIES(mini_jvm dl)
-        SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/../binary/centos_x64)
-    ELSEIF (MINGW)
-        TARGET_LINK_LIBRARIES(mini_jvm ws2_32)
-        IF (CMAKE_SIZEOF_VOID_P EQUAL 4)
-            SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/../binary/win32)
-        elseif (CMAKE_SIZEOF_VOID_P EQUAL 8)
-            SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/../binary/win_x64)
-        endif ()
-    ENDIF ()
+add_executable(mini_jvm ${SOURCE_FILES} main.c)
+TARGET_LINK_LIBRARIES(mini_jvm pthread m)
+#Set link library.
+IF (APPLE)
+    SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/../binary/macos)
+ELSEIF (UNIX)
+    TARGET_LINK_LIBRARIES(mini_jvm dl)
+    SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/../binary/centos_x64)
+ELSEIF (MINGW)
+    TARGET_LINK_LIBRARIES(mini_jvm ws2_32)
+    IF (CMAKE_SIZEOF_VOID_P EQUAL 4)
+        SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/../binary/win32)
+    elseif (CMAKE_SIZEOF_VOID_P EQUAL 8)
+        SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/../binary/win_x64)
+    endif ()
+ENDIF ()
 
 #endif ()
+
+configure_file( "${PROJECT_SOURCE_DIR}/../javalib/dist/minijvm_rt.jar" "${PROJECT_SOURCE_DIR}/../binary/lib/minijvm_rt.jar" COPYONLY)
+configure_file( "${PROJECT_SOURCE_DIR}/../javalib/dist/minijvm_rt.jar" "${PROJECT_SOURCE_DIR}/../mobile/assets/resfiles/minijvm_rt.jar" COPYONLY)
+configure_file( "${PROJECT_SOURCE_DIR}/../ex_lib/jni_gui/java/dist/glfw_gui.jar" "${PROJECT_SOURCE_DIR}/../binary/lib/glfw_gui.jar" COPYONLY)
+configure_file( "${PROJECT_SOURCE_DIR}/../ex_lib/luaj/dist/luaj.jar" "${PROJECT_SOURCE_DIR}/../binary/lib/luaj.jar" COPYONLY)
+configure_file( "${PROJECT_SOURCE_DIR}/../test/javalib_test/dist/minijvm_test.jar" "${PROJECT_SOURCE_DIR}/../binary/lib/minijvm_test.jar" COPYONLY)
+
+#configure_file( "${PROJECT_SOURCE_DIR}/../test/jni_test/java/dist/jni_test.jar" "${PROJECT_SOURCE_DIR}/../binary/lib/jni_test.jar" COPYONLY)
+
+

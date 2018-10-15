@@ -1249,16 +1249,60 @@ s32 org_mini_zip_ZipFile_listFiles0(Runtime *runtime, JClass *clazz) {
 s32 org_mini_zip_ZipFile_isDirectory0(Runtime *runtime, JClass *clazz) {
     Instance *zip_path_arr = localvar_getRefer(runtime->localvar, 0);
     s32 index = localvar_getInt(runtime->localvar, 1);
-    s32 ret = 0;
+    s32 ret = -1;
     if (zip_path_arr) {
         ret = zip_is_directory(zip_path_arr->arr_body, index);
     }
-    if (ret == -1) {
-        push_ref(runtime->stack, NULL);
-    }
+
+    push_int(runtime->stack, ret);
+
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
     invoke_deepth(runtime);
     jvm_printf("org_mini_zip_ZipFile_isDirectory0  \n");
+#endif
+    return 0;
+}
+
+s32 org_mini_zip_ZipFile_extract0(Runtime *runtime, JClass *clazz) {
+    Instance *zip_data = localvar_getRefer(runtime->localvar, 0);
+    s32 ret = 0;
+    ByteBuf *data = bytebuf_create(0);
+    if (zip_data) {
+        ret = zip_extract(zip_data->arr_body, zip_data->arr_length, data);
+    }
+    if (ret == -1) {
+        push_ref(runtime->stack, NULL);
+    } else {
+        Instance *byte_arr = jarray_create_by_type_index(runtime, data->wp, DATATYPE_BYTE);
+        bytebuf_read_batch(data, byte_arr->arr_body, data->wp);
+        push_ref(runtime->stack, byte_arr);
+    }
+    bytebuf_destory(data);
+#if _JVM_DEBUG_BYTECODE_DETAIL > 5
+    invoke_deepth(runtime);
+    jvm_printf("org_mini_zip_ZipFile_extract0  \n");
+#endif
+    return 0;
+}
+
+s32 org_mini_zip_ZipFile_compress0(Runtime *runtime, JClass *clazz) {
+    Instance *data = localvar_getRefer(runtime->localvar, 0);
+    s32 ret = 0;
+    ByteBuf *zip_data = bytebuf_create(0);
+    if (data) {
+        ret = zip_compress(data->arr_body, data->arr_length, zip_data);
+    }
+    if (ret == -1) {
+        push_ref(runtime->stack, NULL);
+    } else {
+        Instance *byte_arr = jarray_create_by_type_index(runtime, zip_data->wp, DATATYPE_BYTE);
+        bytebuf_read_batch(zip_data, byte_arr->arr_body, zip_data->wp);
+        push_ref(runtime->stack, byte_arr);
+    }
+    bytebuf_destory(zip_data);
+#if _JVM_DEBUG_BYTECODE_DETAIL > 5
+    invoke_deepth(runtime);
+    jvm_printf("org_mini_zip_ZipFile_compress0  \n");
 #endif
     return 0;
 }
@@ -1304,7 +1348,9 @@ static java_native_method method_net_table[] = {
         {"org/mini/zip/Zip",          "putEntry0",       "([B[B[B)I",                        org_mini_zip_ZipFile_putEntry0},
         {"org/mini/zip/Zip",          "fileCount0",      "([B)I",                            org_mini_zip_ZipFile_fileCount0},
         {"org/mini/zip/Zip",          "listFiles0",      "([B)[Ljava/lang/String;",          org_mini_zip_ZipFile_listFiles0},
-        {"org/mini/zip/Zip",          "isDirectory0",    "([BI)Z",                           org_mini_zip_ZipFile_isDirectory0},
+        {"org/mini/zip/Zip",          "isDirectory0",    "([BI)I",                           org_mini_zip_ZipFile_isDirectory0},
+        {"org/mini/zip/Zip",          "extract0",        "([B)[B",                           org_mini_zip_ZipFile_extract0},
+        {"org/mini/zip/Zip",          "compress0",       "([B)[B",                           org_mini_zip_ZipFile_compress0},
 
 };
 
