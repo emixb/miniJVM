@@ -1,21 +1,21 @@
 package org.mini.crypt;
 
-
 import java.math.BigInteger;
 import java.util.Random;
 
 /**
  * RSA like asymmetric encryption
- * 
- * 
+ *
+ *
  * @author Gust
  */
 public class AsynCrypt {
 
-    public static final String MY_TEXT = "This is my text";
-    public static final int NUMBER_OF_BIT = 512;
+    static Random rand = new Random(System.currentTimeMillis());
 
     public static void test() {
+        String MY_TEXT = "This is my text";
+        int NUMBER_OF_BIT = 512;
 
         BigInteger p = generateBigPrime(NUMBER_OF_BIT);
         BigInteger q = generateBigPrime(NUMBER_OF_BIT);
@@ -41,7 +41,7 @@ public class AsynCrypt {
     }
 
     public static BigInteger generateBigPrime(int numberOfBit) {
-        return BigInteger.probablePrime(numberOfBit, new Random());
+        return BigInteger.probablePrime(numberOfBit, rand);
     }
 
     public static BigInteger calculateModulus(BigInteger number1, BigInteger number2) {
@@ -55,7 +55,7 @@ public class AsynCrypt {
     }
 
     public static BigInteger calculateCoprime(BigInteger phi, BigInteger modulus, int numberOfBytes) throws RuntimeException {
-        BigInteger e = BigInteger.probablePrime(numberOfBytes, new Random());
+        BigInteger e = BigInteger.probablePrime(numberOfBytes, rand);
 
         while (phi.gcd(e).compareTo(BigInteger.ONE) != 0 && e.compareTo(modulus) < 0) {
             e.add(BigInteger.ONE);

@@ -98,11 +98,19 @@ ENDIF ()
 
 #endif ()
 
-configure_file( "${PROJECT_SOURCE_DIR}/../javalib/dist/minijvm_rt.jar" "${PROJECT_SOURCE_DIR}/../binary/lib/minijvm_rt.jar" COPYONLY)
-configure_file( "${PROJECT_SOURCE_DIR}/../javalib/dist/minijvm_rt.jar" "${PROJECT_SOURCE_DIR}/../mobile/assets/resfiles/minijvm_rt.jar" COPYONLY)
-configure_file( "${PROJECT_SOURCE_DIR}/../ex_lib/jni_gui/java/dist/glfw_gui.jar" "${PROJECT_SOURCE_DIR}/../binary/lib/glfw_gui.jar" COPYONLY)
-configure_file( "${PROJECT_SOURCE_DIR}/../ex_lib/luaj/dist/luaj.jar" "${PROJECT_SOURCE_DIR}/../binary/lib/luaj.jar" COPYONLY)
-configure_file( "${PROJECT_SOURCE_DIR}/../test/javalib_test/dist/minijvm_test.jar" "${PROJECT_SOURCE_DIR}/../binary/lib/minijvm_test.jar" COPYONLY)
+
+function(copyfile pathsrc pathtgt)
+    if (EXISTS pathsrc)
+        configure_file(pathsrc pathtgt COPYONLY)
+    endif ()
+endfunction()
+
+copyfile("${PROJECT_SOURCE_DIR}/../javalib/dist/minijvm_rt.jar" "${PROJECT_SOURCE_DIR}/../binary/lib/minijvm_rt.jar")
+copyfile("${PROJECT_SOURCE_DIR}/../javalib/dist/minijvm_rt.jar" "${PROJECT_SOURCE_DIR}/../mobile/assets/resfiles/minijvm_rt.jar")
+copyfile("${PROJECT_SOURCE_DIR}/../ex_lib/jni_gui/java/dist/glfw_gui.jar" "${PROJECT_SOURCE_DIR}/../binary/lib/glfw_gui.jar")
+copyfile("${PROJECT_SOURCE_DIR}/../ex_lib/luaj/dist/luaj.jar" "${PROJECT_SOURCE_DIR}/../binary/lib/luaj.jar")
+copyfile("${PROJECT_SOURCE_DIR}/../test/javalib_test/dist/minijvm_test.jar" "${PROJECT_SOURCE_DIR}/../binary/lib/minijvm_test.jar")
+
 
 #configure_file( "${PROJECT_SOURCE_DIR}/../test/jni_test/java/dist/jni_test.jar" "${PROJECT_SOURCE_DIR}/../binary/lib/jni_test.jar" COPYONLY)
 
