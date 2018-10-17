@@ -75,6 +75,8 @@ s64 threadSleep(s64 ms);
 s32 sys_properties_load(ClassLoader *loader);
 
 void sys_properties_dispose(void);
+    
+void sys_properties_set_c(c8 *key, c8 *val);
 
 void instance_release_from_thread(Instance *ref, Runtime *runtime);
 
