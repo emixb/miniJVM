@@ -27,6 +27,7 @@ import static org.mini.gl.GL.glUseProgram;
 import static org.mini.gl.GL.glVertexAttribPointer;
 import static org.mini.glfw.Glfw.GLFW_CONTEXT_VERSION_MAJOR;
 import static org.mini.glfw.Glfw.GLFW_CONTEXT_VERSION_MINOR;
+import static org.mini.glfw.Glfw.GLFW_DEPTH_BITS;
 import static org.mini.glfw.Glfw.GLFW_KEY_ESCAPE;
 import static org.mini.glfw.Glfw.GLFW_MOUSE_BUTTON_2;
 import static org.mini.glfw.Glfw.GLFW_MOUSE_BUTTON_LEFT;
@@ -34,6 +35,7 @@ import static org.mini.glfw.Glfw.GLFW_OPENGL_CORE_PROFILE;
 import static org.mini.glfw.Glfw.GLFW_OPENGL_FORWARD_COMPAT;
 import static org.mini.glfw.Glfw.GLFW_OPENGL_PROFILE;
 import static org.mini.glfw.Glfw.GLFW_PRESS;
+import static org.mini.glfw.Glfw.GLFW_TRANSPARENT_FRAMEBUFFER;
 import static org.mini.glfw.Glfw.GLFW_TRUE;
 import static org.mini.glfw.Glfw.glfwCreateWindow;
 import static org.mini.glfw.Glfw.glfwInit;
@@ -113,121 +115,107 @@ public class Shader {
 //  
 // init()函数用于设置我们后面会用到的一些数据.例如顶点信息,纹理等  
 //  
-    int Triangles = 0, NumVAOs = 1;
-    int ArrayBuffer = 0, NumBuffers = 1;
+//
+//    String s_v = "#version 330   \n"
+//            + "layout(location = 0) in vec4 vPosition;  \n"
+//            + "void  \n"
+//            + "main()  \n"
+//            + " {  \n"
+//            + "     gl_Position = vPosition;  \n"
+//            + "} ";
+//    String s_f = "#version 330   \n"
+//            + "out vec4 fColor;  \n"
+//            + "void  \n"
+//            + "main()  \n"
+//            + "{  \n"
+//            + "fColor = vec4(0.0, 0.0, 1.0, 1.0);  \n"
+//            + "}  ";
+    String s_v = "#version 330 \n"
+            + "layout(location = 0) in vec4 vPosition; \n"
+            + "\n"
+            + "void main(){ \n"
+            + "gl_Position=vPosition; \n"
+            + "} \n";
+    String s_f = "#version 330 \n"
+            + "precision mediump float; \n"
+            + "out vec4 fragColor; \n"
+            + "void main(){ \n"
+            + "fragColor=vec4(1.0,1.0,1.0,1.0); \n"
+            + "} \n";
+
+    int vaoIndex = 0, vaoCount = 1;
+    int bufIndex = 0, bufCount = 1;
     int vPosition = 0;
 
-    int[] VAOs = new int[NumVAOs];
-    int[] Buffers = new int[NumBuffers];
+    int[] VAOs = new int[vaoCount];
+    int[] BOs = new int[bufCount];
 
-    int NumVertices = 6;
-
-    byte[] s_v = Gutil.toUtf8(
-            "#version 330   \n"
-            + "attribute vec3 position;\n"
-            + "attribute vec2 texcoord;\n"
-            + "\n"
-            + "varying vec2 vTexcoord;\n"
-            + "\n"
-            + "void main()\n"
-            + "{\n"
-            + "    gl_Position = vec4(position, 1.0);\n"
-            + "    vTexcoord = texcoord;\n"
-            + "}"
-    );
-//            byte[] s_v = Gutil.toUtf8("#version 330   \n"
-//                + "layout(location = 0) in vec4 vPosition;  \n"
-//                + "void  \n"
-//                + "main()  \n"
-//                + " {  \n"
-//                + "     gl_Position = vPosition;  \n"
-//                + "} \000");
-    byte[] s_f = Gutil.toUtf8(
-            "#version 330   \n"
-            + "precision mediump float;\n"
-            + "\n"
-            + "uniform sampler2D image;\n"
-            + "\n"
-            + "varying vec2 vTexcoord;\n"
-            + "\n"
-            + "void main()\n"
-            + "{\n"
-            + "    float block = 150.0;\n"
-            + "    float delta = 1.0/block;\n"
-            + "    vec4 color = vec4(0.0);\n"
-            + "    \n"
-            + "    float factor[9];\n"
-            + "    factor[0] = 0.0947416; factor[1] = 0.118318; factor[2] = 0.0947416;\n"
-            + "    factor[3] = 0.118318; factor[4] = 0.147761; factor[5] = 0.118318;\n"
-            + "    factor[6] = 0.0947416; factor[7] = 0.118318; factor[8] = 0.0947416;\n"
-            + "    \n"
-            + "    for (int i = -1; i <= 1; i++) {\n"
-            + "        for (int j = -1; j <= 1; j++) {\n"
-            + "            float x = max(0.0, vTexcoord.x + float(i) * delta);\n"
-            + "            float y = max(0.0, vTexcoord.y + float(i) * delta);\n"
-            + "            color += texture2D(image, vec2(x, y)) * factor[(i+1)*3+(j+1)];\n"
-            + "        }\n"
-            + "    }\n"
-            + "    \n"
-            + "    gl_FragColor = vec4(vec3(color), 1.0);\n"
-            + "}"
-    );
-//            byte[] s_f = Gutil.toUtf8("#version 330   \n"
-//                + "out vec4 fColor;  \n"
-//                + "void  \n"
-//                + "main()  \n"
-//                + "{  \n"
-//                + "fColor = vec4(0.0, 0.0, 1.0, 1.0);  \n"
-//                + "}  \000");
+    int vecCount = 6;
 
     void init() {
-        glGenVertexArrays(NumVAOs, VAOs, 0);
-        glBindVertexArray(VAOs[Triangles]);
+        glGenVertexArrays(vaoCount, VAOs, 0);
+        glBindVertexArray(VAOs[vaoIndex]);
 
         // 我们首先指定了要渲染的两个三角形的位置信息.  
         float[] vertices = new float[]{
-            -0.90f, -0.90f, // Triangle 1  
-            0.85f, -0.90f,
-            -0.90f, 0.85f,
-            0.90f, -0.85f, // Triangle 2  
-            0.90f, 0.90f,
-            -0.85f, 0.90f
+            -0.90f, -0.90f, 0, // Triangle 1  
+            0.85f, -0.90f, 0,
+            -0.90f, 0.85f, 0,
+            0.90f, -0.85f, 0, // Triangle 2  
+            0.90f, 0.90f, 0,
+            -0.85f, 0.90f, 0
         };
 
-        glGenBuffers(NumBuffers, Buffers, 0);
-        glBindBuffer(GL_ARRAY_BUFFER, Buffers[ArrayBuffer]);
+        glGenBuffers(bufCount, BOs, 0);
+        glBindBuffer(GL_ARRAY_BUFFER, BOs[bufIndex]);
         GL.glBufferData(GL_ARRAY_BUFFER, (long) (vertices.length * 4), vertices, 0, GL_STATIC_DRAW);
 
         int vertex_shader, fragment_shader, program;
-        vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertex_shader, 1, new byte[][]{s_v}, null, 0);
-        glCompileShader(vertex_shader);
-        byte[] szLog = new byte[1024];
-        int[] return_val = {0};
-        GL.glGetShaderiv(vertex_shader, GL.GL_COMPILE_STATUS, return_val, 0);
-        if (return_val[0] == GL_FALSE) {
-            GL.glGetShaderInfoLog(vertex_shader, szLog.length, return_val, 0, szLog);
-            System.out.println("Compile Shader fail error :" + new String(szLog, 0, return_val[0]) + "\n");
-        }
-        fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragment_shader, 1, new byte[][]{s_f}, null, 0);
-        glCompileShader(fragment_shader);
-        GL.glGetShaderiv(fragment_shader, GL.GL_COMPILE_STATUS, return_val, 0);
-        if (return_val[0] == GL_FALSE) {
-            GL.glGetShaderInfoLog(fragment_shader, szLog.length, return_val, 0, szLog);
-            System.out.println("Compile Shader fail error :" + new String(szLog, 0, return_val[0]) + "\n");
-        }
-        program = glCreateProgram();
-        glAttachShader(program, vertex_shader);
-        glAttachShader(program, fragment_shader);
-        glLinkProgram(program);
+        vertex_shader = loadShader(GL_VERTEX_SHADER, s_v);
+
+        fragment_shader = loadShader(GL_FRAGMENT_SHADER, s_f);
+
+        program = linkProgram(vertex_shader, fragment_shader);
 
         glUseProgram(program);
         // 最后这部分我们成为shader plumbing,  
         // 我们把需要的数据和shader程序中的变量关联在一起,后面会详细讲述  
-        glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, null, 0);
+        glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_FALSE, 0, null, 0);
         glEnableVertexAttribArray(vPosition);
 
+    }
+
+    int loadShader(int shaderType, String shaderStr) {
+        int[] return_val = {0};
+        int fragment_shader = glCreateShader(shaderType);
+        glShaderSource(fragment_shader, 1, new byte[][]{Gutil.toUtf8(shaderStr)}, null, 0);
+        glCompileShader(fragment_shader);
+        GL.glGetShaderiv(fragment_shader, GL.GL_COMPILE_STATUS, return_val, 0);
+        if (return_val[0] == GL_FALSE) {
+            GL.glGetShaderiv(fragment_shader, GL.GL_INFO_LOG_LENGTH, return_val, 0);
+            byte[] szLog = new byte[return_val[0] + 1];
+            GL.glGetShaderInfoLog(fragment_shader, szLog.length, return_val, 0, szLog);
+            System.out.println("Compile Shader fail error :" + new String(szLog, 0, return_val[0]) + "\n" + shaderStr + "\n");
+            return 0;
+        }
+        return fragment_shader;
+    }
+
+    int linkProgram(int vertexShader, int fragmentShader) {
+        int[] return_val = {0};
+        int program = glCreateProgram();
+        glAttachShader(program, vertexShader);
+        glAttachShader(program, fragmentShader);
+        glLinkProgram(program);
+        GL.glGetProgramiv(program, GL.GL_LINK_STATUS, return_val, 0);
+        if (return_val[0] == GL_FALSE) {
+            GL.glGetProgramiv(program, GL.GL_INFO_LOG_LENGTH, return_val, 0);
+            byte[] szLog = new byte[return_val[0] + 1];
+            GL.glGetProgramInfoLog(program, szLog.length, return_val, 0, szLog);
+            System.out.println("Link Shader fail error :" + new String(szLog, 0, return_val[0]) + "\n vertex shader:" + vertexShader + "\nfragment shader:" + fragmentShader + "\n");
+            return 0;
+        }
+        return program;
     }
 
 //---------------------------------------------------------------------  
@@ -242,8 +230,8 @@ public class Shader {
         glClear(GL_COLOR_BUFFER_BIT);
 
 //          // 2. 发起OpenGL调用来请求渲染你的对象  
-        glBindVertexArray(VAOs[Triangles]);
-        glDrawArrays(GL_TRIANGLES, 0, NumVertices);
+        glBindVertexArray(VAOs[vaoIndex]);
+        glDrawArrays(GL_TRIANGLES, 0, vecCount);
 
         try {
             Thread.sleep(10);
