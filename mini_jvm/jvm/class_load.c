@@ -1100,7 +1100,7 @@ JClass *resole_class(ByteBuf *bytebuf, Runtime *runtime) {
             class_prepar(tmpclazz, runtime);
             gc_refer_hold(tmpclazz);
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
-            jvm_printf("load class:  %s \n", utf8_cstr(clsName));
+            jvm_printf("load class:  %s \n", utf8_cstr(tmpclazz->name));
 #endif
         } else {
             class_destory(tmpclazz);

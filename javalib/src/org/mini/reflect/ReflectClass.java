@@ -156,7 +156,7 @@ public class ReflectClass {
         }
     }
 
-    static Class[] primitiveClass = {short.class, char.class, byte.class, int.class, float.class, boolean.class, double.class, long.class, void.class};
+    static Class[] primitiveClass; //cant init static , because some type wasnt init
     static String[] primitiveTag = {"S", "C", "B", "I", "F", "Z", "D", "J", "V"};
 
     static public Class getClassBySignature(String s) {
@@ -191,6 +191,10 @@ public class ReflectClass {
         if (c.isArray()) {
             return "[" + getSignatureByClass(c.getComponentType());
         } else if (c.isPrimitive()) {
+            if (primitiveClass == null) {
+                primitiveClass = new Class[]{short.class, char.class, byte.class, int.class, float.class, boolean.class, double.class, long.class, void.class};
+            }
+
             int i = 0;
             for (Class pc : primitiveClass) {
                 if (pc == c) {
