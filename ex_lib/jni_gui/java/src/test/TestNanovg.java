@@ -37,6 +37,7 @@ import static org.mini.nanovg.Gutil.toUtf8;
 import org.mini.gui.GToolkit;
 import static org.mini.glfw.Glfw.glfwGetFramebufferWidth;
 import static org.mini.glfw.Glfw.glfwGetFramebufferHeight;
+import org.mini.nanovg.Nanovg;
 import static org.mini.nanovg.Nanovg.NVG_ALIGN_CENTER;
 import static org.mini.nanovg.Nanovg.NVG_ALIGN_LEFT;
 import static org.mini.nanovg.Nanovg.NVG_ALIGN_MIDDLE;
@@ -301,7 +302,7 @@ public class TestNanovg {
     float NVG_PI = 3.1415926f;
 
     float[] nvgRGBA(int r, int g, int b, int a) {
-        return nvgRGBA((byte) r, (byte) g, (byte) b, (byte) a);
+        return Nanovg.nvgRGBA((byte) r, (byte) g, (byte) b, (byte) a);
     }
 
     float cosf(float v) {
