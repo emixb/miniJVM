@@ -34,6 +34,7 @@ c8 *STR_CLASS_JAVA_LANG_INVOKE_METHODHANDLE = "java/lang/invoke/MethodHandle";
 c8 *STR_CLASS_JAVA_LANG_INVOKE_METHODHANDLES_LOOKUP= "java/lang/invoke/MethodHandles$Lookup";
 c8 *STR_CLASS_JAVA_LANG_STACKTRACE = "java/lang/StackTraceElement";
 c8 *STR_CLASS_JAVA_LANG_THROWABLE = "java/lang/Throwable";
+c8 *STR_CLASS_ORG_MINI_REFLECT_DIRECTMEMOBJ = "org/mini/reflect/DirectMemObj";
 
 c8 *STR_FIELD_STACKFRAME = "stackFrame";
 c8 *STR_FIELD_NAME = "name";

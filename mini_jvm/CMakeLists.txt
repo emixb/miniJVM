@@ -100,8 +100,9 @@ ENDIF ()
 
 
 function(copyfile pathsrc pathtgt)
-    if (EXISTS pathsrc)
-        configure_file(pathsrc pathtgt COPYONLY)
+    if (EXISTS "${pathsrc}")
+        #message("copy src:${pathsrc}   to :${pathtgt}")
+        configure_file(${pathsrc} ${pathtgt} COPYONLY)
     endif ()
 endfunction()
 

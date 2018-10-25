@@ -263,27 +263,6 @@ s32 org_mini_reflect_ReflectField_setFieldVal(Runtime *runtime, JClass *clazz) {
 }
 
 
-s32 org_mini_reflect_ReflectArray_getVal(Runtime *runtime, JClass *clazz) {
-    s32 pos = 0;
-    Long2Double l2d;
-    l2d.l = localvar_getLong(runtime->localvar, pos);
-    pos += 2;
-    Instance *jarr = (__refer) (intptr_t) l2d.l;
-    s32 index = localvar_getInt(runtime->localvar, pos++);
-    s32 ret = jarray_check_exception(jarr, index, runtime);
-    if (!ret) {
-        s64 val = jarray_get_field(jarr, index);
-        push_long(runtime->stack, val);
-    } else {
-        push_long(runtime->stack, 0);
-    }
-#if _JVM_DEBUG_BYTECODE_DETAIL > 5
-    jvm_printf("org_mini_reflect_ReflectArray_getVal\n");
-#endif
-    return 0;
-}
-
-
 s32 org_mini_reflect_ReflectArray_newArray(Runtime *runtime, JClass *clazz) {
     s32 pos = 0;
     JClass *cl = insOfJavaLangClass_get_classHandle((Instance *) localvar_getRefer(runtime->localvar, pos++));
@@ -325,23 +304,6 @@ s32 org_mini_reflect_ReflectArray_multiNewArray(Runtime *runtime, JClass *clazz)
     return 0;
 }
 
-
-s32 org_mini_reflect_ReflectArray_setVal(Runtime *runtime, JClass *clazz) {
-    s32 pos = 0;
-    Long2Double l2d;
-    l2d.l = localvar_getLong(runtime->localvar, pos);
-    pos += 2;
-    Instance *jarr = (__refer) (intptr_t) l2d.l;
-    s32 index = localvar_getInt(runtime->localvar, pos++);
-    s64 val = localvar_getLong(runtime->localvar, pos);
-    pos += 2;
-    s32 ret = jarray_check_exception(jarr, index, runtime);
-    if (!ret) jarray_set_field(jarr, index, val);
-#if _JVM_DEBUG_BYTECODE_DETAIL > 5
-    jvm_printf("org_mini_reflect_ReflectArray_setVal\n");
-#endif
-    return 0;
-}
 
 struct _list_getthread_para {
     s32 i;
@@ -893,16 +855,140 @@ s32 org_mini_reflect_ReflectArray_mapArray(Runtime *runtime, JClass *clazz) {
         ptr = getFieldPtr_byName_c(ins, JDWP_CLASS_ARRAY, "length", "I", runtime);
         if (ptr)setFieldInt(ptr, target->arr_length);
         //
-        ptr = getFieldPtr_byName_c(ins, JDWP_CLASS_ARRAY, "arr_addr", "J", runtime);
+        ptr = getFieldPtr_byName_c(ins, JDWP_CLASS_ARRAY, "body_addr", "J", runtime);
         if (ptr)setFieldLong(ptr, (u64) (intptr_t) target->arr_body);
         //
-        ptr = getFieldPtr_byName_c(ins, JDWP_CLASS_ARRAY, "type", "B", runtime);
+        ptr = getFieldPtr_byName_c(ins, JDWP_CLASS_ARRAY, "typeTag", "B", runtime);
         if (ptr)setFieldByte(ptr, (s8) utf8_char_at(target->mb.clazz->name, 1));
         //
 
     }
     return 0;
 }
+
+
+s32 org_mini_reflect_DirectMemObj_setVal(Runtime *runtime, JClass *clazz) {
+    s32 pos = 0;
+    Instance *dmo = (__refer) (intptr_t) localvar_getRefer(runtime->localvar, pos++);
+    s32 index = localvar_getInt(runtime->localvar, pos++);
+    s64 val = localvar_getLong(runtime->localvar, pos);
+
+    __refer memAddr = getFieldRefer(getInstanceFieldPtr(dmo, jvm_runtime_cache.dmo_memAddr));
+    s32 len = getFieldInt(getInstanceFieldPtr(dmo, jvm_runtime_cache.dmo_length));
+    c8 desc = getFieldChar(getInstanceFieldPtr(dmo, jvm_runtime_cache.dmo_desc));
+
+    s32 ret = 0;
+    if (memAddr && index >= 0 && index < len) {
+        switch (desc) {
+            case '1': {
+                setFieldByte((c8 *) ((c8 *) memAddr + index), (c8) val);
+                break;
+            }
+            case '2': {
+                setFieldShort((c8 *) ((s16 *) memAddr + index), (s16) val);
+                break;
+            }
+            case '4': {
+                setFieldInt((c8 *) ((s32 *) memAddr + index), (s32) val);
+                break;
+            }
+            case '8': {
+                setFieldLong((c8 *) ((s64 *) memAddr + index), (s64) val);
+                break;
+            }
+            case 'R': {
+                setFieldRefer((c8 *) ((__refer) memAddr + index), (__refer) (intptr_t) val);
+                break;
+            }
+        }
+    } else {
+        Instance *exception = exception_create(JVM_EXCEPTION_ILLEGALARGUMENT, runtime);
+        push_ref(runtime->stack, (__refer) exception);
+        ret = RUNTIME_STATUS_EXCEPTION;
+    }
+
+#if _JVM_DEBUG_BYTECODE_DETAIL > 5
+    jvm_printf("org_mini_reflect_DirectMemObj_setVal\n");
+#endif
+    return ret;
+}
+
+s32 org_mini_reflect_DirectMemObj_getVal(Runtime *runtime, JClass *clazz) {
+    s32 pos = 0;
+    Instance *dmo = (__refer) (intptr_t) localvar_getRefer(runtime->localvar, pos++);
+    s32 index = localvar_getInt(runtime->localvar, pos++);
+
+    __refer memAddr = getFieldRefer(getInstanceFieldPtr(dmo, jvm_runtime_cache.dmo_memAddr));
+    s32 len = getFieldInt(getInstanceFieldPtr(dmo, jvm_runtime_cache.dmo_length));
+    c8 desc = getFieldChar(getInstanceFieldPtr(dmo, jvm_runtime_cache.dmo_desc));
+
+    s32 ret = 0;
+    if (memAddr && index >= 0 && index < len) {
+        s64 val;
+        switch (desc) {
+            case '1': {
+                val = getFieldByte((c8 *) ((c8 *) memAddr + index));
+                break;
+            }
+            case '2': {
+                val = getFieldShort((c8 *) ((s16 *) memAddr + index));
+                break;
+            }
+            case '4': {
+                val = getFieldInt((c8 *) ((s32 *) memAddr + index));
+                break;
+            }
+            case '8': {
+                val = getFieldLong((c8 *) ((s64 *) memAddr + index));
+                break;
+            }
+            case 'R': {
+                val = (s64) (intptr_t) getFieldRefer((c8 *) ((__refer) memAddr + index));
+                break;
+            }
+        }
+        push_long(runtime->stack, val);
+    } else {
+        Instance *exception = exception_create(JVM_EXCEPTION_ILLEGALARGUMENT, runtime);
+        push_ref(runtime->stack, (__refer) exception);
+        ret = RUNTIME_STATUS_EXCEPTION;
+    }
+
+#if _JVM_DEBUG_BYTECODE_DETAIL > 5
+    jvm_printf("org_mini_reflect_DirectMemObj_getVal\n");
+#endif
+    return ret;
+}
+
+s32 org_mini_reflect_DirectMemObj_copyTo0(Runtime *runtime, JClass *clazz) {
+    s32 pos = 0;
+    Instance *dmo = localvar_getRefer(runtime->localvar, pos++);
+    s32 src_off = localvar_getInt(runtime->localvar, pos++);
+    Instance *tgt = localvar_getRefer(runtime->localvar, pos++);
+    s32 tgt_off = localvar_getInt(runtime->localvar, pos++);
+    s32 copy_len = localvar_getInt(runtime->localvar, pos++);
+
+    __refer memAddr = getFieldRefer(getInstanceFieldPtr(dmo, jvm_runtime_cache.dmo_memAddr));
+    s32 dmo_len = getFieldInt(getInstanceFieldPtr(dmo, jvm_runtime_cache.dmo_length));
+
+    s32 ret = 0;
+    if (src_off + copy_len > dmo_len
+        || tgt_off + copy_len > tgt->arr_length) {
+        Instance *exception = exception_create(JVM_EXCEPTION_ARRAYINDEXOUTOFBOUNDS, runtime);
+        push_ref(runtime->stack, (__refer) exception);
+        ret = RUNTIME_STATUS_EXCEPTION;
+    } else {
+        s32 bytes = data_type_bytes[tgt->mb.arr_type_index];
+        memcpy((c8 *) tgt->arr_body + (bytes * tgt_off), (c8 *) memAddr + (bytes * src_off), copy_len * (bytes));
+    }
+
+
+#if _JVM_DEBUG_BYTECODE_DETAIL > 5
+    jvm_printf("org_mini_reflect_DirectMemObj_copyTo0\n");
+#endif
+    return ret;
+}
+
 
 static java_native_method method_jdwp_table[] = {
         {"org/mini/reflect/vm/RefNative",  "refIdSize",             "()I",                                                              org_mini_reflect_vm_RefNative_refIdSize},
@@ -933,10 +1019,11 @@ static java_native_method method_jdwp_table[] = {
         {"org/mini/reflect/ReflectMethod", "findMethod0",           "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)J",        org_mini_reflect_ReflectMethod_findMethod0},
         {"org/mini/reflect/StackFrame",    "mapRuntime",            "(J)V",                                                             org_mini_reflect_StackFrame_mapRuntime},
         {"org/mini/reflect/ReflectArray",  "mapArray",              "(J)V",                                                             org_mini_reflect_ReflectArray_mapArray},
-        {"org/mini/reflect/ReflectArray",  "setVal",                "(JIJ)V",                                                           org_mini_reflect_ReflectArray_setVal},
-        {"org/mini/reflect/ReflectArray",  "getVal",                "(JI)J",                                                            org_mini_reflect_ReflectArray_getVal},
         {"org/mini/reflect/ReflectArray",  "newArray",              "(Ljava/lang/Class;I)Ljava/lang/Object;",                           org_mini_reflect_ReflectArray_newArray},
         {"org/mini/reflect/ReflectArray",  "multiNewArray",         "(Ljava/lang/Class;[I)Ljava/lang/Object;",                          org_mini_reflect_ReflectArray_multiNewArray},
+        {"org/mini/reflect/DirectMemObj",  "setVal",                "(IJ)V",                                                            org_mini_reflect_DirectMemObj_setVal},
+        {"org/mini/reflect/DirectMemObj",  "getVal",                "(I)J",                                                             org_mini_reflect_DirectMemObj_getVal},
+        {"org/mini/reflect/DirectMemObj",  "copyTo0",               "(ILjava/lang/Object;II)V",                                         org_mini_reflect_DirectMemObj_copyTo0},
 
 };
 

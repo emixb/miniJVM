@@ -205,6 +205,7 @@ extern c8 *STR_CLASS_JAVA_LANG_THROWABLE;
 extern c8 *STR_CLASS_JAVA_LANG_INVOKE_METHODTYPE;
 extern c8 *STR_CLASS_JAVA_LANG_INVOKE_METHODHANDLE;
 extern c8 *STR_CLASS_JAVA_LANG_INVOKE_METHODHANDLES_LOOKUP;
+extern c8 *STR_CLASS_ORG_MINI_REFLECT_DIRECTMEMOBJ;
 
 extern c8 *STR_FIELD_STACKFRAME;
 extern c8 *STR_FIELD_NAME;
@@ -479,16 +480,6 @@ typedef struct _ConstantMethodRef {
     Utf8String *clsName;
     Pairlist *virtual_methods;
 } ConstantMethodRef, ConstantInterfaceMethodRef;
-
-//typedef struct _ConstantInterfaceMethodRef {
-//    ConstantItem item;
-//    u16 classIndex;
-//    u16 nameAndTypeIndex;
-//
-//    //
-//    Utf8String *name;
-//
-//} ConstantInterfaceMethodRef;
 
 typedef struct _ConstantMethodHandle {
     ConstantItem item;
@@ -782,33 +773,6 @@ Instance *instance_copy(Runtime *runtime, Instance *src, s32 deep_copy);
 //======================= bytecode =============================
 
 
-//ConstantUTF8 *class_get_constant_utf8(Class *clazz, s32 index);
-//
-//ConstantStringRef *class_get_constant_stringref(Class *clazz, s32 index);
-//
-//ConstantClassRef *class_get_constant_classref(Class *clazz, s32 index);
-//
-//ConstantMethodRef *class_get_constant_method_ref(Class *clazz, s32 index);
-//
-//ConstantInterfaceMethodRef *class_get_constant_interface_method_ref(Class *clazz, s32 index);
-//
-//ConstantNameAndType *class_get_constant_name_and_type(Class *clazz, s32 index);
-//
-//ConstantItem *class_get_constant_item(Class *clazz, s32 index);
-//
-//ConstantFieldRef *class_get_constant_fieldref(Class *clazz, s32 field_ref);
-//
-//s32 class_get_constant_integer(Class *clazz, s32 index);
-//
-//s64 class_get_constant_long(Class *clazz, s32 index);
-//
-//Utf8String *class_get_utf8_string(Class *clazz, s32 index);
-//
-//f32 class_get_constant_float(Class *clazz, s32 index);
-//
-//f64 class_get_double_from_constant_pool(Class *clazz, s32 index);
-
-
 /* find UTF8 */
 static inline ConstantUTF8 *class_get_constant_utf8(JClass *clazz, s32 index) {
     return (ConstantUTF8 *) (clazz->constant_item_ptr[index]);
@@ -930,12 +894,6 @@ struct _StackFrame {
     s32 size;
     s32 max_size;
 };
-
-//解决引用类型可能为4字节或8字节的不同情况
-//typedef struct _LocalVarItem {
-//    __refer refer;
-//    s32 integer;
-//} LocalVarItem;
 
 
 struct _Runtime {
@@ -1116,10 +1074,6 @@ static inline s64 entry_2_long(StackEntry *entry) {
 static inline __refer entry_2_refer(StackEntry *entry) {
     return entry->rvalue;
 }
-
-//s32 is_cat2(StackEntry *entry);
-//
-//s32 is_cat1(StackEntry *entry);
 
 static inline s32 is_cat1(StackEntry *entry) {
     if (entry->type & (STACK_ENTRY_INT | STACK_ENTRY_FLOAT | STACK_ENTRY_REF)) {

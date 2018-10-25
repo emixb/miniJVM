@@ -42,6 +42,12 @@ typedef struct _OptimizeCache {
     FieldInfo *stacktrace_lineNumber;
     FieldInfo *stacktrace_parent;
 
+    //
+    FieldInfo *dmo_memAddr;
+    FieldInfo *dmo_length;
+    FieldInfo *dmo_desc;
+
+    //
     JClass *array_classes[DATATYPE_COUNT];
 } OptimizeCache;
 extern OptimizeCache jvm_runtime_cache;
@@ -75,7 +81,7 @@ s64 threadSleep(s64 ms);
 s32 sys_properties_load(ClassLoader *loader);
 
 void sys_properties_dispose(void);
-    
+
 void sys_properties_set_c(c8 *key, c8 *val);
 
 void instance_release_from_thread(Instance *ref, Runtime *runtime);
@@ -99,37 +105,6 @@ Instance *method_handle_create(Runtime *runtime, MethodInfo *mi, s32 kind);
 
 Instance *method_handles_lookup_create(Runtime *runtime, JClass *caller);
 
-//c8 *getInstanceFieldPtr(Instance *ins, FieldInfo *fi);
-//
-//c8 *getStaticFieldPtr(FieldInfo *fi);
-//
-//void setFieldInt(c8 *ptr, s32 v);
-//
-//void setFieldRefer(c8 *ptr, __refer v);
-//
-//void setFieldLong(c8 *ptr, s64 v);
-//
-//void setFieldShort(c8 *ptr, s16 v);
-//
-//void setFieldByte(c8 *ptr, s8 v);
-//
-//void setFieldDouble(c8 *ptr, f64 v);
-//
-//void setFieldFloat(c8 *ptr, f32 v);
-//
-//s64 getFieldLong(c8 *ptr);
-//
-//s8 getFieldByte(c8 *ptr);
-//
-//s16 getFieldShort(c8 *ptr);
-//
-//s32 getFieldInt(c8 *ptr);
-//
-//__refer getFieldRefer(c8 *ptr);
-//
-//f64 getFieldDouble(c8 *ptr);
-//
-//f32 getFieldFloat(c8 *ptr);
 
 /**
  * get instance field value address

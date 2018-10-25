@@ -196,6 +196,14 @@ s32 class_prepar(JClass *clazz, Runtime *runtime) {
         jvm_runtime_cache.stacktrace_lineNumber = fi;
         fi = find_fieldInfo_by_name_c(STR_CLASS_JAVA_LANG_STACKTRACE, "parent", STR_INS_JAVA_LANG_STACKTRACEELEMENT, runtime);
         jvm_runtime_cache.stacktrace_parent = fi;
+    } else if (utf8_equals_c(clazz->name, STR_CLASS_ORG_MINI_REFLECT_DIRECTMEMOBJ)) {
+        FieldInfo *fi;
+        fi = find_fieldInfo_by_name_c(STR_CLASS_ORG_MINI_REFLECT_DIRECTMEMOBJ, "memAddr", "J", runtime);
+        jvm_runtime_cache.dmo_memAddr = fi;
+        fi = find_fieldInfo_by_name_c(STR_CLASS_ORG_MINI_REFLECT_DIRECTMEMOBJ, "length", "I", runtime);
+        jvm_runtime_cache.dmo_length = fi;
+        fi = find_fieldInfo_by_name_c(STR_CLASS_ORG_MINI_REFLECT_DIRECTMEMOBJ, "typeDesc", "C", runtime);
+        jvm_runtime_cache.dmo_desc = fi;
     }
 //    jvm_printf("prepared: %s\n", utf8_cstr(clazz->name));
 
