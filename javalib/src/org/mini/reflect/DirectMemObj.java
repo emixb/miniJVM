@@ -223,7 +223,7 @@ public class DirectMemObj {
 
     public void copyTo(int src_offset, Object targetArray, int tgt_offset, int len) {
         Class cls = targetArray.getClass();
-        System.out.println("arrtype:"+cls.getName());
+        //System.out.println("arrtype:"+cls.getName());
         if (cls.isArray() && cls.getName().charAt(1) == typeTag) {
             copyTo0(src_offset, targetArray, tgt_offset, len);
         } else {
