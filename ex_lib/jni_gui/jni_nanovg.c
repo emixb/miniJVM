@@ -23,7 +23,7 @@
 
 
 #include "jvm.h"
-#include "jni_gui.h"
+#include "media.h"
 #include "stb_jni_assist.h"
 
 

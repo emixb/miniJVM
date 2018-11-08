@@ -5,13 +5,10 @@
  */
 package org.mini.gui.event;
 
-import org.mini.gui.GObject;
-
 /**
  *
- * @author gust
+ * @author Gust
  */
-public interface GActionListener extends GListener {
-
-    void action(GObject gobj);
+public interface GPhotoPickedListener {
+    void onPicked(int uid, String url, byte[] data);
 }

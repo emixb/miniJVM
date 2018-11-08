@@ -741,6 +741,13 @@ s32 jthread_get_daemon_value(Instance *ins, Runtime *runtime) {
     return 0;
 }
 
+void jthread_set_daemon_value(Instance *ins, Runtime *runtime, s32 daemon) {
+    c8 *ptr = getFieldPtr_byName_c(ins, STR_CLASS_JAVA_LANG_THREAD, "daemon", "Z", runtime);
+    if (ptr) {
+        setFieldByte(ptr, (s8) daemon);
+    }
+}
+
 void jthreadlock_create(MemoryBlock *mb) {
     garbage_thread_lock();
     if (!mb->thread_lock) {
@@ -895,7 +902,7 @@ s32 check_suspend_and_pause(Runtime *runtime) {
 
 //===============================    实例化数组  ==================================
 Instance *jarray_create_by_class(Runtime *runtime, s32 count, JClass *clazz) {
-    if(count < 0)return NULL;
+    if (count < 0)return NULL;
     s32 typeIdx = clazz->mb.arr_type_index;
     s32 width = data_type_bytes[typeIdx];
     Instance *arr = jvm_calloc(sizeof(Instance) + (width * count));
@@ -1747,4 +1754,16 @@ void init_jni_func_table() {
     jnienv.print_exception = print_exception;
     jnienv.garbage_refer_hold = gc_refer_hold;
     jnienv.garbage_refer_release = gc_refer_release;
+    jnienv.runtime_create = runtime_create;
+    jnienv.runtime_destory = runtime_destory;
+    jnienv.getLastSon = getLastSon;
+    jnienv.thread_boundle = thread_boundle;
+    jnienv.thread_unboundle = thread_unboundle;
+    jnienv.thrd_current = thrd_current;
+    jnienv.pairlist_create = pairlist_create;
+    jnienv.pairlist_get = pairlist_get;
+    jnienv.pairlist_put = pairlist_put;
+    jnienv.jthread_get_daemon_value = jthread_get_daemon_value;
+    jnienv.jthread_set_daemon_value = jthread_set_daemon_value;
+    jnienv.get_jvm_state = get_jvm_state;
 }

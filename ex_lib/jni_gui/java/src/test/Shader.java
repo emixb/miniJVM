@@ -108,6 +108,38 @@ public class Shader {
         public void framebufferSize(long window, int x, int y) {
         }
     }
+    int loadShader(int shaderType, String shaderStr) {
+        int[] return_val = {0};
+        int fragment_shader = glCreateShader(shaderType);
+        glShaderSource(fragment_shader, 1, new byte[][]{Gutil.toUtf8(shaderStr)}, null, 0);
+        glCompileShader(fragment_shader);
+        GL.glGetShaderiv(fragment_shader, GL.GL_COMPILE_STATUS, return_val, 0);
+        if (return_val[0] == GL_FALSE) {
+            GL.glGetShaderiv(fragment_shader, GL.GL_INFO_LOG_LENGTH, return_val, 0);
+            byte[] szLog = new byte[return_val[0] + 1];
+            GL.glGetShaderInfoLog(fragment_shader, szLog.length, return_val, 0, szLog);
+            System.out.println("Compile Shader fail error :" + new String(szLog, 0, return_val[0]) + "\n" + shaderStr + "\n");
+            return 0;
+        }
+        return fragment_shader;
+    }
+
+    int linkProgram(int vertexShader, int fragmentShader) {
+        int[] return_val = {0};
+        int program = glCreateProgram();
+        glAttachShader(program, vertexShader);
+        glAttachShader(program, fragmentShader);
+        glLinkProgram(program);
+        GL.glGetProgramiv(program, GL.GL_LINK_STATUS, return_val, 0);
+        if (return_val[0] == GL_FALSE) {
+            GL.glGetProgramiv(program, GL.GL_INFO_LOG_LENGTH, return_val, 0);
+            byte[] szLog = new byte[return_val[0] + 1];
+            GL.glGetProgramInfoLog(program, szLog.length, return_val, 0, szLog);
+            System.out.println("Link Shader fail error :" + new String(szLog, 0, return_val[0]) + "\n vertex shader:" + vertexShader + "\nfragment shader:" + fragmentShader + "\n");
+            return 0;
+        }
+        return program;
+    }
 
 //---------------------------------------------------------------------  
 //  
@@ -151,11 +183,6 @@ public class Shader {
     int[] BOs = new int[bufCount];
 
     int vecCount = 6;
-
-    void init() {
-        glGenVertexArrays(vaoCount, VAOs, 0);
-        glBindVertexArray(VAOs[vaoIndex]);
-
         // 我们首先指定了要渲染的两个三角形的位置信息.  
         float[] vertices = new float[]{
             -0.90f, -0.90f, 0, // Triangle 1  
@@ -165,6 +192,11 @@ public class Shader {
             0.90f, 0.90f, 0,
             -0.85f, 0.90f, 0
         };
+
+    void init() {
+        glGenVertexArrays(vaoCount, VAOs, 0);
+        glBindVertexArray(VAOs[vaoIndex]);
+
 
         glGenBuffers(bufCount, BOs, 0);
         glBindBuffer(GL_ARRAY_BUFFER, BOs[bufIndex]);
@@ -185,38 +217,6 @@ public class Shader {
 
     }
 
-    int loadShader(int shaderType, String shaderStr) {
-        int[] return_val = {0};
-        int fragment_shader = glCreateShader(shaderType);
-        glShaderSource(fragment_shader, 1, new byte[][]{Gutil.toUtf8(shaderStr)}, null, 0);
-        glCompileShader(fragment_shader);
-        GL.glGetShaderiv(fragment_shader, GL.GL_COMPILE_STATUS, return_val, 0);
-        if (return_val[0] == GL_FALSE) {
-            GL.glGetShaderiv(fragment_shader, GL.GL_INFO_LOG_LENGTH, return_val, 0);
-            byte[] szLog = new byte[return_val[0] + 1];
-            GL.glGetShaderInfoLog(fragment_shader, szLog.length, return_val, 0, szLog);
-            System.out.println("Compile Shader fail error :" + new String(szLog, 0, return_val[0]) + "\n" + shaderStr + "\n");
-            return 0;
-        }
-        return fragment_shader;
-    }
-
-    int linkProgram(int vertexShader, int fragmentShader) {
-        int[] return_val = {0};
-        int program = glCreateProgram();
-        glAttachShader(program, vertexShader);
-        glAttachShader(program, fragmentShader);
-        glLinkProgram(program);
-        GL.glGetProgramiv(program, GL.GL_LINK_STATUS, return_val, 0);
-        if (return_val[0] == GL_FALSE) {
-            GL.glGetProgramiv(program, GL.GL_INFO_LOG_LENGTH, return_val, 0);
-            byte[] szLog = new byte[return_val[0] + 1];
-            GL.glGetProgramInfoLog(program, szLog.length, return_val, 0, szLog);
-            System.out.println("Link Shader fail error :" + new String(szLog, 0, return_val[0]) + "\n vertex shader:" + vertexShader + "\nfragment shader:" + fragmentShader + "\n");
-            return 0;
-        }
-        return program;
-    }
 
 //---------------------------------------------------------------------  
 //  

@@ -5,10 +5,13 @@
  */
 package org.mini.gui;
 
-import java.util.TimerTask;
+import java.util.ArrayList;
+import java.util.List;
 import org.mini.glfm.Glfm;
 import static org.mini.nanovg.Gutil.toUtf8;
 import static org.mini.gui.GToolkit.nvgRGBA;
+import org.mini.gui.event.GActionListener;
+import org.mini.gui.event.GFocusChangeListener;
 import org.mini.nanovg.Nanovg;
 import static org.mini.nanovg.Nanovg.NVG_ALIGN_LEFT;
 import static org.mini.nanovg.Nanovg.NVG_ALIGN_MIDDLE;
@@ -32,192 +35,336 @@ import static org.mini.nanovg.Nanovg.nvgRect;
 import static org.mini.nanovg.Nanovg.nvgRestore;
 import static org.mini.nanovg.Nanovg.nvgRoundedRect;
 import static org.mini.nanovg.Nanovg.nvgSave;
-import static org.mini.nanovg.Nanovg.nvgScissor;
 import static org.mini.nanovg.Nanovg.nvgStroke;
 import static org.mini.nanovg.Nanovg.nvgStrokeColor;
 import static org.mini.nanovg.Nanovg.nvgStrokeWidth;
 import static org.mini.nanovg.Nanovg.nvgTextAlign;
 import static org.mini.nanovg.Nanovg.nvgTextJni;
 import static org.mini.nanovg.Nanovg.nvgTextMetrics;
-import static org.mini.nanovg.Nanovg.nvgTranslate;
 
 /**
  *
  * @author gust
  */
-public class GList extends GContainer {
+public class GList extends GPanel implements GFocusChangeListener {
 
     char preicon;
     byte[] preicon_arr = toUtf8("" + ICON_CHEVRON_RIGHT);
-    int[] images;
-    String[] labels;
-    int curIndex;
+    List<Integer> selected = new ArrayList();
     boolean pulldown;
-    public static final int MODE_MULTI_LINE = 1, MODE_SINGLE_LINE = 0;
-    int mode = MODE_SINGLE_LINE;
+    //
+    public static final int MODE_MULTI_SHOW = 1, MODE_SINGLE_SHOW = 2;
+    int showMode = MODE_SINGLE_SHOW;
+    //
+    public static final int MODE_MULTI_SELECT = 4, MODE_SINGLE_SELECT = 8;
+    int selectMode = MODE_SINGLE_SELECT;
+
     GScrollBar scrollBar;
     float[] lineh = {0f};
-
-    float[] popBoundle;
-    float[] normalBoundle;
     float list_image_size = 28;
     float list_item_heigh = 40;
-    float list_rows = 5;
-    float list_cols = 1;
-    float pad = 10;
+    float list_rows_max = 7;
+    float list_rows_min = 3;
+    float pad = 5;
+    int menuWidth = 20;
+
+    boolean showScrollbar = false;
+
+    float left, top, width, height;
+
+    public GList() {
+
+    }
 
     public GList(int left, int top, int width, int height) {
-        setLocation(left, top);
-        setSize(width, height);
-        normalBoundle = boundle;
+        this((float) left, top, width, height);
+    }
+
+    public GList(float left, float top, float width, float height) {
+        this.left = left;
+        this.top = top;
+        this.width = width;
+        this.height = height;
+
+        setBgColor(GToolkit.getStyle().getBackgroundColor());
+
+        setViewLocation(left, top);
+        setViewSize(width, height);
+
+        //
+        scrollBar = new GScrollBar(0, GScrollBar.VERTICAL, 0, 0, menuWidth, 100);
+        scrollBar.setActionListener(new ScrollBarActionListener());
+        popWin.add(scrollBar);
+        popWin.add(popView);
+        setFocusListener(this);
+        showScrollBar(false);
+        reSize();
+        changeCurPanel();
+    }
+
+    public void showScrollBar(boolean show) {
+        this.showScrollbar = show;
+        if (show) {
+            menuWidth = 20;
+        } else {
+            menuWidth = 0;
+        }
+    }
+
+    public void setItemHeight(float h) {
+        list_item_heigh = h;
+        list_image_size = h - 12;
+    }
+
+    public List<GObject> getItemList() {
+        return popView.getElements();
+    }
+
+    @Override
+    public int getType() {
+        return TYPE_LIST;
     }
 
     public void setIcon(char icon) {
         preicon = icon;
     }
 
-    public void setItems(int[] imgs, String[] labs) {
-        if (imgs == null || labs == null || imgs.length != labs.length) {
+    public GListItem addItems(GImage img, String lab) {
+        GListItem gli = new GListItem(img, lab);
+        addItem(gli);
+        return gli;
+    }
+
+    public void addItem(GListItem gli) {
+        if (gli != null) {
+            popView.add(gli);
+            gli.list = this;
+            reSize();
+        }
+    }
+
+    public void addItem(int index, GListItem gli) {
+        if (gli != null) {
+            popView.add(index, gli);
+            gli.list = this;
+            reSize();
+        }
+    }
+
+    public void removeItem(int index) {
+        popView.remove(index);
+        reSize();
+    }
+
+    public void removeItem(GObject go) {
+        if (!(go instanceof GListItem)) {
+            throw new IllegalArgumentException("need GListItem");
+        }
+        popView.remove(go);
+        reSize();
+    }
+
+    public void removeItemAll() {
+        popView.clear();
+    }
+
+    public GListItem[] getItems() {
+        GListItem[] items = new GListItem[popView.getElementSize()];
+        int i = 0;
+        for (GObject go : popView.elements) {
+            items[i] = (GListItem) go;
+            i++;
+        }
+        return items;
+    }
+
+    void reSize() {
+        int itemcount = popView.elements.size();
+        if (itemcount <= 0) {
+            return;
+        }
+
+        if (showMode == MODE_MULTI_SHOW) {
+            popWin.setViewLocation(0, 0);
+            popWin.setViewSize(width, height);
+
+        } else {
+            float popH = itemcount * list_item_heigh;
+            if (itemcount < list_rows_min) {
+                popH = list_rows_min * list_item_heigh;
+            }
+            if (itemcount > list_rows_max) {
+                popH = list_rows_max * list_item_heigh;
+            }
+
+            popWin.setViewLocation(0, 0);
+            popWin.setViewSize(width, popH);
+
+        }
+
+        reAlignItems();
+
+        normalPanel.setLocation(0, 0);
+        normalPanel.setSize(width, height);
+
+        scrollBar.setPos(popView.scrolly);
+        flush();
+    }
+
+    public void reAlignItems() {
+        int i = 0;
+        for (GObject go : popView.getElements()) {
+            go.setLocation(pad, i * list_item_heigh);
+            go.setSize(popView.getViewW() - pad * 2, list_item_heigh);
+            i++;
+        }
+        selected.clear();
+    }
+
+    void changeCurPanel() {
+        int itemcount = popView.elements.size();
+        clear();
+
+        if (showMode == MODE_MULTI_SHOW) {
+            setLocation(left, top);
+            setSize(width, height);
+            add(popWin);
+        } else if (pulldown && itemcount > 0) {
+            float popH = itemcount * list_item_heigh;
+            if (itemcount < list_rows_min) {
+                popH = list_rows_min * list_item_heigh;
+            }
+            if (itemcount > list_rows_max) {
+                popH = list_rows_max * list_item_heigh;
+            }
+            float popY = 0;
+            if (popH > parent.getViewH()) {// small than frame height
+                popY = parent.getY();
+            } else if (top + popH < parent.getViewH()) {
+                popY = top;
+            } else {
+                popY = parent.getViewH() - popH;
+            }
+            setLocation(left, popY);
+            setSize(popWin.getViewW(), popWin.getViewH());
+            add(popWin);
+        } else {
+            setLocation(left, top);
+            setSize(width, height);
+            add(normalPanel);
+        }
+    }
+
+    public void setItems(GImage[] imgs, String[] labs) {
+        if ((imgs == null && labs == null) || (imgs != null && labs != null && imgs.length != labs.length)) {
             throw new IllegalArgumentException("need images and labels count equals.");
         }
-        images = imgs;
-        labels = labs;
+        int len = imgs == null ? labs.length : imgs.length;
+        for (int i = 0; i < len; i++) {
+            addItems(imgs == null ? null : imgs[i], labs == null ? null : labs[i]);
+        }
+        reSize();
     }
 
-    public int[] getImages() {
-        return images;
+    public void setShowMode(int m) {
+        this.showMode = m;
+        reSize();
+        changeCurPanel();
     }
 
-    public void setMode(int m) {
-        this.mode = m;
+    public int getShowMode() {
+        return this.showMode;
     }
 
-    public int getMode() {
-        return this.mode;
+    public void setSelectMode(int m) {
+        selectMode = m;
     }
 
-    public String[] getLabels() {
-        return labels;
+    public int getSelectMode() {
+        return selectMode;
     }
 
     public int getSelectedIndex() {
-        return curIndex;
+        if (selected.size() > 0) {
+            return selected.get(0);
+        }
+        return -1;
     }
 
     public void setSelectedIndex(int i) {
-        curIndex = i;
-    }
-
-    @Override
-    public void mouseButtonEvent(int button, boolean pressed, int x, int y) {
-        int rx = (int) (x - parent.getX());
-        int ry = (int) (y - parent.getY());
-        if (isInArea(x, y)) {
-            if (pressed) {
-                boolean inScroll = false;
-                if (scrollBar != null) {
-                    inScroll = scrollBar.isInArea(x, y);
-                }
-                if (!inScroll) {
-                    if (pulldown) {
-                        float stackh = (labels.length / list_cols) * (list_item_heigh) + pad;
-                        float pos = scrollBar.getPos() * (stackh - popBoundle[HEIGHT]) + (y - getY());
-                        curIndex = (int) (pos / stackh * labels.length);
-                        if (actionListener != null) {
-                            actionListener.action(this);
-                        }
-                    }
-                    pulldown = !pulldown;
-                    parent.setFocus(this);
-                }
-            }
-        }
-        super.mouseButtonEvent(button, pressed, x, y);
-    }
-
-    int startX, startY;
-
-    @Override
-    public void touchEvent(int phase, int x, int y) {
-        int rx = (int) (x - parent.getX());
-        int ry = (int) (y - parent.getY());
-        if (isInBoundle(boundle, rx, ry)) {
-            if (phase == Glfm.GLFMTouchPhaseBegan) {
-                startX = x;
-                startY = y;
-                if (task != null) {
-                    task.cancel();
-                    task = null;
-                }
-            } else if (phase == Glfm.GLFMTouchPhaseEnded) {
-                boolean inScroll = false;
-                if (scrollBar != null) {
-                    inScroll = isInBoundle(scrollBar.boundle, x - getX(), y - getY());
-                }
-                if (!inScroll && startX == x && startY == y) {
-                    if (pulldown) {
-                        float stackh = (labels.length / list_cols) * (list_item_heigh) + pad;
-                        float pos = scrollBar.getPos() * (stackh - popBoundle[HEIGHT]) + (y - getY());
-                        curIndex = (int) (pos / stackh * labels.length);
-                        if (actionListener != null) {
-                            actionListener.action(this);
-                        }
-                    }
-                    pulldown = !pulldown;
-                }
-            }
-        }
-        super.touchEvent(phase, x, y);
-    }
-
-    @Override
-    public void dragEvent(float scrollX, float scrollY, float x, float y) {
-        scrollEvent(scrollX, scrollY, x, y);
-    }
-
-    @Override
-    public void scrollEvent(float scrollX, float scrollY, float x, float y) {
-        int rx = (int) (x - parent.getX());
-        int ry = (int) (y - parent.getY());
-        if (isInBoundle(boundle, rx, ry) && scrollBar != null) {
-            scrollBar.setPos(scrollBar.getPos() - 1.f / labels.length * (float) (scrollY / list_item_heigh));
+        selected.clear();
+        if (i >= 0 && i < popView.getElements().size()) {
+            selected.add(i);
         }
     }
 
-    //每多长时间进行一次惯性动作
-    long inertiaPeriod = 16;
-    //总共做多少次操作
-    long maxMoveCount = 120;
-    //惯性任务
-    TimerTask task;
+    public int[] getSelectedIndices() {
+        int size = selected.size();
+        int[] r = new int[size];
+        for (int i = 0; i < size; i++) {
+            r[i] = selected.get(i);
+        }
+        return r;
+    }
+
+    public void setSelectedIndices(int[] s) {
+        selected.clear();
+        for (int i = 0; i < s.length; i++) {
+            selected.add(s[i]);
+        }
+    }
+
+    boolean isSelected(int index) {
+        return selected.contains(index);
+    }
+
+    public int getItemIndex(GListItem item) {
+        return popView.getElements().indexOf(item);
+    }
+
+    public void selectAll() {
+        if (selectMode == MODE_MULTI_SELECT) {
+            int size = popView.getElementSize();
+            for (int i = 0; i < size; i++) {
+                selected.add(i);
+            }
+        }
+    }
+
+    public void deSelectAll() {
+        selected.clear();
+    }
+
+    void select(int index) {
+        if (selectMode == MODE_SINGLE_SELECT) {
+            selected.clear();
+            selected.add(new Integer(index));
+        } else if (selected.contains(index)) {
+            selected.remove(new Integer(index));
+        } else {
+            selected.add(new Integer(index));
+        }
+    }
+
+    void unSelect(int index) {
+        selected.remove(new Integer(index));
+    }
+
+    public GListItem getItem(int index) {
+        if (index < 0 || index >= popView.elements.size()) {
+            return null;
+        }
+        return (GListItem) popView.elements.get(index);
+    }
 
     @Override
-    public void inertiaEvent(float x1, float y1, float x2, float y2, final long moveTime) {
-        double dx = x2 - x1;
-        final double dy = y2 - y1;
-        task = new TimerTask() {
-            //惯性速度
-            double speed = dy / (moveTime / inertiaPeriod);
-            //阴力
-            double resistance = -speed / maxMoveCount;
-            //
-            float count = 0;
+    public void focusGot(GObject go) {
+    }
 
-            @Override
-            public void run() {
-//                System.out.println("inertia " + speed);
-                speed += resistance;
-                scrollBar.setPos(scrollBar.getPos() - 1.f / labels.length * (float) (speed / list_item_heigh));
-                flush();
-                if (count++ > maxMoveCount) {
-                    try {
-                        this.cancel();
-                    } catch (Exception e) {
-                    }
-                }
-            }
-        };
-        getTimer().schedule(task, 0, inertiaPeriod);
+    @Override
+    public void focusLost(GObject go) {
+        pulldown = false;
+        changeCurPanel();
     }
 
     /**
@@ -227,187 +374,38 @@ public class GList extends GContainer {
      */
     @Override
     public boolean update(long vg) {
-        if (parent.getFocus() != this) {
-            pulldown = false;
-        }
-        if (mode == MODE_MULTI_LINE) {
-            pulldown = true;
-        }
 
+        //int itemcount = popView.elements.size();
         nvgFontSize(vg, GToolkit.getStyle().getTextFontSize());
         nvgFontFace(vg, GToolkit.getFontWord());
         nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
 
         nvgTextMetrics(vg, null, null, lineh);
 
-        if (pulldown && labels != null) {
-            popBoundle = new float[4];
-
-            if (mode == MODE_MULTI_LINE) {
-                popBoundle[LEFT] = normalBoundle[LEFT];
-                popBoundle[TOP] = normalBoundle[TOP];
-                popBoundle[WIDTH] = normalBoundle[WIDTH];
-                popBoundle[HEIGHT] = normalBoundle[HEIGHT];
-                list_rows = popBoundle[HEIGHT] / list_item_heigh;
-            } else {
-                float popH = labels.length * list_item_heigh;
-                if (labels.length > list_rows) {
-                    popH = list_rows * list_item_heigh;
-                }
-                float popY = 0;
-                if (popH > parent.getH()) {// small than frame height
-                    popH = parent.getH();
-                    popY = parent.getY();
-                } else if (normalBoundle[TOP] + popH < parent.getH()) {
-                    popY = normalBoundle[TOP];
-                } else {
-                    popY = parent.getH() - popH;
-                }
-
-                popBoundle[LEFT] = normalBoundle[LEFT];
-                popBoundle[TOP] = popY;
-                popBoundle[WIDTH] = normalBoundle[WIDTH];
-                popBoundle[HEIGHT] = popH;
-            }
-            boundle = popBoundle;
-            if (scrollBar == null) {
-                scrollBar = new GScrollBar(0, GScrollBar.VERTICAL,
-                        (int) (boundle[WIDTH] - 22 + 1),
-                        (int) (pad),
-                        20,
-                        (int) (boundle[HEIGHT] - pad * 2));
-                add(scrollBar);
-            }
-            drawPop(vg,
-                    getX(),
-                    getY(),
-                    getW(),
-                    getH(),
-                    images, labels);
-            super.update(vg);
-        } else {
-            boundle = normalBoundle;
-            float x = getX();
-            float y = getY();
-            float w = getW();
-            float h = getH();
-            nvgScissor(vg, x, y, w, list_item_heigh);
-            drawNormal(vg, x, y, w, list_item_heigh);
-        }
-
-        return true;
+        Nanovg.nvgResetScissor(vg);
+        Nanovg.nvgScissor(vg, getViewX(), getViewY(), getViewW(), getViewH());
+        return super.update(vg);
     }
 
-    void drawNormal(long vg, float x, float y, float w, float h) {
-        byte[] bg;
-
-        if (pulldown) {
-            bg = nvgLinearGradient(vg, x, y + h, x, y, nvgRGBA(255, 255, 255, 16), nvgRGBA(0, 0, 0, 16));
-        } else {
-            bg = nvgLinearGradient(vg, x, y, x, y + h, nvgRGBA(255, 255, 255, 16), nvgRGBA(0, 0, 0, 16));
+    static void drawText(long vg, float tx, float ty, float pw, float ph, String s) {
+        if (s == null) {
+            return;
         }
-        float cornerRadius = 4.0f;
-        nvgBeginPath(vg);
-        nvgRoundedRect(vg, x + 1, y + 1, w - 2, h - 2, cornerRadius - 1);
-        nvgFillPaint(vg, bg);
-        nvgFill(vg);
-
-        nvgBeginPath(vg);
-        nvgRoundedRect(vg, x + 0.5f, y + 0.5f, w - 1, h - 1, cornerRadius - 0.5f);
-        nvgStrokeColor(vg, nvgRGBA(0, 0, 0, 48));
-        nvgStroke(vg);
-        float thumb = h - pad;
-        drawImage(vg, x + pad, y + h * 0.5f - thumb / 2, thumb, thumb, curIndex);
-
-        drawText(vg, x + thumb + pad + pad, y + h / 2, thumb, thumb, curIndex);
-
-        nvgFontSize(vg, GToolkit.getStyle().getIconFontSize());
-        nvgFontFace(vg, GToolkit.getFontIcon());
-        nvgTextJni(vg, x + w - thumb, y + h * 0.5f, preicon_arr, 0, preicon_arr.length);
-    }
-
-    void drawPop(long vg, float x, float y, float w, float h, int[] images, String[] strs) {
-        if (images == null) {
-            images = new int[]{0};
-            strs = new String[]{""};
-        }
-        int nimages = images.length;
-        float cornerRadius = 3.0f;
-        byte[] shadowPaint, fadePaint;
-        float thumb = list_item_heigh - pad;
-        float stackh = (nimages / list_cols) * (list_item_heigh) + pad;
-
-        nvgSave(vg);
-//	nvgClearState(vg);
-        nvgScissor(vg, x, y, w, h);
-
-        // Window
-        GToolkit.getStyle().drawEditBoxBase(vg, x, y, w, h);
-//        nvgBeginPath(vg);
-//        nvgRoundedRect(vg, x, y, w, h, cornerRadius);
-//        nvgFillColor(vg, nvgRGBA(60, 60, 60, 192));
-//        nvgFill(vg);
-
-        // Drop shadow
-//        shadowPaint = nvgBoxGradient(vg, x, y + 2, w, h, cornerRadius * 2, 10, nvgRGBA(0, 0, 0, 128), nvgRGBA(0, 0, 0, 0));
-//        nvgBeginPath(vg);
-//        nvgRect(vg, x - 10, y - 10, w + 20, h + 30);
-//        nvgRoundedRect(vg, x, y, w, h, cornerRadius);
-//        nvgPathWinding(vg, NVG_HOLE);
-//        nvgFillPaint(vg, shadowPaint);
-//        nvgFill(vg);
-        nvgSave(vg);
-        float th = -(stackh - h) * scrollBar.getPos();
-        nvgTranslate(vg, 0, th);
-
-        for (int i = 0; i < nimages; i++) {
-            float tx, ty;
-            tx = x + pad;
-            ty = y + pad;
-            tx += (i % list_cols) * (thumb + pad);
-            ty += (i / list_cols) * (thumb + pad);
-
-            if (curIndex == i) {
-                GToolkit.drawRect(vg, tx, ty, w - (thumb + pad), list_item_heigh - pad, GToolkit.getStyle().getSelectedColor());
-            }
-
-            drawImage(vg, tx, ty, thumb, thumb, i);
-
-            drawText(vg, tx + thumb + pad, ty + thumb / 2, thumb, thumb, i);
-        }
-        nvgRestore(vg);
-
-        // Hide fades
-        fadePaint = nvgLinearGradient(vg, x, y, x, y + 6, nvgRGBA(20, 20, 20, 192), nvgRGBA(30, 30, 30, 0));
-        nvgBeginPath(vg);
-        nvgRect(vg, x + 2, y, w - 4, 6);
-        nvgFillPaint(vg, fadePaint);
-        nvgFill(vg);
-
-        fadePaint = nvgLinearGradient(vg, x, y + h, x, y + h - 6, nvgRGBA(20, 20, 20, 192), nvgRGBA(30, 30, 30, 0));
-        nvgBeginPath(vg);
-        nvgRect(vg, x + 2, y + h - 6, w - 4, 6);
-        nvgFillPaint(vg, fadePaint);
-        nvgFill(vg);
-        nvgRestore(vg);
-    }
-
-    void drawText(long vg, float tx, float ty, float pw, float ph, int i) {
         nvgFillColor(vg, GToolkit.getStyle().getTextFontColor());
-        //Nanovg.nvgScissor(vg, x, y, w, h);
-        byte[] b = toUtf8(labels[i]);
+        byte[] b = toUtf8(s);
         Nanovg.nvgTextJni(vg, tx, ty, b, 0, b.length);
-        //Nanovg.nvgResetScissor(vg);
     }
 
-    void drawImage(long vg, float px, float py, float pw, float ph, int i) {
-
+    static void drawImage(long vg, float px, float py, float pw, float ph, GImage img) {
+        if (img == null) {
+            return;
+        }
         byte[] shadowPaint, imgPaint;
         float ix, iy, iw, ih;
         float thumb = pw;
         int[] imgw = {0}, imgh = {0};
 
-        nvgImageSize(vg, images[i], imgw, imgh);
+        nvgImageSize(vg, img.getTexture(), imgw, imgh);
         if (imgw[0] < imgh[0]) {
             iw = thumb;
             ih = iw * (float) imgh[0] / (float) imgw[0];
@@ -420,7 +418,7 @@ public class GList extends GContainer {
             iy = 0;
         }
 
-        imgPaint = nvgImagePattern(vg, px + ix, py + iy, iw, ih, 0.0f / 180.0f * (float) Math.PI, images[i], 0.8f);
+        imgPaint = nvgImagePattern(vg, px + ix, py + iy, iw, ih, 0.0f / 180.0f * (float) Math.PI, img.getTexture(), 0.8f);
         nvgBeginPath(vg);
         nvgRoundedRect(vg, px, py, thumb, thumb, 5);
         nvgFillPaint(vg, imgPaint);
@@ -470,4 +468,147 @@ public class GList extends GContainer {
         return a < mn ? mn : (a > mx ? mx : a);
     }
 
+    /**
+     *
+     */
+    GPanel normalPanel = new GPanel() {
+
+        @Override
+        public void touchEvent(int phase, int x, int y) {
+
+            if (phase == Glfm.GLFMTouchPhaseEnded) {
+                if (!pulldown) {
+                    pulldown = true;
+                    GList.this.changeCurPanel();
+                }
+            }
+            super.touchEvent(phase, x, y);
+
+        }
+
+        @Override
+        public void mouseButtonEvent(int button, boolean pressed, int x, int y) {
+            if (pressed) {
+                if (!pulldown) {
+                    pulldown = true;
+                    GList.this.changeCurPanel();
+                }
+            }
+            super.mouseButtonEvent(button, pressed, x, y);
+        }
+
+        void click() {
+
+        }
+
+        @Override
+        public boolean update(long vg) {
+            drawNormal(vg, normalPanel.getX(), normalPanel.getY(), normalPanel.getW(), normalPanel.getH());
+            return true;
+        }
+
+        void drawNormal(long vg, float x, float y, float w, float h) {
+            byte[] bg;
+
+            if (pulldown) {
+                bg = nvgLinearGradient(vg, x, y + h, x, y, nvgRGBA(255, 255, 255, 16), nvgRGBA(0, 0, 0, 16));
+            } else {
+                bg = nvgLinearGradient(vg, x, y, x, y + h, nvgRGBA(255, 255, 255, 16), nvgRGBA(0, 0, 0, 16));
+            }
+            float cornerRadius = 4.0f;
+            nvgBeginPath(vg);
+            nvgRoundedRect(vg, x + 1, y + 1, w - 2, h - 2, cornerRadius - 1);
+            nvgFillPaint(vg, bg);
+            nvgFill(vg);
+
+            nvgBeginPath(vg);
+            nvgRoundedRect(vg, x + 0.5f, y + 0.5f, w - 1, h - 1, cornerRadius - 0.5f);
+            nvgStrokeColor(vg, nvgRGBA(0, 0, 0, 48));
+            nvgStroke(vg);
+
+            if (popView.elements.size() > 0) {
+                float thumb = h - pad;
+                int selectIndex = getSelectedIndex();
+                if (selectIndex >= 0) {
+                    GListItem gli = (GListItem) getItem(selectIndex);
+                    drawImage(vg, x + pad, y + h * 0.5f - thumb / 2, thumb, thumb, gli.img);
+
+                    drawText(vg, x + thumb + pad + pad, y + h / 2, thumb, thumb, gli.label);
+
+                    nvgFontSize(vg, GToolkit.getStyle().getIconFontSize());
+                    nvgFontFace(vg, GToolkit.getFontIcon());
+                    nvgTextJni(vg, x + w - thumb, y + h * 0.5f, preicon_arr, 0, preicon_arr.length);
+                }
+            }
+        }
+    };
+
+    /**
+     *
+     */
+    protected GViewPort popView = new GViewPort() {
+
+        @Override
+        public boolean update(long vg) {
+            float x = getX();
+            float y = getY();
+            float w = getW();
+            float h = getH();
+
+            GToolkit.drawRect(vg, x, y, w, h, GList.this.getBgColor());
+
+            super.update(vg);
+
+//            // Hide fades
+//            byte[] fadePaint;
+//            fadePaint = nvgLinearGradient(vg, x, y, x, y + 6, nvgRGBA(20, 20, 20, 192), nvgRGBA(30, 30, 30, 0));
+//            nvgBeginPath(vg);
+//            nvgRect(vg, x + 2, y, w - 4, 6);
+//            nvgFillPaint(vg, fadePaint);
+//            nvgFill(vg);
+//
+//            fadePaint = nvgLinearGradient(vg, x, y + h, x, y + h - 6, nvgRGBA(20, 20, 20, 192), nvgRGBA(30, 30, 30, 0));
+//            nvgBeginPath(vg);
+//            nvgRect(vg, x + 2, y + h - 6, w - 4, 6);
+//            nvgFillPaint(vg, fadePaint);
+//            nvgFill(vg);
+            return true;
+        }
+
+    };
+
+    GListPopWindow popWin = new GListPopWindow();
+
+    class GListPopWindow extends GPanel {
+
+        @Override
+        public int getType() {
+            return TYPE_UNKNOW;
+        }
+
+        @Override
+        public void setSize(float width, float height) {
+            super.setSize(width, height);
+
+            popView.setLocation(0, 0);
+            popView.setSize(width - menuWidth, height);
+            popView.setViewLocation(0, 0);
+            popView.setViewSize(width - menuWidth, height);
+
+            scrollBar.setLocation(width - menuWidth, 0);
+            scrollBar.setSize(20, height);
+        }
+
+    };
+
+    class ScrollBarActionListener implements GActionListener {
+
+        @Override
+        public void action(GObject gobj) {
+            popView.setScrollY(((GScrollBar) gobj).getPos());
+            reSize();
+            flush();
+        }
+
+    }
 }

@@ -5,13 +5,11 @@
  */
 package org.mini.gui.event;
 
-import org.mini.gui.GObject;
-
 /**
  *
- * @author gust
+ * @author Gust
  */
-public interface GActionListener extends GListener {
+public interface GKeyboardShowListener {
 
-    void action(GObject gobj);
+    void keyboardShow(boolean show, float x, float y, float w, float h);
 }

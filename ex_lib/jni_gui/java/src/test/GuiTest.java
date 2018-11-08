@@ -3,11 +3,13 @@ package test;
 import java.util.Random;
 import org.mini.gl.warp.GLFrameBuffer;
 import org.mini.gl.warp.GLFrameBufferPainter;
+import org.mini.gui.GApplication;
 import static org.mini.nanovg.Gutil.toUtf8;
 import org.mini.gui.GButton;
 import org.mini.gui.GCanvas;
 import org.mini.gui.GCheckBox;
 import org.mini.gui.GColorSelector;
+import org.mini.gui.GContainer;
 import org.mini.gui.GTextBox;
 import org.mini.gui.GFrame;
 import org.mini.gui.GForm;
@@ -17,9 +19,8 @@ import org.mini.gui.GTextField;
 import org.mini.gui.GLabel;
 import org.mini.gui.GList;
 import org.mini.gui.GObject;
-import org.mini.gui.GPanel;
 import org.mini.gui.GScrollBar;
-import org.mini.gui.GuiCallBack;
+import org.mini.gui.impl.GuiCallBack;
 import org.mini.gui.event.GActionListener;
 import static org.mini.nanovg.Nanovg.nvgCreateImage;
 
@@ -32,33 +33,39 @@ import static org.mini.nanovg.Nanovg.nvgCreateImage;
  *
  * @author gust
  */
-public class GuiTest {
+public class GuiTest implements GApplication {
 
     public static void main(String[] args) {
-        GuiTest gt = new GuiTest();
-        gt.t1();
+        GuiCallBack ccb = GuiCallBack.getInstance();
+        ccb.init(800, 600);//window size
 
+        GuiTest app = new GuiTest();
+        GForm form = app.createdForm(GuiCallBack.getInstance());
+        form.setTitle("登录 窗口");
+        ccb.setForm(form);
+
+        ccb.mainLoop();
+        ccb.destory();
     }
+
     GForm win;
-    GuiCallBack ccb;
 
-    void t1() {
-        ccb = new GuiCallBack();
-        win = new GForm(/*"GuiTest"*/"登录 窗口", 800, 600, ccb);
-        win.init();
-        long vg = win.getGLContext();
-        GFrame gframe = new GFrame("Github"/*"demo"*/, 50, 50, 300, 500);
-        init(gframe.getPanel(), vg);
-        win.add(gframe);
-        win.run();
+    @Override
+    public GForm createdForm(GuiCallBack ccb) {
+        if (win == null) {
+            win = new GForm(ccb);
+            win.init();
+            long vg = win.getNvContext();
+            GFrame gframe = new GFrame("Github"/*"demo"*/, 50, 50, 300, 500);
+            init(gframe.getView(), vg);
+            win.add(gframe);
+        }
+        return win;
     }
 
-    final int EASY = 0, MID = 1, HARD = 2;
-    int op = EASY;
-    int property = 20;
     Light light;
 
-    public void init(GPanel parent, long vg) {
+    public void init(GContainer parent, long vg) {
         light = new Light();
 
         int x = 8, y = 10;
@@ -95,8 +102,8 @@ public class GuiTest {
             public void action(GObject go) {
                 Random ran = new Random();
                 GFrame sub1 = new GFrame(/*"子窗口"*/"颜色选择", 400 + ran.nextInt(100), 50 + ran.nextInt(100), 300, 400);
-                GPanel panel = sub1.getPanel();
-                init1(panel, vg);
+                GContainer view = sub1.getView();
+                init1(view, vg);
                 sub1.setClosable(true);
                 win.add(sub1);
             }
@@ -141,19 +148,20 @@ public class GuiTest {
     GImage img;
     GList list;
 
-    public void init1(GPanel parent, long vg) {
-        img = new GImage("./image4.png");
+    public void init1(GContainer parent, long vg) {
+        img = GImage.createImage(vg, "./image4.png");
 
         int x = 10, y = 10;
         list = new GList(x, y, 280, 30);
         parent.add(list);
-        if (list.getImages() == null) {
-            int i = nvgCreateImage(vg, toUtf8("./image4.png"), 0);
-            list.setItems(new int[]{i, i, i, i, i, i, i, i, i, i},
-                    new String[]{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J",});
-        }
+        int i = nvgCreateImage(vg, toUtf8("./image4.png"), 0);
+        list.setItems(new GImage[]{img, img, img, img, img, img, img, img, img, img},
+                new String[]{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J",});
         y += 40;
-        parent.add(new TestCanvas(x, y, 280, 150));
+        GCanvas cvs = new TestCanvas(x, y, i, i);
+        cvs.setLocation(x, y);
+        cvs.setSize(280, 150);
+        parent.add(cvs);
         y += 160;
         GColorSelector cs = new GColorSelector(0, x, y, 130, 130);
         parent.add(cs);
@@ -165,6 +173,9 @@ public class GuiTest {
         GLFrameBuffer glfb;
         GLFrameBufferPainter glfbRender;
         GImage img3D;
+
+        public TestCanvas() {
+        }
 
         public TestCanvas(int x, int y, int w, int h) {
             super(x, y, w, h);

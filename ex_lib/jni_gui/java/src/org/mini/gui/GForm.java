@@ -5,90 +5,90 @@
  */
 package org.mini.gui;
 
-import java.util.Iterator;
+import org.mini.gui.impl.GuiCallBack;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import static org.mini.gl.GL.GL_COLOR_BUFFER_BIT;
 import static org.mini.gl.GL.GL_DEPTH_BUFFER_BIT;
 import static org.mini.gl.GL.GL_STENCIL_BUFFER_BIT;
-import org.mini.nanovg.StbFont;
-import static org.mini.gl.GL.GL_TRUE;
 import static org.mini.gl.GL.glClear;
+import org.mini.nanovg.StbFont;
 import static org.mini.gl.GL.glClearColor;
 import static org.mini.gl.GL.glViewport;
-import org.mini.glfw.Glfw;
-import static org.mini.glfw.Glfw.GLFW_CONTEXT_VERSION_MAJOR;
-import static org.mini.glfw.Glfw.GLFW_CONTEXT_VERSION_MINOR;
-import static org.mini.glfw.Glfw.GLFW_OPENGL_CORE_PROFILE;
-import static org.mini.glfw.Glfw.GLFW_OPENGL_FORWARD_COMPAT;
-import static org.mini.glfw.Glfw.GLFW_OPENGL_PROFILE;
-import static org.mini.glfw.Glfw.glfwPollEvents;
-import static org.mini.glfw.Glfw.glfwSwapBuffers;
-import static org.mini.glfw.Glfw.glfwSwapInterval;
-import static org.mini.glfw.Glfw.glfwTerminate;
-import static org.mini.glfw.Glfw.glfwWindowHint;
-import static org.mini.glfw.Glfw.glfwWindowShouldClose;
-import org.mini.nanovg.Gutil;
-import static org.mini.glfw.Glfw.glfwGetFramebufferWidth;
-import static org.mini.glfw.Glfw.glfwGetFramebufferHeight;
-import static org.mini.gui.GObject.LEFT;
+import org.mini.glfm.Glfm;
+import static org.mini.gui.GObject.TYPE_FORM;
 import static org.mini.gui.GObject.flush;
 import static org.mini.gui.GToolkit.nvgRGBA;
+import org.mini.gui.event.GAppActiveListener;
+import org.mini.gui.event.GKeyboardShowListener;
+import org.mini.gui.event.GNotifyListener;
+import org.mini.gui.event.GPhotoPickedListener;
+import org.mini.nanovg.Gutil;
 import org.mini.nanovg.Nanovg;
 import static org.mini.nanovg.Nanovg.NVG_ALIGN_MIDDLE;
-import static org.mini.nanovg.Nanovg.NVG_ANTIALIAS;
-import static org.mini.nanovg.Nanovg.NVG_DEBUG;
-import static org.mini.nanovg.Nanovg.NVG_STENCIL_STROKES;
 import static org.mini.nanovg.Nanovg.nvgBeginFrame;
-import static org.mini.nanovg.Nanovg.nvgCreateGL3;
-import static org.mini.nanovg.Nanovg.nvgDeleteGL3;
 import static org.mini.nanovg.Nanovg.nvgEndFrame;
 import static org.mini.nanovg.Nanovg.nvgFillColor;
 import static org.mini.nanovg.Nanovg.nvgFontFace;
 import static org.mini.nanovg.Nanovg.nvgFontSize;
 import static org.mini.nanovg.Nanovg.nvgTextAlign;
-import static org.mini.gui.GObject.flush;
-import static org.mini.gui.GObject.flush;
-import static org.mini.gui.GObject.flush;
 
 /**
  *
  * @author gust
  */
-public class GForm extends GPanel implements Runnable {
+public class GForm extends GViewPort {
 
     String title;
-    int width;
-    int height;
-    long win; //glfw win
+    long display; //glfw display
     long vg; //nk contex
     GuiCallBack callback;
     static StbFont gfont;
     float fps;
     float fpsExpect = 30;
-
-    float pxRatio;
-    int fbWidth, fbHeight;
-
-    int[] unicode_range = {
-        0x0020, 0xFFFF,
-        0
-    };
+    long last, count;
     //
+    float pxRatio;
+
+    int fbWidth, fbHeight;
+    //
+    boolean premult;
+
+    GPhotoPickedListener pickListener;
+    GKeyboardShowListener keyshowListener;
+    GAppActiveListener activeListener;
+    GNotifyListener notifyListener;
+
+    final static List<Integer> pendingDeleteImage = new ArrayList();
 
     Timer timer = new Timer(true);//用于更新画面，UI系统采取按需刷新的原则
 
-    public GForm(String title, int width, int height, GuiCallBack ccb) {
+    public GForm(GuiCallBack ccb) {
         this.title = title;
-        this.width = width;
-        this.height = height;
-        boundle[WIDTH] = width;
-        boundle[HEIGHT] = height;
-        //set inner jpanel
-        super.setLocation(0, 0);
-        super.setSize(width, height);
 
         callback = ccb;
+
+        fbWidth = ccb.getFrameBufferWidth();
+        fbHeight = ccb.getFrameBufferHeight();
+        int winWidth, winHeight;
+        winWidth = ccb.getDeviceWidth();
+        winHeight = ccb.getDeviceHeight();
+
+        pxRatio = ccb.getDeviceRatio();
+
+        setLocation(0, 0);
+        setSize(winWidth, winHeight);
+
+        setViewLocation(0, 0);
+        setViewSize(winWidth, winHeight);
+
+        init();
+    }
+
+    public int getType() {
+        return TYPE_FORM;
     }
 
     public GuiCallBack getCallBack() {
@@ -103,127 +103,96 @@ public class GForm extends GPanel implements Runnable {
         return gfont;
     }
 
-    public long getGLContext() {
-        return vg;
-    }
-
-    public int getDeviceWidth() {
-        return (int) width;
-    }
-
-    public int getDeviceHeight() {
-        return (int) height;
-    }
-
     public long getNvContext() {
-        return vg;
+        return callback.getNvContext();
     }
 
     public long getWinContext() {
-        return win;
+        return display;
+    }
+
+    public int getDeviceWidth() {
+        return (int) callback.getDeviceWidth();
+    }
+
+    public int getDeviceHeight() {
+        return (int) callback.getDeviceHeight();
+    }
+
+    public void setTitle(String title) {
+        callback.setDisplayTitle(title);
     }
 
     @Override
     public void init() {
-
-        if (!Glfw.glfwInit()) {
-            System.out.println("glfw init error.");
-            System.exit(1);
-        }
-        String osname = System.getProperty("os.name");
-        if (osname != null && osname.contains("Mac")) {
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-            glfwWindowHint(Glfw.GLFW_COCOA_RETINA_FRAMEBUFFER, GL_TRUE);
-        }
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-
-        win = Glfw.glfwCreateWindow(width, height, Gutil.toUtf8(title), 0, 0);
-        if (win == 0) {
-            glfwTerminate();
-            System.exit(1);
-        }
-        Glfw.glfwMakeContextCurrent(win);
-        glfwSwapInterval(1);
-        vg = nvgCreateGL3(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
+        display = callback.getDisplay();
+        vg = callback.getNvContext();
         if (vg == 0) {
-            System.out.println("Could not init nanovg.\n");
-
+            System.out.println("callback.getNvContext() is null.");
         }
+
+        String respath = callback.getResRoot();
+        System.setProperty("word_font_path", respath + "/resfiles/wqymhei.ttc");
+        System.setProperty("icon_font_path", respath + "/resfiles/entypo.ttf");
+        System.setProperty("emoji_font_path", respath + "/resfiles/NotoEmoji-Regular.ttf");
         GToolkit.loadFont(vg);
 
-        callback.setWindowHandle(win);
-        callback.setForm(this);
-        Glfw.glfwSetCallback(win, callback);
-
-        width = Glfw.glfwGetWindowWidth(win);
-        height = Glfw.glfwGetWindowHeight(win);
-        fbWidth = glfwGetFramebufferWidth(win);
-        fbHeight = glfwGetFramebufferHeight(win);
-        // Calculate pixel ration for hi-dpi devices.
-        pxRatio = (float) fbWidth / (float) width;
-
+        System.out.println("fbWidth=" + fbWidth + "  ,fbHeight=" + fbHeight);
+        flush();
     }
 
-    @Override
-    public void run() {
-        if (vg == 0) {
-            System.out.println("gl context not inited.");
-            return;
-        }
-        //
-        GToolkit.putForm(vg, this);
-        long last = System.currentTimeMillis(), now;
-        int count = 0;
+    public void display(long vg) {
 
         long startAt, endAt, cost;
-        while (!glfwWindowShouldClose(win)) {
-            try {
-                startAt = System.currentTimeMillis();
-                glfwPollEvents();
-                //user define contents
-                if (GObject.flushReq()) {
-                    display(vg);
-                    glfwSwapBuffers(win);
-                }
-                count++;
-                now = System.currentTimeMillis();
-                if (now - last > 1000) {
-                    //System.out.println("fps:" + count);
-                    fps = count;
-                    last = now;
-                    count = 0;
-                }
+        try {
+            startAt = System.currentTimeMillis();
 
-                endAt = System.currentTimeMillis();
-                cost = endAt - startAt;
-                if (cost < 1000 / fpsExpect) {
-                    Thread.sleep((long) (1000 / fpsExpect - cost));
-                }
-            } catch (Exception ex) {
-                ex.printStackTrace();
+            // Update and render
+            glViewport(0, 0, fbWidth, fbHeight);
+            if (premult) {
+                glClearColor(0, 0, 0, 0);
+            } else {
+                glClearColor(0.3f, 0.3f, 0.32f, 1.0f);
             }
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+            int winWidth, winHeight;
+            winWidth = callback.getDeviceWidth();
+            winHeight = callback.getDeviceHeight();
+
+            nvgBeginFrame(vg, winWidth, winHeight, pxRatio);
+            drawDebugInfo(vg);
+            Nanovg.nvgResetScissor(vg);
+            Nanovg.nvgScissor(vg, 0, 0, winWidth, winHeight);
+            update(vg);
+            nvgEndFrame(vg);
+
+            //
+            count++;
+            endAt = System.currentTimeMillis();
+            cost = endAt - startAt;
+            if (cost > 1000) {
+                //System.out.println("fps:" + count);
+                fps = count;
+                last = endAt;
+                count = 0;
+            }
+//                if (cost < 1000 / fpsExpect) {
+//                    Thread.sleep((long) (1000 / fpsExpect - cost));
+//                }
+            synchronized (pendingDeleteImage) {
+                for (int i = pendingDeleteImage.size() - 1; i >= 0; i--) {
+                    Integer tex = pendingDeleteImage.get(i);
+                    if (tex != null) {
+                        Nanovg.nvgDeleteImage(vg, tex);
+                        System.out.println("delete image " + tex);
+                    }
+                }
+                pendingDeleteImage.clear();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        nvgDeleteGL3(vg);
-        glfwTerminate();
-        GToolkit.removeForm(vg);
-        vg = 0;
-    }
-
-    void display(long vg) {
-
-        // Update and render
-        glViewport(0, 0, fbWidth, fbHeight);
-        glClearColor(0.3f, 0.3f, 0.32f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-        nvgBeginFrame(vg, width, height, pxRatio);
-        Nanovg.nvgResetScissor(vg);
-        Nanovg.nvgScissor(vg, 0, 0, width, height);
-        update(vg);
-        changeFocus();
-        nvgEndFrame(vg);
     }
 
     void drawDebugInfo(long vg) {
@@ -233,26 +202,20 @@ public class GForm extends GPanel implements Runnable {
         nvgTextAlign(vg, Nanovg.NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
 
         GuiCallBack cb = (GuiCallBack) callback;
-        float dx = 10, dy = 40;
+        float dx = 2, dy = 40;
         byte[] b;
         nvgFillColor(vg, nvgRGBA(255, 255, 255, 255));
 
-        b = Gutil.toUtf8("touch x:" + cb.mouseX);
+        b = Gutil.toUtf8("touch x,y:" + cb.mouseX + "," + cb.mouseY);
         Nanovg.nvgTextJni(vg, dx, dy, b, 0, b.length);
         dy += font_size;
-        b = Gutil.toUtf8("touch y:" + cb.mouseY);
+        b = Gutil.toUtf8("form:" + getX() + "," + getY() + "," + getW() + "," + getH() + "  " + getViewX() + "," + getViewY() + "," + getViewW() + "," + getViewH());
+
         Nanovg.nvgTextJni(vg, dx, dy, b, 0, b.length);
         dy += font_size;
         if (focus != null) {
-            b = Gutil.toUtf8("focus x:" + focus.boundle[LEFT] + " y:" + focus.boundle[TOP] + " w:" + focus.boundle[WIDTH] + " h:" + focus.boundle[HEIGHT]);
+            b = Gutil.toUtf8("focus:" + focus.getX() + "," + focus.getY() + "," + focus.getW() + "," + focus.getH() + "  " + ((focus instanceof GContainer) ? ((GContainer) focus).getViewX() + "," + ((GContainer) focus).getViewY() + "," + ((GContainer) focus).getViewW() + "," + ((GContainer) focus).getViewH() : ""));
             Nanovg.nvgTextJni(vg, dx, dy, b, 0, b.length);
-        }
-    }
-
-    void changeFocus() {
-        if (focus != null && elements.peek() != focus) {
-            elements.remove(focus);
-            elements.addFirst(focus);
         }
     }
 
@@ -275,6 +238,93 @@ public class GForm extends GPanel implements Runnable {
 
     public void setFps(float fps) {
         fpsExpect = fps;
+    }
+
+    public void onPhotoPicked(int uid, String url, byte[] data) {
+        if (pickListener != null) {
+            pickListener.onPicked(uid, url, data);
+        }
+    }
+
+    /**
+     * @return the pickListener
+     */
+    public GPhotoPickedListener getPickListener() {
+        return pickListener;
+    }
+
+    /**
+     * @param pickListener the pickListener to set
+     */
+    public void setPickListener(GPhotoPickedListener pickListener) {
+        this.pickListener = pickListener;
+    }
+
+    public void KeyboardPopEvent(boolean visible, float x, float y, float w, float h) {
+        if (keyshowListener != null) {
+            keyshowListener.keyboardShow(visible, x, y, w, h);
+        }
+    }
+
+    /**
+     * @return the keyshowListener
+     */
+    public GKeyboardShowListener getKeyshowListener() {
+        return keyshowListener;
+    }
+
+    /**
+     * @param keyshowListener the keyshowListener to set
+     */
+    public void setKeyshowListener(GKeyboardShowListener keyshowListener) {
+        this.keyshowListener = keyshowListener;
+    }
+
+    public static void deleteImage(int texture) {
+        synchronized (pendingDeleteImage) {
+            pendingDeleteImage.add(texture);
+        }
+    }
+
+    public void onAppFocus(boolean focus) {
+        //System.out.println("app focus:" + focus);
+        if (activeListener != null) {
+            activeListener.onAppActive(focus);
+        }
+    }
+
+    public void onNotify(String key, String val) {
+        if (notifyListener != null) {
+            notifyListener.onNotify(key, val);
+        }
+    }
+
+    /**
+     * @return the activeListener
+     */
+    public GAppActiveListener getActiveListener() {
+        return activeListener;
+    }
+
+    /**
+     * @param activeListener the activeListener to set
+     */
+    public void setActiveListener(GAppActiveListener activeListener) {
+        this.activeListener = activeListener;
+    }
+
+    /**
+     * @return the notifyListener
+     */
+    public GNotifyListener getNotifyListener() {
+        return notifyListener;
+    }
+
+    /**
+     * @param notifyListener the notifyListener to set
+     */
+    public void setNotifyListener(GNotifyListener notifyListener) {
+        this.notifyListener = notifyListener;
     }
 
 }

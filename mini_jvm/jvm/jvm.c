@@ -170,6 +170,14 @@ void classloader_release_classs_static_field(ClassLoader *class_loader) {
     }
 }
 
+void set_jvm_state(int state) {
+    jvm_state = state;
+}
+
+int get_jvm_state() {
+    return jvm_state;
+}
+
 void _on_jvm_sig(int no) {
 
     jvm_printf("jvm signo:%d  errno: %d , %s\n", no, errno, strerror(errno));
@@ -183,13 +191,14 @@ void jvm_init(c8 *p_classpath, StaticLibRegFunc regFunc) {
 #ifdef SIGPIPE
     signal(SIGPIPE, _on_jvm_sig);
 #endif
+    if (get_jvm_state() != JVM_STATUS_UNKNOW) {
+        return;
+    }
+    set_jvm_state(JVM_STATUS_INITING);
+
     if (!p_classpath) {
         p_classpath = "./";
     }
-    if (jvm_init_flag) {
-        return;
-    }
-    jvm_init_flag = 1;
 
     heap_size = 0;
     //
@@ -228,24 +237,29 @@ void jvm_init(c8 *p_classpath, StaticLibRegFunc regFunc) {
     //启动调试器
     jdwp_start_server();
 
-
+    set_jvm_state(JVM_STATUS_RUNNING);
 }
 
 void jvm_destroy(StaticLibRegFunc unRegFunc) {
     while (threadlist_count_none_daemon() > 0) {//wait for other thread over ,
         threadSleep(20);
     }
+    set_jvm_state(JVM_STATUS_STOPED);
     //waiting for daemon thread terminate
     s32 i;
     while (thread_list->length) {
         for (i = 0; i < thread_list->length; i++) {
             Runtime *r = threadlist_get(i);
-            r->threadInfo->suspend_count = 1;
-            r->threadInfo->no_pause = 1;
-            r->threadInfo->is_interrupt = 1;
-            jthread_lock(r->threadInfo->curThreadLock, r);
-            jthread_notify(r->threadInfo->curThreadLock, r);
-            jthread_unlock(r->threadInfo->curThreadLock, r);
+            if (!r->son) {//未在执行jvm指令
+                thread_unboundle(r);//
+            } else {
+                r->threadInfo->suspend_count = 1;
+                r->threadInfo->no_pause = 1;
+                r->threadInfo->is_interrupt = 1;
+                jthread_lock(r->threadInfo->curThreadLock, r);
+                jthread_notify(r->threadInfo->curThreadLock, r);
+                jthread_unlock(r->threadInfo->curThreadLock, r);
+            }
         }
         threadSleep(20);
     }
@@ -259,7 +273,7 @@ void jvm_destroy(StaticLibRegFunc unRegFunc) {
     sys_properties_dispose();
     close_log();
     jvm_printf("jvm over %lld\n", heap_size);
-    jvm_init_flag = 0;
+    set_jvm_state(JVM_STATUS_UNKNOW);
 }
 
 s32 execute_jvm(c8 *p_classpath, c8 *p_mainclass, ArrayList *java_para) {

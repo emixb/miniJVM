@@ -27,14 +27,26 @@ import static org.mini.nanovg.Nanovg.nvgTextMetrics;
  *
  * @author Gust
  */
-public class GMenu extends GContainer {
+public class GMenu extends GPanel {
 
     float[] lineh = new float[1];
+    int selectedIndex=-1;
 
+    public GMenu() {
+
+    }
 
     public GMenu(int left, int top, int width, int height) {
+        this((float) left, top, width, height);
+    }
+
+    public GMenu(float left, float top, float width, float height) {
         setLocation(left, top);
         setSize(width, height);
+    }
+
+    public int getType() {
+        return TYPE_MENU;
     }
 
     @Override
@@ -134,13 +146,13 @@ public class GMenu extends GContainer {
             float dy = item.getY();
             if (i > 0) {
                 nvgBeginPath(vg);
-                nvgFillColor(vg, nvgRGBA(0, 0, 0, 48));
+                nvgFillColor(vg, nvgRGBA(192, 192, 192, 48));
                 nvgRect(vg, dx - 1, dy + 2, 2, h - 4);
                 nvgFill(vg);
             }
             i++;
         }
-        
+
         super.update(vg);
         return true;
     }

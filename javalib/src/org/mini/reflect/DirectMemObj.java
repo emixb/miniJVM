@@ -5,6 +5,7 @@
  */
 package org.mini.reflect;
 
+import java.lang.reflect.Array;
 import org.mini.reflect.vm.RConst;
 import org.mini.reflect.vm.RefNative;
 
@@ -26,16 +27,30 @@ public class DirectMemObj {
     long memAddr;
     int length;
     char typeDesc; //'1','2','4','8','R'
+
     //
-    public byte typeTag;
+    public byte typeTag;  //RConst.TAG...
     DMOFinalizer finalizer;
 
+    //
+    /**
+     *
+     * @param mem_addr
+     * @param len
+     */
     public DirectMemObj(long mem_addr, int len) {
         this(mem_addr, len, RConst.TAG_BYTE);
     }
 
     /**
-     * 
+     *
+     * It's a direct memory access obj , danger for write operation , danger for
+     * read data safe
+     *
+     * this class main aim to process native lib memory pointer.
+     *
+     * like an array or ByteBuffer
+     *
      * typeTag is RConst.xxxtag
      *
      * @param mem_addr
@@ -66,6 +81,69 @@ public class DirectMemObj {
             finalizer.onFinalize();
             System.out.println("DMO finalized");
         }
+    }
+
+    public static <T> DirectMemObj allocate(int capacity) {
+        Object arr = Array.newInstance(byte.class, capacity);
+        return wrap(arr);
+    }
+
+    /**
+     * direct allocate memory from heap
+     *
+     * @param capacity in byte
+     * @return
+     */
+    public static <T> DirectMemObj allocate(int capacity, Class clazz) {
+        Object arr = Array.newInstance(clazz, capacity);
+        return wrap(arr);
+    }
+
+    Object arrayHolder;//持有warp的数组,防止回收了
+
+    public static <T> DirectMemObj wrap(T array) {
+        return wrap(array, 0, Array.getLength(array));
+    }
+
+    public static <T> DirectMemObj wrap(T array, int offset, int length) {
+
+        long arrayId = RefNative.obj2id(array);
+        long ptr = ReflectArray.getBodyPtr(arrayId);
+        int bytes = 1;
+        byte tag = 0;
+        if (array instanceof byte[]) {
+            bytes = 1;
+            tag = RConst.TAG_BYTE;
+        } else if (array instanceof short[]) {
+            bytes = 2;
+            tag = RConst.TAG_SHORT;
+        } else if (array instanceof char[]) {
+            bytes = 2;
+            tag = RConst.TAG_CHAR;
+        } else if (array instanceof int[]) {
+            bytes = 4;
+            tag = RConst.TAG_INT;
+        } else if (array instanceof long[]) {
+            bytes = 8;
+            tag = RConst.TAG_LONG;
+        } else if (array instanceof float[]) {
+            bytes = 4;
+            tag = RConst.TAG_FLOAT;
+        } else if (array instanceof double[]) {
+            bytes = 8;
+            tag = RConst.TAG_DOUBLE;
+        } else {
+            bytes = RefNative.refIdSize();
+            tag = RConst.TAG_OBJECT;
+        }
+        if (ptr == 0 || tag == 0 || ReflectArray.getLength(arrayId) > offset + length) {
+            throw new IllegalArgumentException("espected array " + Long.toHexString(ptr) + " tag:" + (char) tag);
+        }
+
+        ptr += offset * bytes;
+        DirectMemObj dmo = new DirectMemObj(ptr, length, tag);
+        dmo.arrayHolder = array;
+        return dmo;
     }
 
     /**
@@ -231,9 +309,31 @@ public class DirectMemObj {
         }
     }
 
-    native long getVal(int index);
+    public void copyFrom(Object srcArray) {
+        copyFrom(0, srcArray, 0, length);
+    }
 
-    native void setVal(int index, long val);
+    public void copyFrom(int src_offset, Object srcArray, int tgt_offset, int len) {
+        Class cls = srcArray.getClass();
+        //System.out.println("arrtype:"+cls.getName());
+        if (cls.isArray() && cls.getName().charAt(1) == typeTag) {
+            copyFrom0(src_offset, srcArray, tgt_offset, len);
+        } else {
+            throw new IllegalArgumentException("espected array and same datatype: " + typeTag);
+        }
+    }
 
-    native void copyTo0(int src_offset, Object tgt, int tgt_offset, int len);
+    private native long getVal(int index);
+
+    private native void setVal(int index, long val);
+
+    private native void copyTo0(int src_offset, Object tgtArr, int tgt_offset, int len);
+
+    private native void copyFrom0(int src_offset, Object srcArr, int tgt_offset, int len);
+
+    //
+    private static native long heap_calloc(int capacity);
+
+    private static native void heap_free(long memAddr);
+
 }

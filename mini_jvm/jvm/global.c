@@ -90,7 +90,7 @@ OptimizeCache jvm_runtime_cache;
 //
 u8 java_debug = 0;
 
-s32 jvm_init_flag = 0;
+s32 jvm_state = JVM_STATUS_UNKNOW;
 
 #if _JVM_DEBUG_PROFILE
 Hashtable *profile_instructs;

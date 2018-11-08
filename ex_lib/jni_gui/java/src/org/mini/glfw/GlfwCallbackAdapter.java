@@ -67,4 +67,8 @@ public class GlfwCallbackAdapter implements GlfwCallback {
     @Override
     public void drop(long window, int count, String[] paths){
     }
+
+    @Override
+    public void mainLoop() {
+    }
 }

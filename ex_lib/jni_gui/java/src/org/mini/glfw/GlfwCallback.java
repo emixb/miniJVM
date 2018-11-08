@@ -147,5 +147,8 @@ public interface GlfwCallback {
      * @param paths 
      */
     public void drop(long window, int count, String[] paths);
+    
+    
+    public void mainLoop();
 
 }

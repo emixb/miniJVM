@@ -20,9 +20,9 @@ public class ReflectArray {
     public long arrayId;
     //不可随意改动字段类型及名字，要和native一起改
     //native field name ,dont change name
-    public byte typeTag;
-    long body_addr;
-    public int length;
+//    public byte typeTag;
+//    long body_addr;
+//    public int length;
 
     //
     DirectMemObj dmo;
@@ -33,18 +33,13 @@ public class ReflectArray {
      */
     public ReflectArray(long array) {
         arrayId = array;
-        mapArray(arrayId);
+//        mapArray(arrayId);
+        byte typeTag = getTypeTag(array);
+        long body_addr = getBodyPtr(array);
+        int length = getLength(array);
         dmo = new DirectMemObj(body_addr, length, typeTag);
     }
 
-    /**
-     * return data start memory address
-     *
-     * @return
-     */
-    public long getDataPtr() {
-        return body_addr;
-    }
 
     public void setValObj(int index, Object val) {
         dmo.setValObj(index, val);
@@ -54,7 +49,12 @@ public class ReflectArray {
         return dmo.getValObj(index);
     }
 
-    final native void mapArray(long classId);
+//    final native void mapArray(long classId);
+    public static native int getLength(long arr);
+
+    public static native byte getTypeTag(long arr);
+
+    public static native long getBodyPtr(long array);
 
     /*
      * Private

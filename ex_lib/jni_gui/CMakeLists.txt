@@ -5,16 +5,16 @@ project(jni_gui)
 #set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_C_STANDARD 99)
 
-include_directories(deps/include/ ../../mini_jvm/jvm )
+include_directories(deps/include/ ../../mini_jvm/jvm)
 
 set(SOURCE_FILES
         deps/include/glad/glad.c
         deps/include/nanovg/nanovg.c
-        jni_gui.h
+        media.h
         jni_glfw.c
         jni_gl.c
-        #        jni_nk.c
-        jni_gui.c
+        jni_minial.c
+        media.c
         jni_nanovg.c
         )
 add_executable(test_gui ${SOURCE_FILES})
@@ -58,11 +58,11 @@ ELSEIF (MINGW)
         message("32bit")
         find_library(MY_LIB libglfw3.a "${CMAKE_SOURCE_DIR}/deps/lib/win_i686/")
         SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/../../binary/win32)
-    elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    elseif (CMAKE_SIZEOF_VOID_P EQUAL 8)
         message("64bit")
         find_library(MY_LIB libglfw3.a "${CMAKE_SOURCE_DIR}/deps/lib/win_x64/")
         SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/../../binary/win_x64)
-    endif()
+    endif ()
     message(${MY_LIB})
     MARK_AS_ADVANCED(MY_LIB)
     TARGET_LINK_LIBRARIES(gui ${MY_LIB})

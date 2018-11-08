@@ -127,7 +127,7 @@ import static org.mini.nanovg.Nanovg.nvgTranslate;
  */
 public class TestNanovg {
 
-    long win;
+    long display;
 
     public static void main(String[] args) {
         TestNanovg gt = new TestNanovg();
@@ -143,24 +143,24 @@ public class TestNanovg {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_DEPTH_BITS, 16);
         glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
-        win = glfwCreateWindow(1200, 600, "TestNanovg".getBytes(), 0, 0);
-        if (win != 0) {
-            glfwSetCallback(win, new CallBack());
-            glfwMakeContextCurrent(win);
+        display = glfwCreateWindow(1200, 600, "TestNanovg".getBytes(), 0, 0);
+        if (display != 0) {
+            glfwSetCallback(display, new CallBack());
+            glfwMakeContextCurrent(display);
             //glfwSwapInterval(1);
 
-            int w = glfwGetFramebufferWidth(win);
-            int h = glfwGetFramebufferHeight(win);
+            int w = glfwGetFramebufferWidth(display);
+            int h = glfwGetFramebufferHeight(display);
             System.out.println("w=" + w + "  ,h=" + h);
             init();
             long last = System.currentTimeMillis(), now;
             int count = 0;
-            while (!glfwWindowShouldClose(win)) {
+            while (!glfwWindowShouldClose(display)) {
 
                 display();
 
                 glfwPollEvents();
-                glfwSwapBuffers(win);
+                glfwSwapBuffers(display);
                 count++;
                 now = System.currentTimeMillis();
                 if (now - last > 1000) {
@@ -271,10 +271,10 @@ public class TestNanovg {
         float pxRatio;
         int winWidth, winHeight;
         int fbWidth, fbHeight;
-        winWidth = Glfw.glfwGetWindowWidth(win);
-        winHeight = Glfw.glfwGetWindowHeight(win);
-        fbWidth = glfwGetFramebufferWidth(win);
-        fbHeight = glfwGetFramebufferHeight(win);
+        winWidth = Glfw.glfwGetWindowWidth(display);
+        winHeight = Glfw.glfwGetWindowHeight(display);
+        fbWidth = glfwGetFramebufferWidth(display);
+        fbHeight = glfwGetFramebufferHeight(display);
         // Calculate pixel ration for hi-dpi devices.
         pxRatio = (float) fbWidth / (float) winWidth;
 

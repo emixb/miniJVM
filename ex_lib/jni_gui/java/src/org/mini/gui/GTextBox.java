@@ -5,6 +5,7 @@
  */
 package org.mini.gui;
 
+import java.util.Timer;
 import java.util.TimerTask;
 import org.mini.glfm.Glfm;
 import org.mini.glfw.Glfw;
@@ -18,8 +19,6 @@ import static org.mini.nanovg.Nanovg.nvgFillColor;
 import static org.mini.nanovg.Nanovg.nvgFontFace;
 import static org.mini.nanovg.Nanovg.nvgFontSize;
 import static org.mini.nanovg.Nanovg.nvgNVGglyphPosition_x;
-import static org.mini.nanovg.Nanovg.nvgRestore;
-import static org.mini.nanovg.Nanovg.nvgSave;
 import static org.mini.nanovg.Nanovg.nvgTextAlign;
 import static org.mini.nanovg.Nanovg.nvgTextBreakLinesJni;
 import static org.mini.nanovg.Nanovg.nvgTextGlyphPositionsJni;
@@ -62,12 +61,24 @@ public class GTextBox extends GTextObject {
     //
     boolean mouseDrag;
 
+    public GTextBox() {
+    }
+
     public GTextBox(String text, String hint, int left, int top, int width, int height) {
+        this(text, hint, (float) left, top, width, height);
+
+    }
+
+    public GTextBox(String text, String hint, float left, float top, float width, float height) {
         setText(text);
         setHint(hint);
         setLocation(left, top);
         setSize(width, height);
         setFocusListener(this);
+    }
+
+    public int getType() {
+        return TYPE_TEXTBOX;
     }
 
     boolean isInArea(short[] bound, float x, float y) {
@@ -462,7 +473,10 @@ public class GTextBox extends GTextObject {
     TimerTask task;
 
     @Override
-    public void inertiaEvent(float x1, float y1, float x2, float y2, final long moveTime) {
+    public boolean inertiaEvent(float x1, float y1, float x2, float y2, final long moveTime) {
+        if (scroll >= 1 || scroll <= 0) {
+            return false;
+        }
         double dx = x2 - x1;
         final double dy = y2 - y1;
         scrollDelta = 0;
@@ -477,7 +491,7 @@ public class GTextBox extends GTextObject {
             @Override
             public void run() {
 //                System.out.println("inertia " + speed);
-                speed += resistance;//速度和阴力抵消为0时,退出滑动
+                speed -= resistance;//速度和阴力抵消为0时,退出滑动
 
                 float dh = getOutOfShowAreaHeight();
                 if (dh > 0) {
@@ -492,28 +506,32 @@ public class GTextBox extends GTextObject {
                 }
             }
         };
-        getTimer().schedule(task, 0, inertiaPeriod);
+        Timer timer = getTimer();
+        if (timer != null) {
+            timer.schedule(task, 0, inertiaPeriod);
+        }
+        return true;
     }
 
     @Override
-    public void scrollEvent(float scrollX, float scrollY, float x, float y) {
-        dragEvent(scrollX, scrollY, x, y);
+    public boolean scrollEvent(float scrollX, float scrollY, float x, float y) {
+        return dragEvent(scrollX, scrollY, x, y);
     }
 
     @Override
-    public void dragEvent(float dx, float dy, float x, float y) {
+    public boolean dragEvent(float dx, float dy, float x, float y) {
         if (selectMode || mouseDrag) {
-            return;
+            return false;
         }
-        if (isInArea(x, y)) {
-            float dh = getOutOfShowAreaHeight();
-            if (dh > 0) {
-                setScroll(scroll - (float) dy / dh);
-            }
+        float dh = getOutOfShowAreaHeight();
+        if (dh > 0) {
+            return setScroll(scroll - (float) dy / dh);
         }
+        return false;
     }
 
-    void setScroll(float p) {
+    boolean setScroll(float p) {
+        float tmp = scroll;
         scroll = p;
         if (scroll > 1) {
             scroll = 1.f;
@@ -521,6 +539,7 @@ public class GTextBox extends GTextObject {
         if (scroll < 0) {
             scroll = 0.f;
         }
+        return tmp != scroll;
     }
 
     float getOutOfShowAreaHeight() {
@@ -681,9 +700,8 @@ public class GTextBox extends GTextObject {
             int nrows, i, char_count;
             float caretx = 0;
 
-            nvgSave(vg);
             Nanovg.nvgScissor(vg, text_area[LEFT], text_area[TOP], text_area[WIDTH], text_area[HEIGHT]);
-            Nanovg.nvgIntersectScissor(vg, parent.getX(), parent.getY(), parent.getViewW(), parent.getViewH());
+            Nanovg.nvgIntersectScissor(vg, parent.getViewX(), parent.getViewY(), parent.getViewW(), parent.getViewH());
             //需要恢复现场
             try {
 
@@ -815,7 +833,6 @@ public class GTextBox extends GTextObject {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            nvgRestore(vg);
 
             Nanovg.nvgDeleteNVGtextRow(rowsHandle);
             Nanovg.nvgDeleteNVGglyphPosition(glyphsHandle);

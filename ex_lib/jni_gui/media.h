@@ -27,7 +27,14 @@ __refer ptr_NutilFuncTable();
 
 s32 count_NutilFuncTable();
 
-static void init() {}
+__refer ptr_MiniALFuncTable();
+
+s32 count_MiniALFuncTable();
+
+//
+Runtime *getRuntimeCurThread(JniEnv *env);
+
+static void init(){}
 
 struct _GlobeRefer {
     JniEnv *env;
@@ -48,6 +55,14 @@ struct _GlobeRefer {
     MethodInfo *_callback_window_iconify;
     MethodInfo *_callback_window_refresh;
     MethodInfo *_callback_framebuffer_size;
+
+    //
+    MethodInfo *_callback_minial_on_send_frames;
+    MethodInfo *_callback_minial_on_recv_frames;
+    MethodInfo *_callback_minial_on_stop;
+
+    //
+    Pairlist *runtime_list;
 };
 
 

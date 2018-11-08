@@ -28,9 +28,7 @@ import static org.mini.nanovg.Nanovg.nvgLinearGradient;
 import static org.mini.nanovg.Nanovg.nvgMoveTo;
 import static org.mini.nanovg.Nanovg.nvgPathWinding;
 import static org.mini.nanovg.Nanovg.nvgRect;
-import static org.mini.nanovg.Nanovg.nvgRestore;
 import static org.mini.nanovg.Nanovg.nvgRoundedRect;
-import static org.mini.nanovg.Nanovg.nvgSave;
 import static org.mini.nanovg.Nanovg.nvgStroke;
 import static org.mini.nanovg.Nanovg.nvgStrokeColor;
 import static org.mini.nanovg.Nanovg.nvgTextAlign;
@@ -40,7 +38,7 @@ import static org.mini.nanovg.Nanovg.nvgTextJni;
  *
  * @author gust
  */
-public class GFrame extends GContainer {
+public class GFrame extends GPanel {
 
     String title;
     byte[] title_arr;
@@ -50,25 +48,54 @@ public class GFrame extends GContainer {
 
     int background_rgba;
 
-    GPanel panel = new GPanel();
+    GViewPort panel = new GViewPort();
 
     GPanel title_panel = new GPanel();
     long vg;
     int frameMode;
     boolean closable = true;
 
+    public GFrame() {
+
+    }
+
     public GFrame(String title, int left, int top, int width, int height) {
+        this(title, (float) left, top, width, height);
+    }
+
+    public GFrame(String title, float left, float top, float width, float height) {
         setTitle(title);
         setLocation(left, top);
         setSize(width, height);
+        setViewLocation(left, top);
+        setViewSize(width, height);
 
         panel.setLocation(2, 32);
         panel.setSize(width - 4, height - 34);
+        panel.setViewLocation(2, 32);
+        panel.setViewSize(width - 4, height - 34);
         add(panel);
 
         title_panel.setLocation(1, 1);
         title_panel.setSize(width - 2, 30);
         add(title_panel);
+    }
+
+    @Override
+    public void setSize(float w, float h) {
+        panel.setSize(w - 4, h - 34);
+        super.setSize(w, h);
+    }
+
+    @Override
+    public int getType() {
+        return TYPE_FRAME;
+    }
+
+    public void close() {
+        if (parent != null) {
+            parent.remove(this);
+        }
     }
 
     public void setTitle(String title) {
@@ -92,7 +119,7 @@ public class GFrame extends GContainer {
         background_rgba = rgba;
     }
 
-    public GPanel getPanel() {
+    public GContainer getView() {
         return panel;
     }
 
@@ -120,28 +147,35 @@ public class GFrame extends GContainer {
             return;
         }
         if ((align_mod & GGraphics.LEFT) != 0) {
-            boundle[LEFT] = 0;
+            move(-getViewX(), 0);
         } else if ((align_mod & GGraphics.RIGHT) != 0) {
-            boundle[LEFT] = getForm().getDeviceWidth() - boundle[WIDTH];
+            move(getForm().getDeviceWidth() - (getViewX() + getViewW()), 0);
         } else if ((align_mod & GGraphics.HCENTER) != 0) {
-            boundle[LEFT] = (getForm().getDeviceWidth() - boundle[WIDTH]) / 2;
+            move(getForm().getDeviceWidth() / 2 - (getViewX() + getViewW() / 2), 0);
         }
         if ((align_mod & GGraphics.TOP) != 0) {
-            boundle[TOP] = 0;
+            move(0, -getViewY());
         } else if ((align_mod & GGraphics.BOTTOM) != 0) {
-            boundle[TOP] = getForm().getDeviceHeight() - boundle[HEIGHT];
+            move(0, getForm().getDeviceHeight() - (getViewY() + getViewH()));
         } else if ((align_mod & GGraphics.HCENTER) != 0) {
-            boundle[TOP] = (getForm().getDeviceHeight() - boundle[HEIGHT]) / 2;
+            move(0, getForm().getDeviceHeight() / 2 - (getViewY() + getViewH() / 2));
+        }
+    }
+
+    @Override
+    public void onAdd(GObject obj) {
+        if (parent != null) {
+            parent.setFocus(this);
         }
     }
 
     @Override
     public boolean update(long vg) {
         this.vg = vg;
-        float x = getX();
-        float y = getY();
-        float w = getW();
-        float h = getH();
+        float x = getViewX();
+        float y = getViewY();
+        float w = getViewW();
+        float h = getViewH();
         drawWindow(vg, title, x, y, w, h);
         super.update(this.vg);
         return true;
@@ -204,10 +238,10 @@ public class GFrame extends GContainer {
             nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
             nvgTextJni(vg, x + 10, y + 16, close_arr, 0, close_arr.length);
         }
-        close_boundle[LEFT] = x + 10;
-        close_boundle[TOP] = y + 6;
-        close_boundle[WIDTH] = 16;
-        close_boundle[HEIGHT] = 16;
+        close_boundle[LEFT] = x;
+        close_boundle[TOP] = y;
+        close_boundle[WIDTH] = 30;
+        close_boundle[HEIGHT] = 30;
 
     }
 
@@ -246,22 +280,19 @@ public class GFrame extends GContainer {
     }
 
     @Override
-    public void dragEvent(float dx, float dy, float x, float y) {
+    public boolean dragEvent(float dx, float dy, float x, float y) {
 
         if (dragFrame) {
             move(dx, dy);
-//            if (parent != null) {
-//                parent.reBoundle();
-//            }
+            return true;
         } else {
-
-            super.dragEvent(dx, dy, x, y);
+            return super.dragEvent(dx, dy, x, y);
         }
     }
 
     @Override
-    public void scrollEvent(float scrollX, float scrollY, float x, float y) {
-        panel.scrollEvent(scrollX, scrollY, x, y);
+    public boolean scrollEvent(float scrollX, float scrollY, float x, float y) {
+        return panel.scrollEvent(scrollX, scrollY, x, y);
     }
 
     @Override
@@ -292,5 +323,10 @@ public class GFrame extends GContainer {
         } else {
             panel.setFocus(null);
         }
+    }
+
+    @Override
+    public String toString() {
+        return title + "/" + super.toString();
     }
 }

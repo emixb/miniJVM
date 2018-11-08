@@ -866,6 +866,36 @@ s32 org_mini_reflect_ReflectArray_mapArray(Runtime *runtime, JClass *clazz) {
     return 0;
 }
 
+s32 org_mini_reflect_ReflectArray_getLength(Runtime *runtime, JClass *clazz) {
+    s32 pos = 0;
+    Instance *jarr = (__refer) (intptr_t) localvar_getLong(runtime->localvar, pos);
+    pos += 2;
+
+    push_int(runtime->stack, (jarr == NULL || jarr->mb.type != MEM_TYPE_ARR) ? 0 : jarr->arr_length);
+
+    return 0;
+}
+
+s32 org_mini_reflect_ReflectArray_getTypeTag(Runtime *runtime, JClass *clazz) {
+    s32 pos = 0;
+    Instance *jarr = (__refer) (intptr_t) localvar_getLong(runtime->localvar, pos);
+    pos += 2;
+
+    push_int(runtime->stack, (jarr == NULL || jarr->mb.type != MEM_TYPE_ARR) ? 0 : (s8) utf8_char_at(jarr->mb.clazz->name, 1));
+
+    return 0;
+}
+
+s32 org_mini_reflect_ReflectArray_getArrayBodyPtr(Runtime *runtime, JClass *clazz) {
+    s32 pos = 0;
+    Instance *jarr = (__refer) (intptr_t) localvar_getLong(runtime->localvar, pos);
+    pos += 2;
+
+    push_long(runtime->stack, (jarr == NULL || jarr->mb.type != MEM_TYPE_ARR) ? 0 : (s64) (intptr_t) jarr->arr_body);
+
+    return 0;
+}
+
 
 s32 org_mini_reflect_DirectMemObj_setVal(Runtime *runtime, JClass *clazz) {
     s32 pos = 0;
@@ -989,6 +1019,56 @@ s32 org_mini_reflect_DirectMemObj_copyTo0(Runtime *runtime, JClass *clazz) {
     return ret;
 }
 
+s32 org_mini_reflect_DirectMemObj_copyFrom0(Runtime *runtime, JClass *clazz) {
+    s32 pos = 0;
+    Instance *dmo = localvar_getRefer(runtime->localvar, pos++);
+    s32 src_off = localvar_getInt(runtime->localvar, pos++);
+    Instance *src = localvar_getRefer(runtime->localvar, pos++);
+    s32 tgt_off = localvar_getInt(runtime->localvar, pos++);
+    s32 copy_len = localvar_getInt(runtime->localvar, pos++);
+
+    __refer memAddr = getFieldRefer(getInstanceFieldPtr(dmo, jvm_runtime_cache.dmo_memAddr));
+    s32 dmo_len = getFieldInt(getInstanceFieldPtr(dmo, jvm_runtime_cache.dmo_length));
+
+    s32 ret = 0;
+    if (src_off + copy_len > src->arr_length
+        || tgt_off + copy_len > dmo_len) {
+        Instance *exception = exception_create(JVM_EXCEPTION_ARRAYINDEXOUTOFBOUNDS, runtime);
+        push_ref(runtime->stack, (__refer) exception);
+        ret = RUNTIME_STATUS_EXCEPTION;
+    } else {
+        s32 bytes = data_type_bytes[src->mb.arr_type_index];
+        memcpy((c8 *) memAddr + (bytes * tgt_off), (c8 *) src->arr_body + (bytes * src_off), copy_len * (bytes));
+    }
+
+
+#if _JVM_DEBUG_BYTECODE_DETAIL > 5
+    jvm_printf("org_mini_reflect_DirectMemObj_copyFrom0\n");
+#endif
+    return ret;
+}
+
+s32 org_mini_reflect_DirectMemObj_heap_calloc(Runtime *runtime, JClass *clazz) {
+    s32 pos = 0;
+    s32 size = localvar_getInt(runtime->localvar, pos++);
+
+    __refer ptr = jvm_calloc(size);
+
+    push_long(runtime->stack, (s64) (intptr_t) ptr);
+
+    return 0;
+}
+
+s32 org_mini_reflect_DirectMemObj_heap_free(Runtime *runtime, JClass *clazz) {
+    s32 pos = 0;
+    __refer ptr = (__refer) (intptr_t) localvar_getLong(runtime->localvar, pos);
+    pos += 2;
+
+    jvm_free(ptr);
+
+    return 0;
+}
+
 
 static java_native_method method_jdwp_table[] = {
         {"org/mini/reflect/vm/RefNative",  "refIdSize",             "()I",                                                              org_mini_reflect_vm_RefNative_refIdSize},
@@ -1019,11 +1099,17 @@ static java_native_method method_jdwp_table[] = {
         {"org/mini/reflect/ReflectMethod", "findMethod0",           "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)J",        org_mini_reflect_ReflectMethod_findMethod0},
         {"org/mini/reflect/StackFrame",    "mapRuntime",            "(J)V",                                                             org_mini_reflect_StackFrame_mapRuntime},
         {"org/mini/reflect/ReflectArray",  "mapArray",              "(J)V",                                                             org_mini_reflect_ReflectArray_mapArray},
+        {"org/mini/reflect/ReflectArray",  "getLength",             "(J)I",                                                             org_mini_reflect_ReflectArray_getLength},
+        {"org/mini/reflect/ReflectArray",  "getTypeTag",            "(J)B",                                                             org_mini_reflect_ReflectArray_getTypeTag},
+        {"org/mini/reflect/ReflectArray",  "getBodyPtr",            "(J)J",                                                             org_mini_reflect_ReflectArray_getArrayBodyPtr},
         {"org/mini/reflect/ReflectArray",  "newArray",              "(Ljava/lang/Class;I)Ljava/lang/Object;",                           org_mini_reflect_ReflectArray_newArray},
         {"org/mini/reflect/ReflectArray",  "multiNewArray",         "(Ljava/lang/Class;[I)Ljava/lang/Object;",                          org_mini_reflect_ReflectArray_multiNewArray},
         {"org/mini/reflect/DirectMemObj",  "setVal",                "(IJ)V",                                                            org_mini_reflect_DirectMemObj_setVal},
         {"org/mini/reflect/DirectMemObj",  "getVal",                "(I)J",                                                             org_mini_reflect_DirectMemObj_getVal},
         {"org/mini/reflect/DirectMemObj",  "copyTo0",               "(ILjava/lang/Object;II)V",                                         org_mini_reflect_DirectMemObj_copyTo0},
+        {"org/mini/reflect/DirectMemObj",  "copyFrom0",             "(ILjava/lang/Object;II)V",                                         org_mini_reflect_DirectMemObj_copyFrom0},
+        {"org/mini/reflect/DirectMemObj",  "heap_calloc",           "(I)J",                                                             org_mini_reflect_DirectMemObj_heap_calloc},
+        {"org/mini/reflect/DirectMemObj",  "heap_free",             "(J)V",                                                             org_mini_reflect_DirectMemObj_heap_free},
 
 };
 

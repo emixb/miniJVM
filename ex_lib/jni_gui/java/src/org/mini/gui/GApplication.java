@@ -3,15 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.mini.gui.event;
+package org.mini.gui;
 
-import org.mini.gui.GObject;
+import org.mini.gui.impl.GuiCallBack;
 
 /**
  *
- * @author gust
+ * @author Gust
  */
-public interface GActionListener extends GListener {
+public interface GApplication {
 
-    void action(GObject gobj);
+    GForm createdForm( GuiCallBack ccb);
 }

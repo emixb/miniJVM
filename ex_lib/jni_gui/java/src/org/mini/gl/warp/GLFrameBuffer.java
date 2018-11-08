@@ -8,7 +8,7 @@ package org.mini.gl.warp;
 import org.mini.gl.GL;
 import static org.mini.gl.GL.GL_CLAMP;
 import static org.mini.gl.GL.GL_COLOR_ATTACHMENT0;
-import static org.mini.gl.GL.GL_DEPTH24_STENCIL8;
+import static org.mini.gl.GL.GL_DEPTH_COMPONENT24;
 import static org.mini.gl.GL.GL_DEPTH_STENCIL_ATTACHMENT;
 import static org.mini.gl.GL.GL_FRAMEBUFFER;
 import static org.mini.gl.GL.GL_FRAMEBUFFER_BINDING;
@@ -18,6 +18,7 @@ import static org.mini.gl.GL.GL_MODELVIEW;
 import static org.mini.gl.GL.GL_PROJECTION;
 import static org.mini.gl.GL.GL_RENDERBUFFER;
 import static org.mini.gl.GL.GL_RGB;
+import static org.mini.gl.GL.GL_RGBA8;
 import static org.mini.gl.GL.GL_TEXTURE_2D;
 import static org.mini.gl.GL.GL_TEXTURE_MAG_FILTER;
 import static org.mini.gl.GL.GL_TEXTURE_MIN_FILTER;
@@ -56,9 +57,12 @@ public class GLFrameBuffer {
     int texture_w = 512;
     int texture_h = 512;
     int[] fbo = {0};        // FBO对象的句柄
-    int[] render_buffer = {0};
+    int[] render_buffer = {0, 0};
     int[] rendertarget = {0};        // 纹理对象的句柄
     int[] curFrameBuffer = {0};
+
+    static final int RBUF_COLOR = 0;
+    static final int RBUF_DEPTH = 0;
 
     public GLFrameBuffer(int w, int h) {
         texture_w = w;
@@ -68,10 +72,6 @@ public class GLFrameBuffer {
 
     // 初始化几何形体
     public void create() {
-        // 创建FBO对象
-        glGenFramebuffers(1, fbo, 0);
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo[0]);
-
         // 创建纹理
         glGenTextures(1, rendertarget, 0);
         glBindTexture(GL_TEXTURE_2D, rendertarget[0]);
@@ -83,11 +83,18 @@ public class GLFrameBuffer {
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rendertarget[0], 0);
 
         //创建深度缓冲区
-        glGenRenderbuffers(1, render_buffer, 0);
-        glBindRenderbuffer(GL_RENDERBUFFER, render_buffer[0]);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, texture_w, texture_h);
+        glGenRenderbuffers(fbo.length, fbo, 0);
+        glBindRenderbuffer(GL_RENDERBUFFER, render_buffer[RBUF_COLOR]);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, texture_w, texture_h);
+        glBindRenderbuffer(GL_RENDERBUFFER, render_buffer[RBUF_DEPTH]);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, texture_w, texture_h);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, render_buffer[0]); // now actually attach it
 
+        // 创建FBO对象
+        glGenFramebuffers(1, fbo, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo[0]);
+
+        //
         int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if (status != GL_FRAMEBUFFER_COMPLETE) {
             System.out.println("framebuffer object error.");

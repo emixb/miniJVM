@@ -8,27 +8,24 @@ package org.mini.nanovg;
 import java.io.UnsupportedEncodingException;
 import org.mini.gl.GL;
 import static org.mini.gl.GL.GL_CLAMP_TO_EDGE;
+import static org.mini.gl.GL.GL_LINEAR;
 import static org.mini.gl.GL.GL_LINEAR_MIPMAP_NEAREST;
-import static org.mini.gl.GL.GL_RENDERER;
+import static org.mini.gl.GL.GL_RGB;
 import static org.mini.gl.GL.GL_RGBA;
-import static org.mini.gl.GL.GL_RGBA8;
 import static org.mini.gl.GL.GL_TEXTURE_2D;
 import static org.mini.gl.GL.GL_TEXTURE_MAG_FILTER;
 import static org.mini.gl.GL.GL_TEXTURE_MIN_FILTER;
 import static org.mini.gl.GL.GL_TEXTURE_WRAP_S;
 import static org.mini.gl.GL.GL_TEXTURE_WRAP_T;
 import static org.mini.gl.GL.GL_UNSIGNED_BYTE;
-import static org.mini.gl.GL.GL_VERSION;
-import static org.mini.gl.GL.glBegin;
 import static org.mini.gl.GL.glBindTexture;
 import static org.mini.gl.GL.glGenTextures;
 import static org.mini.gl.GL.glGenerateMipmap;
-import static org.mini.gl.GL.glGetString;
+import static org.mini.gl.GL.glGetError;
 import static org.mini.gl.GL.glTexImage2D;
 import static org.mini.gl.GL.glTexParameterf;
-import static org.mini.nanovg.Nanovg.access_mem;
-import static org.mini.nanovg.Nanovg.stbi_image_free;
 import static org.mini.nanovg.Nanovg.stbi_load;
+import org.mini.reflect.DirectMemObj;
 
 /**
  *
@@ -122,6 +119,15 @@ public class Gutil {
 
     static public native float[] mat4x4_look_at(float[] rm, float[] vec3_eye, float[] vec3_center, float[] vec3_up);
 
+    static public void printMat4(float[] mat4) {
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                System.out.print(" " + mat4[i * 4 + j]);
+            }
+            System.out.println();
+        }
+    }
+
     static public void gluPerspective(double fov, double aspectRatio, double zNear, double zFar) {
         // 使用glu库函数，需要添加glu.h头文件
         //gluPerspective( fov, aspectRatio, zNear, zFar );
@@ -181,24 +187,24 @@ public class Gutil {
     }
 
     static public void drawCood() {
-        GL.glPushMatrix();
-        float len = 1000f;
-        GL.glBegin(GL.GL_LINES);
-        GL.glColor3f(1.f, 0, 0);
-        GL.glVertex3f(0, 0, 0);
-        GL.glVertex3f(len, 0, 0);
-        GL.glEnd();
-        glBegin(GL.GL_LINES);
-        GL.glColor3f(0, 1.f, 0);
-        GL.glVertex3f(0, 0, 0);
-        GL.glVertex3f(0, len, 0);
-        GL.glEnd();
-        glBegin(GL.GL_LINES);
-        GL.glColor3f(0, 0, 1.f);
-        GL.glVertex3f(0, 0, 0);
-        GL.glVertex3f(0, 0, len);
-        GL.glEnd();
-        GL.glPopMatrix();
+//        GL.glPushMatrix();
+//        float len = 1000f;
+//        GL.glBegin(GL.GL_LINES);
+//        GL.glColor3f(1.f, 0, 0);
+//        GL.glVertex3f(0, 0, 0);
+//        GL.glVertex3f(len, 0, 0);
+//        GL.glEnd();
+//        glBegin(GL.GL_LINES);
+//        GL.glColor3f(0, 1.f, 0);
+//        GL.glVertex3f(0, 0, 0);
+//        GL.glVertex3f(0, len, 0);
+//        GL.glEnd();
+//        glBegin(GL.GL_LINES);
+//        GL.glColor3f(0, 0, 1.f);
+//        GL.glVertex3f(0, 0, 0);
+//        GL.glVertex3f(0, 0, len);
+//        GL.glEnd();
+//        GL.glPopMatrix();
     }
 
     public static byte[] toUtf8(String s) {
@@ -219,6 +225,45 @@ public class Gutil {
         return barr;
     }
 
+    public static byte[] image_load_data(String filename, int[] w_h_d) {
+        int[] x = {0}, y = {0}, n = {0};
+        byte[] b = toUtf8(filename);
+        long data = stbi_load(b, x, y, n, 4);
+        if (data == 0) {
+            System.out.println("ERROR: failed to load image: " + filename);
+            return null;
+        }
+        n[0] = 4;
+        DirectMemObj dmo = new DirectMemObj(data, x[0] * y[0] * n[0]);
+        w_h_d[0] = x[0];
+        w_h_d[1] = y[0];
+        w_h_d[2] = n[0];
+
+        //find pow 2
+        int w = x[0];
+        int h = y[0];
+        int de = n[0];
+//        int align = 16;
+//        while (w > align && h > align) {
+//            align <<= 1;
+//        }
+//        byte[] d = new byte[align * align * n[0]];
+        byte[] d = new byte[w * h * de];
+
+        int lineCount = w * de;
+        for (int i = 0; i < h; i++) {
+            dmo.copyTo(i * lineCount, d, i * lineCount, lineCount);
+        }
+        return d;
+    }
+
+    public static void checkGlError(String tag) {
+        int err = glGetError();
+        if (err != 0) {
+            System.out.println("gl error tag:" + tag + "  " + err);
+        }
+    }
+
     /**
      * load image return opengl GL_TEXTURE_2D id
      *
@@ -227,34 +272,74 @@ public class Gutil {
      * @return
      */
     public static int image_load(String filename, int[] w_h_d) {
-        int[] x = {0}, y = {0}, n = {0};
-        int[] tex = {0};
-        byte[] b = toUtf8(filename);
-        long data = stbi_load(b, x, y, n, 0);
-        if (data == 0) {
-            System.out.println("ERROR: failed to load image: " + filename);
-            return -1;
-        }
-        w_h_d[0] = x[0];
-        w_h_d[1] = y[0];
-        w_h_d[2] = n[0];
-        byte[] d = new byte[x[0] * y[0] * n[0]];
-        for (int i = 0, imax = d.length; i < imax; i++) {
-            d[i] = access_mem(data + i);
-        }
+
+        byte[] d = image_load_data(filename, w_h_d);
+
+        int tex[] = {0};
         glGenTextures(1, tex, 0);
         glBindTexture(GL_TEXTURE_2D, tex[0]);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        GL.glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, x[0], y[0], 0, GL_RGBA, GL_UNSIGNED_BYTE, d, 0);
-//        glGenerateMipmap(GL_TEXTURE_2D);
+        Gutil.checkGlError("texture bind");
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        Gutil.checkGlError("texture para 1");
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        Gutil.checkGlError("texture para 2");
+//        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//        Gutil.checkGlError("texture para 3");
+//        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//        Gutil.checkGlError("texture para 4");
+        GL.glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w_h_d[0], w_h_d[1], 0, w_h_d[2] < 4 ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, d, 0);
+        Gutil.checkGlError("texture 2d");
 //    printf("x=%d,y=%d,n=%d\n", x, y, n);
 
-        stbi_image_free(data);
         return tex[0];
     }
+//
+//    public static int image_load_data(byte[] fileCont, int[] w_h_d) {
+//        int[] x = {0}, y = {0}, n = {0};
+//        int[] tex = {0};
+//        long ptr = new ReflectArray(RefNative.obj2id(fileCont)).getDataPtr();
+//        long data = Nanovg.stbi_load_from_memory(ptr, fileCont.length, x, y, n, 0);
+//        if (data == 0) {
+//            System.out.println("ERROR: failed to load image: " + fileCont);
+//            return -1;
+//        }
+//        w_h_d[0] = x[0];
+//        w_h_d[1] = y[0];
+//        w_h_d[2] = n[0];
+//
+//        //find pow 2
+//        int w = x[0];
+//        int h = y[0];
+//        int de = n[0];
+//        int align = 16;
+//        while (w > align && h > align) {
+//            align <<= 1;
+//        }
+//        byte[] d = new byte[align * align * n[0]];
+//        for (int i = 0; i < h; i++) {
+//            for (int j = 0; j < w; j++) {
+//                for (int k = 0; k < de; k++) {
+//                    int srcPos = i * h * k + j * k + k;
+//                    int dstPos = i * align * k + j * k + k;
+//                    d[dstPos] = access_mem(data + srcPos);
+//                }
+//            }
+//        }
+//
+//        glGenTextures(1, tex, 0);
+//        glBindTexture(GL_TEXTURE_2D, tex[0]);
+//        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+//        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+//        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//        GL.glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, x[0], y[0], 0, GL_RGBA, GL_UNSIGNED_BYTE, d, 0);
+////        glGenerateMipmap(GL_TEXTURE_2D);
+////    printf("x=%d,y=%d,n=%d\n", x, y, n);
+//
+//        stbi_image_free(data);
+//        return tex[0];
+//
+//    }
 
     static public int genTexture2D(byte[] data, int w, int h, int gl_inner_format, int gl_format) {
         int[] tex = {0};
@@ -277,17 +362,17 @@ public class Gutil {
     }
 
     static public void printGlVersion() {
-        byte[] b;
-        String name = new String(glGetString(GL.GL_VENDOR)); //返回负责当前OpenGL实现厂商的名字
-        String biaoshifu = new String(glGetString(GL_RENDERER)); //返回一个渲染器标识符，通常是个硬件平台
-        String OpenGLVersion = new String(glGetString(GL_VERSION)); //返回当前OpenGL实现的版本号
-        b = glGetString(GL.GL_MAJOR_VERSION);
-        String majorVersion = b == null ? "" : new String(b);
-        b = glGetString(GL.GL_MINOR_VERSION);
-        String minorVersion = b == null ? "" : new String(b);
-        System.out.println("OpenGL vendor：" + name);
-        System.out.println("OpenGL renderer：" + biaoshifu);
-        System.out.println("OpenGL version：" + OpenGLVersion);
-        System.out.println("OpenGL version：" + majorVersion + "." + minorVersion);
+//        byte[] b;
+//        String name = new String(glGetString(GL.GL_VENDOR)); //返回负责当前OpenGL实现厂商的名字
+//        String biaoshifu = new String(glGetString(GL_RENDERER)); //返回一个渲染器标识符，通常是个硬件平台
+//        String OpenGLVersion = new String(glGetString(GL_VERSION)); //返回当前OpenGL实现的版本号
+//        b = glGetString(GL.GL_MAJOR_VERSION);
+//        String majorVersion = b == null ? "" : new String(b);
+//        b = glGetString(GL.GL_MINOR_VERSION);
+//        String minorVersion = b == null ? "" : new String(b);
+//        System.out.println("OpenGL vendor：" + name);
+//        System.out.println("OpenGL renderer：" + biaoshifu);
+//        System.out.println("OpenGL version：" + OpenGLVersion);
+//        System.out.println("OpenGL version：" + majorVersion + "." + minorVersion);
     }
 }

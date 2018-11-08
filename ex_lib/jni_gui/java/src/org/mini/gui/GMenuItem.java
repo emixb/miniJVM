@@ -30,6 +30,8 @@ public class GMenuItem extends GObject {
     float[] lineh = new float[1];
     boolean touched = false;
 
+    int redPoint;
+
     GMenuItem(String t, GImage i, GMenu _parent) {
         tag = t;
         img = i;
@@ -37,16 +39,45 @@ public class GMenuItem extends GObject {
 
     }
 
+    public int getType() {
+        return TYPE_MENUITEM;
+    }
+
+    boolean isSelected() {
+        if (parent instanceof GMenu) {
+            GMenu menu = (GMenu) parent;
+            if (menu.getElements().indexOf(this) == menu.selectedIndex) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void setSelected() {
+        if (parent instanceof GMenu) {
+            GMenu menu = (GMenu) parent;
+            menu.selectedIndex = menu.getElements().indexOf(this);
+        }
+    }
+
+    public void addNewMsgCount(int count) {
+        redPoint += count;
+    }
+
+    public void clearMsgNewCount() {
+        redPoint = 0;
+    }
+
     @Override
     public void mouseButtonEvent(int button, boolean pressed, int x, int y) {
         if (isInArea(x, y)) {
             if (pressed && button == Glfw.GLFW_MOUSE_BUTTON_1) {
                 touched = true;
-            } else if (!pressed && button == Glfw.GLFW_MOUSE_BUTTON_1) {
-                touched = false;
                 if (actionListener != null) {
                     actionListener.action(this);
                 }
+            } else if (!pressed && button == Glfw.GLFW_MOUSE_BUTTON_1) {
+                touched = false;
             }
         }
 
@@ -57,11 +88,12 @@ public class GMenuItem extends GObject {
         if (isInArea(x, y)) {
             if (phase == Glfm.GLFMTouchPhaseBegan) {
                 touched = true;
-            } else if (phase == Glfm.GLFMTouchPhaseEnded) {
-                touched = false;
                 if (actionListener != null) {
                     actionListener.action(this);
+                    clearMsgNewCount();
                 }
+            } else if (phase == Glfm.GLFMTouchPhaseEnded) {
+                touched = false;
             }
         }
 
@@ -70,20 +102,20 @@ public class GMenuItem extends GObject {
     public boolean update(long vg) {
 
         float cornerRadius = 4.0f;
-        
+
         nvgTextMetrics(vg, null, null, lineh);
 
         //touched item background
         if (touched) {
             nvgFillColor(vg, nvgRGBA(255, 255, 255, 48));
             nvgBeginPath(vg);
-            nvgRoundedRect(vg, getViewX() + 1, getViewY() + 1, getViewW() - 2, getViewH() - 2, cornerRadius - 0.5f);
+            nvgRoundedRect(vg, getX() + 1, getY() + 1, getW() - 2, getH() - 2, cornerRadius - 0.5f);
             nvgFill(vg);
             //System.out.println("draw touched");
-
+            touched = false;
         }
 
-        float pad = 5;
+        float pad = 2;
         byte[] imgPaint;
         float dx = getX();
         float dy = getY();
@@ -94,14 +126,14 @@ public class GMenuItem extends GObject {
 
         if (img != null) {
             if (tag != null) {
-                img_h = dh * .7f - pad - lineh[0];
+                img_h = dh * .85f - pad - lineh[0];
                 img_x = dx + dw / 2 - img_h / 2;
                 img_w = img_h;
                 img_y = dy + dh * .2f;
                 tag_x = dx + dw / 2;
                 tag_y = img_y + img_h + pad + lineh[0] / 2;
             } else {
-                img_h = dh * .7f - pad - lineh[0];
+                img_h = dh * .85f - pad;
                 img_x = dx + dw / 2 - img_h / 2;
                 img_w = img_h;
                 img_y = dy + dh / 2 - img_h / 2;
@@ -112,6 +144,10 @@ public class GMenuItem extends GObject {
         }
         //画图
         if (img != null) {
+            float alpha = 1.f;
+            if (!isSelected()) {
+                alpha = 0.5f;
+            }
             imgPaint = nvgImagePattern(vg, img_x, img_y, img_w, img_h, 0.0f / 180.0f * (float) Math.PI, img.getTexture(), 0.8f);
             nvgBeginPath(vg);
             nvgRoundedRect(vg, img_x, img_y, img_w, img_h, 5);
@@ -127,6 +163,9 @@ public class GMenuItem extends GObject {
             Nanovg.nvgTextJni(vg, tag_x, tag_y, b, 0, b.length);
         }
 
+        if (redPoint > 0) {
+            GToolkit.drawRedPoint(vg, redPoint > 99 ? "..." : Integer.toString(redPoint), dx + dw * .7f, dy + dh * .5f - 10, 12f);
+        }
         return true;
     }
 }

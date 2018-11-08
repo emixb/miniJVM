@@ -312,8 +312,15 @@ enum {
     RUNTIME_STATUS_INTERRUPT,
 };
 
+//指令指行返回状态
+enum {
+    JVM_STATUS_UNKNOW,
+    JVM_STATUS_INITING,
+    JVM_STATUS_RUNNING,
+    JVM_STATUS_STOPED,
+};
 //======================= global var =============================
-extern s32 jvm_init_flag;
+extern s32 jvm_state;
 
 extern ClassLoader *sys_classloader;
 
@@ -327,6 +334,9 @@ extern Hashtable *sys_prop;
 
 extern s32 STACK_LENGHT;
 
+int get_jvm_state();
+
+void set_jvm_state(int state);
 
 //==============profile============
 #if _JVM_DEBUG_PROFILE
@@ -1348,6 +1358,31 @@ struct _JNIENV {
     void (*garbage_refer_hold)(__refer ref);
 
     void (*garbage_refer_release)(__refer ref);
+
+    Runtime *(*runtime_create)(Runtime *parent);
+
+    void (*runtime_destory)(Runtime *runtime);
+
+    Runtime *(*getLastSon)(Runtime *top);
+
+    void (*thread_boundle)(Runtime *runtime);
+
+    void (*thread_unboundle)(Runtime *runtime);
+
+    thrd_t (*thrd_current)(void);
+
+    Pairlist *(*pairlist_create)(s32 len);
+
+    __refer (*pairlist_get)(Pairlist *list, __refer left);
+
+    s32 (*pairlist_put)(Pairlist *list, __refer left, __refer right);
+
+    s32 (*jthread_get_daemon_value)(Instance *ins, Runtime *runtime);
+
+    void (*jthread_set_daemon_value)(Instance *ins, Runtime *runtime, s32 daemon);
+
+    s32 (*get_jvm_state)();
+
 };
 
 

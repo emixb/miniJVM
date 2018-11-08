@@ -39,7 +39,7 @@ public final class Array {
      * </blockquote>
      *
      * @param componentType the <code>Class</code> object representing the
- component typeTag of the new array
+     * component typeTag of the new array
      * @param length the length of the new array
      * @return the new array
      * @exception NullPointerException if the specified
@@ -54,22 +54,22 @@ public final class Array {
     }
 
     /**
-     * Creates a new array with the specified component typeTag and dimensions. If
-     * <code>componentType</code> represents a non-array class or interface, the
-     * new array has <code>dimensions.length</code> dimensions and&nbsp;
+     * Creates a new array with the specified component typeTag and dimensions.
+     * If <code>componentType</code> represents a non-array class or interface,
+     * the new array has <code>dimensions.length</code> dimensions and&nbsp;
      * <code>componentType&nbsp;</code> as its component typeTag. If
- <code>componentType</code> represents an array class, the number of
+     * <code>componentType</code> represents an array class, the number of
      * dimensions of the new array is equal to the sum of
      * <code>dimensions.length</code> and the number of dimensions of
-     * <code>componentType</code>. In this case, the component typeTag of the new
- array is the component typeTag of <code>componentType</code>.
+     * <code>componentType</code>. In this case, the component typeTag of the
+     * new array is the component typeTag of <code>componentType</code>.
      *
      * <p>
      * The number of dimensions of the new array must not exceed the number of
      * array dimensions supported by the implementation (typically 255).
      *
      * @param componentType the <code>Class</code> object representing the
- component typeTag of the new array
+     * component typeTag of the new array
      * @param dimensions an array of <code>int</code> types representing the
      * dimensions of the new array
      * @return the new array
@@ -98,14 +98,13 @@ public final class Array {
      */
     public static int getLength(Object array)
             throws IllegalArgumentException {
-        ReflectArray ra = new ReflectArray(RefNative.obj2id(array));
-        return ra.length;
+        return ReflectArray.getLength(RefNative.obj2id(array));
     }
 
     /**
      * Returns the value of the indexed component in the specified array object.
      * The value is automatically wrapped in an object if it has a primitive
- typeTag.
+     * typeTag.
      *
      * @param array the array
      * @param index the index
@@ -132,9 +131,9 @@ public final class Array {
      * @param index the index
      * @return the value of the indexed component in the specified array
      * @exception NullPointerException If the specified object is null
-     * @throws IllegalArgumentException If the specified object is not an
- array, or if the indexed element cannot be converted to the return typeTag
- by an identity or widening conversion
+     * @throws IllegalArgumentException If the specified object is not an array,
+     * or if the indexed element cannot be converted to the return typeTag by an
+     * identity or widening conversion
      * @exception ArrayIndexOutOfBoundsException If the specified
      * <code>index</code> argument is negative, or if it is greater than or
      * equal to the length of the specified array
@@ -154,9 +153,9 @@ public final class Array {
      * @param index the index
      * @return the value of the indexed component in the specified array
      * @exception NullPointerException If the specified object is null
-     * @throws IllegalArgumentException If the specified object is not an
- array, or if the indexed element cannot be converted to the return typeTag
- by an identity or widening conversion
+     * @throws IllegalArgumentException If the specified object is not an array,
+     * or if the indexed element cannot be converted to the return typeTag by an
+     * identity or widening conversion
      * @exception ArrayIndexOutOfBoundsException If the specified
      * <code>index</code> argument is negative, or if it is greater than or
      * equal to the length of the specified array
@@ -176,9 +175,9 @@ public final class Array {
      * @param index the index
      * @return the value of the indexed component in the specified array
      * @exception NullPointerException If the specified object is null
-     * @throws IllegalArgumentException If the specified object is not an
- array, or if the indexed element cannot be converted to the return typeTag
- by an identity or widening conversion
+     * @throws IllegalArgumentException If the specified object is not an array,
+     * or if the indexed element cannot be converted to the return typeTag by an
+     * identity or widening conversion
      * @exception ArrayIndexOutOfBoundsException If the specified
      * <code>index</code> argument is negative, or if it is greater than or
      * equal to the length of the specified array
@@ -198,9 +197,9 @@ public final class Array {
      * @param index the index
      * @return the value of the indexed component in the specified array
      * @exception NullPointerException If the specified object is null
-     * @throws IllegalArgumentException If the specified object is not an
- array, or if the indexed element cannot be converted to the return typeTag
- by an identity or widening conversion
+     * @throws IllegalArgumentException If the specified object is not an array,
+     * or if the indexed element cannot be converted to the return typeTag by an
+     * identity or widening conversion
      * @exception ArrayIndexOutOfBoundsException If the specified
      * <code>index</code> argument is negative, or if it is greater than or
      * equal to the length of the specified array
@@ -220,9 +219,9 @@ public final class Array {
      * @param index the index
      * @return the value of the indexed component in the specified array
      * @exception NullPointerException If the specified object is null
-     * @throws IllegalArgumentException If the specified object is not an
- array, or if the indexed element cannot be converted to the return typeTag
- by an identity or widening conversion
+     * @throws IllegalArgumentException If the specified object is not an array,
+     * or if the indexed element cannot be converted to the return typeTag by an
+     * identity or widening conversion
      * @exception ArrayIndexOutOfBoundsException If the specified
      * <code>index</code> argument is negative, or if it is greater than or
      * equal to the length of the specified array
@@ -242,9 +241,9 @@ public final class Array {
      * @param index the index
      * @return the value of the indexed component in the specified array
      * @exception NullPointerException If the specified object is null
-     * @throws IllegalArgumentException If the specified object is not an
- array, or if the indexed element cannot be converted to the return typeTag
- by an identity or widening conversion
+     * @throws IllegalArgumentException If the specified object is not an array,
+     * or if the indexed element cannot be converted to the return typeTag by an
+     * identity or widening conversion
      * @exception ArrayIndexOutOfBoundsException If the specified
      * <code>index</code> argument is negative, or if it is greater than or
      * equal to the length of the specified array
@@ -264,9 +263,9 @@ public final class Array {
      * @param index the index
      * @return the value of the indexed component in the specified array
      * @exception NullPointerException If the specified object is null
-     * @throws IllegalArgumentException If the specified object is not an
- array, or if the indexed element cannot be converted to the return typeTag
- by an identity or widening conversion
+     * @throws IllegalArgumentException If the specified object is not an array,
+     * or if the indexed element cannot be converted to the return typeTag by an
+     * identity or widening conversion
      * @exception ArrayIndexOutOfBoundsException If the specified
      * <code>index</code> argument is negative, or if it is greater than or
      * equal to the length of the specified array
@@ -286,9 +285,9 @@ public final class Array {
      * @param index the index
      * @return the value of the indexed component in the specified array
      * @exception NullPointerException If the specified object is null
-     * @throws IllegalArgumentException If the specified object is not an
- array, or if the indexed element cannot be converted to the return typeTag
- by an identity or widening conversion
+     * @throws IllegalArgumentException If the specified object is not an array,
+     * or if the indexed element cannot be converted to the return typeTag by an
+     * identity or widening conversion
      * @exception ArrayIndexOutOfBoundsException If the specified
      * <code>index</code> argument is negative, or if it is greater than or
      * equal to the length of the specified array
@@ -303,15 +302,15 @@ public final class Array {
     /**
      * Sets the value of the indexed component of the specified array object to
      * the specified new value. The new value is first automatically unwrapped
- if the array has a primitive component typeTag.
+     * if the array has a primitive component typeTag.
      *
      * @param array the array
      * @param index the index into the array
      * @param value the new value of the indexed component
      * @exception NullPointerException If the specified object argument is null
-     * @throws IllegalArgumentException If the specified object argument is
- not an array, or if the array component typeTag is primitive and an
- unwrapping conversion fails
+     * @throws IllegalArgumentException If the specified object argument is not
+     * an array, or if the array component typeTag is primitive and an
+     * unwrapping conversion fails
      * @exception ArrayIndexOutOfBoundsException If the specified
      * <code>index</code> argument is negative, or if it is greater than or
      * equal to the length of the specified array
@@ -330,10 +329,10 @@ public final class Array {
      * @param index the index into the array
      * @param z the new value of the indexed component
      * @exception NullPointerException If the specified object argument is null
-     * @throws IllegalArgumentException If the specified object argument is
- not an array, or if the specified value cannot be converted to the
- underlying array's component typeTag by an identity or a primitive widening
- conversion
+     * @throws IllegalArgumentException If the specified object argument is not
+     * an array, or if the specified value cannot be converted to the underlying
+     * array's component typeTag by an identity or a primitive widening
+     * conversion
      * @exception ArrayIndexOutOfBoundsException If the specified
      * <code>index</code> argument is negative, or if it is greater than or
      * equal to the length of the specified array
@@ -353,10 +352,10 @@ public final class Array {
      * @param index the index into the array
      * @param b the new value of the indexed component
      * @exception NullPointerException If the specified object argument is null
-     * @throws IllegalArgumentException If the specified object argument is
- not an array, or if the specified value cannot be converted to the
- underlying array's component typeTag by an identity or a primitive widening
- conversion
+     * @throws IllegalArgumentException If the specified object argument is not
+     * an array, or if the specified value cannot be converted to the underlying
+     * array's component typeTag by an identity or a primitive widening
+     * conversion
      * @exception ArrayIndexOutOfBoundsException If the specified
      * <code>index</code> argument is negative, or if it is greater than or
      * equal to the length of the specified array
@@ -376,10 +375,10 @@ public final class Array {
      * @param index the index into the array
      * @param c the new value of the indexed component
      * @exception NullPointerException If the specified object argument is null
-     * @throws IllegalArgumentException If the specified object argument is
- not an array, or if the specified value cannot be converted to the
- underlying array's component typeTag by an identity or a primitive widening
- conversion
+     * @throws IllegalArgumentException If the specified object argument is not
+     * an array, or if the specified value cannot be converted to the underlying
+     * array's component typeTag by an identity or a primitive widening
+     * conversion
      * @exception ArrayIndexOutOfBoundsException If the specified
      * <code>index</code> argument is negative, or if it is greater than or
      * equal to the length of the specified array
@@ -399,10 +398,10 @@ public final class Array {
      * @param index the index into the array
      * @param s the new value of the indexed component
      * @exception NullPointerException If the specified object argument is null
-     * @throws IllegalArgumentException If the specified object argument is
- not an array, or if the specified value cannot be converted to the
- underlying array's component typeTag by an identity or a primitive widening
- conversion
+     * @throws IllegalArgumentException If the specified object argument is not
+     * an array, or if the specified value cannot be converted to the underlying
+     * array's component typeTag by an identity or a primitive widening
+     * conversion
      * @exception ArrayIndexOutOfBoundsException If the specified
      * <code>index</code> argument is negative, or if it is greater than or
      * equal to the length of the specified array
@@ -422,10 +421,10 @@ public final class Array {
      * @param index the index into the array
      * @param i the new value of the indexed component
      * @exception NullPointerException If the specified object argument is null
-     * @throws IllegalArgumentException If the specified object argument is
- not an array, or if the specified value cannot be converted to the
- underlying array's component typeTag by an identity or a primitive widening
- conversion
+     * @throws IllegalArgumentException If the specified object argument is not
+     * an array, or if the specified value cannot be converted to the underlying
+     * array's component typeTag by an identity or a primitive widening
+     * conversion
      * @exception ArrayIndexOutOfBoundsException If the specified
      * <code>index</code> argument is negative, or if it is greater than or
      * equal to the length of the specified array
@@ -445,10 +444,10 @@ public final class Array {
      * @param index the index into the array
      * @param l the new value of the indexed component
      * @exception NullPointerException If the specified object argument is null
-     * @throws IllegalArgumentException If the specified object argument is
- not an array, or if the specified value cannot be converted to the
- underlying array's component typeTag by an identity or a primitive widening
- conversion
+     * @throws IllegalArgumentException If the specified object argument is not
+     * an array, or if the specified value cannot be converted to the underlying
+     * array's component typeTag by an identity or a primitive widening
+     * conversion
      * @exception ArrayIndexOutOfBoundsException If the specified
      * <code>index</code> argument is negative, or if it is greater than or
      * equal to the length of the specified array
@@ -468,10 +467,10 @@ public final class Array {
      * @param index the index into the array
      * @param f the new value of the indexed component
      * @exception NullPointerException If the specified object argument is null
-     * @throws IllegalArgumentException If the specified object argument is
- not an array, or if the specified value cannot be converted to the
- underlying array's component typeTag by an identity or a primitive widening
- conversion
+     * @throws IllegalArgumentException If the specified object argument is not
+     * an array, or if the specified value cannot be converted to the underlying
+     * array's component typeTag by an identity or a primitive widening
+     * conversion
      * @exception ArrayIndexOutOfBoundsException If the specified
      * <code>index</code> argument is negative, or if it is greater than or
      * equal to the length of the specified array
@@ -491,10 +490,10 @@ public final class Array {
      * @param index the index into the array
      * @param d the new value of the indexed component
      * @exception NullPointerException If the specified object argument is null
-     * @throws IllegalArgumentException If the specified object argument is
- not an array, or if the specified value cannot be converted to the
- underlying array's component typeTag by an identity or a primitive widening
- conversion
+     * @throws IllegalArgumentException If the specified object argument is not
+     * an array, or if the specified value cannot be converted to the underlying
+     * array's component typeTag by an identity or a primitive widening
+     * conversion
      * @exception ArrayIndexOutOfBoundsException If the specified
      * <code>index</code> argument is negative, or if it is greater than or
      * equal to the length of the specified array
@@ -505,7 +504,5 @@ public final class Array {
         ReflectArray ra = new ReflectArray(RefNative.obj2id(array));
         ra.setValObj(index, (Double) d);
     }
-
-    
 
 }

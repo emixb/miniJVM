@@ -7,16 +7,12 @@ package org.mini.gui;
 
 import static org.mini.gui.GObject.LEFT;
 import static org.mini.nanovg.Gutil.toUtf8;
-import org.mini.nanovg.Nanovg;
 import static org.mini.nanovg.Nanovg.NVG_ALIGN_LEFT;
 import static org.mini.nanovg.Nanovg.NVG_ALIGN_MIDDLE;
 import static org.mini.nanovg.Nanovg.NVG_ALIGN_TOP;
 import static org.mini.nanovg.Nanovg.nvgFillColor;
 import static org.mini.nanovg.Nanovg.nvgFontFace;
 import static org.mini.nanovg.Nanovg.nvgFontSize;
-import static org.mini.nanovg.Nanovg.nvgResetScissor;
-import static org.mini.nanovg.Nanovg.nvgSave;
-import static org.mini.nanovg.Nanovg.nvgScissor;
 import static org.mini.nanovg.Nanovg.nvgTextAlign;
 import static org.mini.nanovg.Nanovg.nvgTextBoxBoundsJni;
 import static org.mini.nanovg.Nanovg.nvgTextBoxJni;
@@ -32,10 +28,28 @@ public class GLabel extends GObject {
     byte[] text_arr;
     char preicon;
 
+    int align = NVG_ALIGN_LEFT | NVG_ALIGN_TOP;
+
+    public GLabel() {
+
+    }
+
     public GLabel(String text, int left, int top, int width, int height) {
+        this(text, (float) left, top, width, height);
+    }
+
+    public GLabel(String text, float left, float top, float width, float height) {
         setText(text);
         setLocation(left, top);
         setSize(width, height);
+    }
+
+    public int getType() {
+        return TYPE_LABEL;
+    }
+
+    public void setAlign(int ali) {
+        align = ali;
     }
 
     public final void setText(String text) {
@@ -68,7 +82,7 @@ public class GLabel extends GObject {
         nvgFontFace(vg, GToolkit.getFontWord());
         nvgFillColor(vg, GToolkit.getStyle().getTextFontColor());
 
-        nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
+        nvgTextAlign(vg, align);
         nvgTextJni(vg, x, y + h * 0.5f, text_arr, 0, text_arr.length);
 
     }
@@ -79,22 +93,23 @@ public class GLabel extends GObject {
         nvgFillColor(vg, GToolkit.getStyle().getTextFontColor());
         nvgFontFace(vg, GToolkit.getFontWord());
 
-        nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_TOP);
+        nvgTextAlign(vg, align);
         float[] text_area = new float[]{x + 2f, y + 2f, w - 4f, h - 4f};
         float dx = text_area[LEFT];
         float dy = text_area[TOP];
 
-        float[] bond = new float[4];
-        nvgTextBoxBoundsJni(vg, text_area[LEFT], text_area[TOP], text_area[WIDTH], text_arr, 0, text_arr.length, bond);
-        bond[WIDTH] -= bond[LEFT];
-        bond[HEIGHT] -= bond[TOP];
-        bond[LEFT] = bond[TOP] = 0;
+        if (text_arr != null) {
+            float[] bond = new float[4];
+            nvgTextBoxBoundsJni(vg, text_area[LEFT], text_area[TOP], text_area[WIDTH], text_arr, 0, text_arr.length, bond);
+            bond[WIDTH] -= bond[LEFT];
+            bond[HEIGHT] -= bond[TOP];
+            bond[LEFT] = bond[TOP] = 0;
 
-        if (bond[HEIGHT] > text_area[HEIGHT]) {
-            dy -= bond[HEIGHT] - text_area[HEIGHT];
+            if (bond[HEIGHT] > text_area[HEIGHT]) {
+                dy -= bond[HEIGHT] - text_area[HEIGHT];
+            }
+            nvgTextBoxJni(vg, dx, dy, text_area[WIDTH], text_arr, 0, text_arr.length);
         }
-        nvgTextBoxJni(vg, dx, dy, text_area[WIDTH], text_arr, 0, text_arr.length);
-
     }
 
 }

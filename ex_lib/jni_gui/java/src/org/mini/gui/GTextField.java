@@ -50,13 +50,25 @@ public class GTextField extends GTextObject {
 
     boolean password = false;//是否密码字段
 
+    public GTextField() {
+
+    }
+
     public GTextField(String text, String hint, int left, int top, int width, int height) {
+        this(text, hint, (float) left, top, width, height);
+    }
+
+    public GTextField(String text, String hint, float left, float top, float width, float height) {
         setText(text);
         setHint(hint);
         setLocation(left, top);
         setSize(width, height);
         reset_boundle = new float[]{left + width - height, top, height, height};
         setFocusListener(this);
+    }
+
+    public int getType() {
+        return TYPE_TEXTFIELD;
     }
 
     public void setBoxStyle(int boxStyle) {
@@ -150,6 +162,7 @@ public class GTextField extends GTextObject {
                 }
             }
         }
+        super.touchEvent(phase, x, y);
     }
 
     @Override
@@ -379,7 +392,7 @@ public class GTextField extends GTextObject {
 
             if (selectStart != -1 && selectEnd != -1) {
 
-                GToolkit.drawRect(vg, text_show_area_x, wordy - lineh[0] / 2, text_show_area_w, lineh[0], GToolkit.getStyle().getSelectedColor());
+                GToolkit.drawRect(vg, text_show_area_x, wordy - lineh[0] * .5f, text_show_area_w, lineh[0], GToolkit.getStyle().getSelectedColor());
 
             }
             nvgFillColor(vg, GToolkit.getStyle().getTextFontColor());

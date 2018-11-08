@@ -5,13 +5,11 @@
  */
 package org.mini.gui.event;
 
-import org.mini.gui.GObject;
-
 /**
  *
- * @author gust
+ * @author Gust
  */
-public interface GActionListener extends GListener {
+public interface GNotifyListener {
 
-    void action(GObject gobj);
+    void onNotify(String key, String val);
 }

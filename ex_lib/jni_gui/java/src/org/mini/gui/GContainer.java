@@ -5,9 +5,7 @@
  */
 package org.mini.gui;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import org.mini.glfm.Glfm;
 import org.mini.nanovg.Nanovg;
@@ -20,31 +18,47 @@ import static org.mini.nanovg.Nanovg.nvgScissor;
  */
 abstract public class GContainer extends GObject {
 
-    LinkedList<GObject> elements = new LinkedList();
+    final List<GObject> elements = new ArrayList();
+    private final List<GMenu> menus = new ArrayList();
+    private final List<GObject> fronts = new ArrayList();
     GObject focus;
 
-    //异步添加删除form
-    List<AddRemoveItem> cache = Collections.synchronizedList(new LinkedList());
-    List<AddRemoveItem> cacheBack = Collections.synchronizedList(new LinkedList());
+    public abstract float getViewX();
 
-    class AddRemoveItem {
+    public abstract float getViewY();
 
-        static final int ADD = 0;
-        static final int REMOVE = 1;
-        int operation;
-        GObject go;
+    public abstract float getViewW();
 
-        AddRemoveItem(int op, GObject go) {
-            operation = op;
-            this.go = go;
-        }
+    public abstract float getViewH();
+
+    public abstract void setViewLocation(float x, float y);
+
+    public abstract void setViewSize(float x, float y);
+
+    public abstract float[] getViewBoundle();
+
+    public boolean isInArea(float x, float y) {
+        float absx = getViewX();
+        float absy = getViewY();
+        return x >= absx && x <= absx + getViewW()
+                && y >= absy && y <= absy + getViewH();
     }
 
-    GObject findFocus(float x, float y) {
-        for (Iterator<GObject> it = elements.iterator(); it.hasNext();) {
-            GObject nko = it.next();
-            if (nko.isInArea(x, y)) {
-                return nko;
+    public List<GObject> getElements() {
+        return elements;
+    }
+
+    public int getElementSize() {
+        return elements.size();
+    }
+
+    public GObject findByXY(float x, float y) {
+        synchronized (elements) {
+            for (int i = elements.size() - 1; i >= 0; i--) {
+                GObject nko = elements.get(i);
+                if (nko.isInArea(x, y)) {
+                    return nko;
+                }
             }
         }
         return null;
@@ -58,9 +72,12 @@ abstract public class GContainer extends GObject {
     }
 
     /**
-     * @param focus the focus to set
+     * @param go
      */
     public void setFocus(GObject go) {
+        if (go instanceof GMenu) {
+            return;
+        }
         if (this.focus != go) {
             if (focus != null) {
                 if (focus.focusListener != null) {
@@ -78,39 +95,73 @@ abstract public class GContainer extends GObject {
 
     public void add(GObject nko) {
         if (nko != null) {
-            cache.add(new AddRemoveItem(AddRemoveItem.ADD, nko));
-            nko.init();
-            nko.setParent(this);
+            add(elements.size(), nko);
         }
     }
 
     public void add(int index, GObject nko) {
         if (nko != null) {
-            cache.add(index, new AddRemoveItem(AddRemoveItem.ADD, nko));
-            nko.init();
-            nko.setParent(this);
+            synchronized (elements) {
+                elements.add(index, nko);
+                nko.setParent(this);
+                nko.init();
+                onAdd(nko);
+            }
         }
     }
 
     public void remove(GObject nko) {
         if (nko != null) {
-            nko.setParent(null);
-            nko.destory();
-            cache.add(new AddRemoveItem(AddRemoveItem.REMOVE, nko));
+            synchronized (elements) {
+                nko.setParent(null);
+                nko.destory();
+                elements.remove(nko);
+                if (focus == nko) {
+                    focus = null;
+                }
+                onRemove(nko);
+            }
         }
     }
 
     public void remove(int index) {
-        GObject nko = elements.get(index);
-        if (nko != null) {
-            nko.setParent(null);
-            nko.destory();
-            cache.add(new AddRemoveItem(AddRemoveItem.REMOVE, nko));
+        synchronized (elements) {
+            GObject nko = elements.get(index);
+            remove(nko);
         }
     }
 
-    public boolean isSon(GObject son) {
+    public boolean contains(GObject son) {
         return elements.contains(son);
+    }
+
+    public void clear() {
+        synchronized (elements) {
+            int size = elements.size();
+            for (int i = 0; i < size; i++) {
+                remove(elements.size() - 1);
+            }
+        }
+    }
+
+    public GObject findByName(String name) {
+        if (name == null) {
+            return null;
+        }
+        synchronized (elements) {
+            for (GObject go : elements) {
+                if (name.equals(go.name)) {
+                    return go;
+                }
+                if (go instanceof GContainer) {
+                    GObject sub = ((GContainer) go).findByName(name);
+                    if (sub != null) {
+                        return sub;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public void onAdd(GObject obj) {
@@ -127,64 +178,99 @@ abstract public class GContainer extends GObject {
 
     @Override
     public boolean update(long ctx) {
-        int menuCount = 0;
-        List tmp = cacheBack;
-        cacheBack = cache;
-        cache = tmp;
-        //菜单加在最前面,focus 在之后,其他组件再在其后
-        for (AddRemoveItem ari : cacheBack) {
-            if (ari.operation == AddRemoveItem.ADD) {
-                setFocus(ari.go);
-                elements.addFirst(ari.go);
-                onAdd(ari.go);
-            } else {
-                boolean success = elements.remove(ari.go);
-                if (success) {
-                    if (getFocus() == ari.go) {
-                        setFocus(null);
+        try {
+            synchronized (elements) {
+                //更新所有UI组件
+                menus.clear();
+                fronts.clear();
+                for (GObject nko : elements) {
+                    if (nko == focus) {
+                        continue;
                     }
-                    onRemove(ari.go);
+                    if (nko.getType() == TYPE_MENU) {
+                        menus.add((GMenu) nko);
+                        continue;
+                    }
+                    if (nko.isFront()) {
+                        fronts.add(nko);
+                        continue;
+                    }
+
+                    if (nko.isVisible()) {
+                        drawObj(ctx, nko);
+                    }
+                }
+                if (focus != null) {
+                    drawObj(ctx, focus);
+
+                    //frame re sort
+                    if (getType() == TYPE_FORM) {
+                        elements.remove(focus);
+                        elements.add(focus);
+
+                    }
+                }
+                for (GObject m : fronts) {
+                    elements.remove(m);
+                    elements.add(m);
+                    drawObj(ctx, m);
+                }
+                for (GMenu m : menus) {
+                    elements.remove(m);
+                    elements.add(m);
+                    drawObj(ctx, m);
                 }
             }
-        }
-        cacheBack.clear();
-        //如果focus不是第一个，则移到第一个，这样遮挡关系才正确
-        if (focus != null && !(this instanceof GMenu)) {
-            elements.remove(focus);
-            elements.add(menuCount, focus);
-        }
-        //更新所有UI组件
-        GObject[] arr = elements.toArray(new GObject[elements.size()]);
-        for (int i = arr.length - 1; i >= 0; i--) {
-            GObject nko = arr[i];
-            if (nko.isVisable()) {
-                float x = nko.getViewX();
-                float y = nko.getViewY();
-                float w = nko.getViewW();
-                float h = nko.getViewH();
 
-                nvgSave(ctx);
-                nvgScissor(ctx, x, y, w, h);
-                Nanovg.nvgIntersectScissor(ctx, getViewX(), getViewY(), getViewW(), getViewH());
-                nko.update(ctx);
-
-//                if (focus == nko) {
-//                    nvgScissor(ctx, x, y, w, h);
-//                    nvgBeginPath(ctx);
-//                    Nanovg.nvgRect(ctx, x + 1, y + 1, w - 2, h - 2);
-//                    nvgStrokeColor(ctx, nvgRGBA(255, 0, 0, 255));
-//                    nvgStroke(ctx);
-//
-//                    nvgBeginPath(ctx);
-//                    Nanovg.nvgRect(ctx, nko.getX() + 2, nko.getY() + 2, nko.getW() - 4, nko.getH() - 4);
-//                    nvgStrokeColor(ctx, nvgRGBA(0, 0, 255, 255));
-//                    nvgStroke(ctx);
-//
-//                }
-                Nanovg.nvgRestore(ctx);
-            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return true;
+    }
+
+    private void drawObj(long ctx, GObject nko) {
+        float x, y, w, h;
+        if (nko instanceof GContainer) {
+            GContainer c = (GContainer) nko;
+            x = c.getViewX();
+            y = c.getViewY();
+            w = c.getViewW();
+            h = c.getViewH();
+
+        } else {
+            x = nko.getX();
+            y = nko.getY();
+            w = nko.getW();
+            h = nko.getH();
+        }
+
+        nvgSave(ctx);
+        nvgScissor(ctx, x, y, w, h);
+        float vx = getViewX();
+        float vy = getViewY();
+        float vw = getViewW();
+        float vh = getViewH();
+        if (vx + vw < x || vx > x + w || vy > y + h || vy + vh < y) {
+        } else {
+            Nanovg.nvgIntersectScissor(ctx, vx, vy, vw, vh);
+
+            nko.update(ctx);
+
+//        if (focus == nko) {
+//            nvgScissor(ctx, x, y, w, h);
+//            nvgBeginPath(ctx);
+//            Nanovg.nvgRect(ctx, x + 1, y + 1, w - 2, h - 2);
+//            nvgStrokeColor(ctx, nvgRGBA(255, 0, 0, 255));
+//            nvgStroke(ctx);
+//
+//            nvgBeginPath(ctx);
+//            Nanovg.nvgRect(ctx, nko.getX() + 2, nko.getY() + 2, nko.getW() - 4, nko.getH() - 4);
+//            nvgStrokeColor(ctx, nvgRGBA(0, 0, 255, 255));
+//            nvgStroke(ctx);
+//
+//        }
+            Nanovg.nvgRestore(ctx);
+        }
     }
 
     @Override
@@ -203,7 +289,7 @@ abstract public class GContainer extends GObject {
 
     @Override
     public void mouseButtonEvent(int button, boolean pressed, int x, int y) {
-        setFocus(findFocus(x, y));
+        setFocus(findByXY(x, y));
 
         if (focus != null) {
             focus.mouseButtonEvent(button, pressed, x, y);
@@ -228,11 +314,12 @@ abstract public class GContainer extends GObject {
     }
 
     @Override
-    public void scrollEvent(float scrollX, float scrollY, float x, float y) {
-        setFocus(findFocus(x, y));
+    public boolean scrollEvent(float scrollX, float scrollY, float x, float y) {
+        setFocus(findByXY(x, y));
         if (focus != null && focus.isInArea(x, y)) {
-            focus.scrollEvent(scrollX, scrollY, x, y);
+            return focus.scrollEvent(scrollX, scrollY, x, y);
         }
+        return false;
     }
 
     @Override
@@ -242,11 +329,18 @@ abstract public class GContainer extends GObject {
         }
     }
 
-    public void dragEvent(float dx, float dy, float x, float y) {
-        setFocus(findFocus(x, y));
-        if (focus != null && focus.isInArea(x, y)) {
-            focus.dragEvent(dx, dy, x, y);
+    @Override
+    public boolean dragEvent(float dx, float dy, float x, float y) {
+        GObject found = findByXY(x, y);
+        if (found instanceof GMenu) {
+            return found.dragEvent(dx, dy, x, y);
         }
+
+        setFocus(found);
+        if (focus != null && focus.isInArea(x, y)) {
+            return focus.dragEvent(dx, dy, x, y);
+        }
+        return false;
     }
 
     ///==========================
@@ -266,28 +360,45 @@ abstract public class GContainer extends GObject {
 
     @Override
     public void touchEvent(int phase, int x, int y) {
-        if (phase == Glfm.GLFMTouchPhaseBegan) {
-            setFocus(findFocus(x, y));
+        GObject found = findByXY(x, y);
+        if (found instanceof GMenu) {
+            found.touchEvent(phase, x, y);
+            return;
         }
-        if (focus != null) {
+
+        if (focus != null && focus.isInArea(x, y)) {
             focus.touchEvent(phase, x, y);
+        } else {
+            if (phase == Glfm.GLFMTouchPhaseBegan) {
+                setFocus(found);
+            }
+            if (focus != null) {
+                focus.touchEvent(phase, x, y);
+            }
         }
     }
 
     @Override
-    public void inertiaEvent(float x1, float y1, float x2, float y2, long moveTime) {
-
+    public boolean inertiaEvent(float x1, float y1, float x2, float y2, long moveTime) {
         if (focus != null && focus.isInArea((float) x1, (float) y1)) {
-            focus.inertiaEvent(x1, y1, x2, y2, moveTime);
+            return focus.inertiaEvent(x1, y1, x2, y2, moveTime);
         }
+        return false;
     }
 
     @Override
     public void longTouchedEvent(int x, int y) {
-        setFocus(findFocus(x, y));
+        GObject found = findByXY(x, y);
+        if (found instanceof GMenu) {
+            found.longTouchedEvent(x, y);
+            return;
+        }
+
+        setFocus(found);
 
         if (focus != null) {
             focus.longTouchedEvent(x, y);
         }
     }
+
 }

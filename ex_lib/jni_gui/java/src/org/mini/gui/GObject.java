@@ -16,6 +16,30 @@ import org.mini.gui.event.GFocusChangeListener;
  */
 abstract public class GObject {
 
+    public static final int TYPE_UNKNOW = -1;
+    public static final int TYPE_BUTTON = 0;
+    public static final int TYPE_CANVAS = 1;
+    public static final int TYPE_CHECKBOX = 3;
+    public static final int TYPE_COLORSELECTOR = 4;
+    public static final int TYPE_FORM = 5;
+    public static final int TYPE_FRAME = 6;
+    public static final int TYPE_LABEL = 7;
+    public static final int TYPE_LIST = 8;
+    public static final int TYPE_LISTITEM = 9;
+    public static final int TYPE_MENU = 10;
+    public static final int TYPE_MENUITEM = 11;
+    public static final int TYPE_PANEL = 12;
+    public static final int TYPE_SCROLLBAR = 13;
+    public static final int TYPE_TEXTBOX = 14;
+    public static final int TYPE_TEXTFIELD = 15;
+    public static final int TYPE_VIEWPORT = 16;
+    public static final int TYPE_IMAGEITEM = 17;
+    public static final int TYPE_EDITMENU = 18;
+
+    //
+    public static final int ALIGN_H_FULL = 1;
+    public static final int ALIGN_V_FULL = 2;
+
     public static char ICON_SEARCH = (char) 0x1F50D;
     public static char ICON_CIRCLED_CROSS = 0x2716;
     public static char ICON_CHEVRON_RIGHT = 0xE75E;
@@ -23,34 +47,45 @@ abstract public class GObject {
     public static char ICON_LOGIN = 0xE740;
     public static char ICON_TRASH = 0xE729;
     //
-    GContainer parent;
+    protected GContainer parent;
 
-    //object position and width ,height
-    float[] boundle = new float[4];
-    static final int LEFT = 0;
-    static final int TOP = 1;
-    static final int WIDTH = 2;
-    static final int HEIGHT = 3;
+    protected float[] boundle = new float[4];
 
-    float[] bgColor;
-    float[] color;
+    public static final int LEFT = 0;
+    public static final int TOP = 1;
+    public static final int WIDTH = 2;
+    public static final int HEIGHT = 3;
 
-    GActionListener actionListener;
+    protected float[] bgColor;
+    protected float[] color;
 
-    GFocusChangeListener focusListener;
+    protected GActionListener actionListener;
+
+    protected GFocusChangeListener focusListener;
 
     volatile static int flush;
 
-    boolean visable = true;
+    protected boolean visible = true;
 
-    boolean fixedLocation;
+    protected boolean front = false;
 
+    protected boolean fixedLocation;
+
+    protected String name;
+
+    protected Object attachment;
+
+    /**
+     *
+     */
     public void init() {
 
     }
 
-    void destory() {
+    public void destory() {
     }
+
+    public abstract int getType();
 
     static synchronized public void flush() {
         flush = 3;
@@ -100,8 +135,8 @@ abstract public class GObject {
     public void cursorPosEvent(int x, int y) {
     }
 
-    public void dragEvent(float dx, float dy, float x, float y) {
-
+    public boolean dragEvent(float dx, float dy, float x, float y) {
+        return false;
     }
 
     public void dropEvent(int count, String[] paths) {
@@ -119,7 +154,8 @@ abstract public class GObject {
     public void touchEvent(int phase, int x, int y) {
     }
 
-    public void scrollEvent(float scrollX, float scrollY, float x, float y) {
+    public boolean scrollEvent(float scrollX, float scrollY, float x, float y) {
+        return false;
     }
 
     /**
@@ -131,8 +167,8 @@ abstract public class GObject {
      * @param y2
      * @param moveTime
      */
-    public void inertiaEvent(float x1, float y1, float x2, float y2, long moveTime) {
-
+    public boolean inertiaEvent(float x1, float y1, float x2, float y2, long moveTime) {
+        return false;
     }
 
     public static boolean isInBoundle(float[] bound, float x, float y) {
@@ -141,17 +177,17 @@ abstract public class GObject {
     }
 
     public boolean isInArea(float x, float y) {
-        float absx = getViewX();
-        float absy = getViewY();
-        return x >= absx && x <= absx + getViewW()
-                && y >= absy && y <= absy + getViewH();
+        float absx = getX();
+        float absy = getY();
+        return x >= absx && x <= absx + getW()
+                && y >= absy && y <= absy + getH();
     }
 
     public float[] getBoundle() {
         return boundle;
     }
 
-    public GObject getParent() {
+    public GContainer getParent() {
         return parent;
     }
 
@@ -162,11 +198,25 @@ abstract public class GObject {
     public void setLocation(float x, float y) {
         boundle[LEFT] = x;
         boundle[TOP] = y;
+        if (parent != null) {
+            parent.reBoundle();
+        }
     }
 
     public void setSize(float w, float h) {
         boundle[WIDTH] = w;
         boundle[HEIGHT] = h;
+        if (parent != null) {
+            parent.reBoundle();
+        }
+    }
+
+    public float getLocationLeft() {
+        return boundle[LEFT];
+    }
+
+    public float getLocationTop() {
+        return boundle[TOP];
     }
 
     public float getX() {
@@ -191,25 +241,12 @@ abstract public class GObject {
         return boundle[HEIGHT];
     }
 
-    public float getViewX() {
-        return getX();
-    }
-
-    public float getViewY() {
-        return getY();
-    }
-
-    public float getViewW() {
-        return boundle[WIDTH];
-    }
-
-    public float getViewH() {
-        return boundle[HEIGHT];
-    }
-
     public void move(float dx, float dy) {
         boundle[LEFT] += dx;
         boundle[TOP] += dy;
+        if (parent != null) {
+            parent.reBoundle();
+        }
     }
 
     /**
@@ -227,6 +264,10 @@ abstract public class GObject {
      */
     public void setBgColor(int r, int g, int b, int a) {
         bgColor = nvgRGBA((byte) r, (byte) g, (byte) b, (byte) a);
+    }
+
+    public void setBgColor(float[] color) {
+        bgColor = color;
     }
 
     /**
@@ -260,12 +301,12 @@ abstract public class GObject {
         this.actionListener = actionListener;
     }
 
-    public void setVisable(boolean v) {
-        visable = v;
+    public void setVisible(boolean v) {
+        visible = v;
     }
 
-    public boolean isVisable() {
-        return visable;
+    public boolean isVisible() {
+        return visible;
     }
 
     public GForm getForm() {
@@ -300,5 +341,47 @@ abstract public class GObject {
      */
     public void setFocusListener(GFocusChangeListener focusListener) {
         this.focusListener = focusListener;
+    }
+
+    /**
+     * @return the name
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * @param name the name to set
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    /**
+     * @return the attachment
+     */
+    public Object getAttachment() {
+        return attachment;
+    }
+
+    /**
+     * @param attachment the attachment to set
+     */
+    public void setAttachment(Object attachment) {
+        this.attachment = attachment;
+    }
+
+    /**
+     * @return the front
+     */
+    public boolean isFront() {
+        return front;
+    }
+
+    /**
+     * @param front the front to set
+     */
+    public void setFront(boolean front) {
+        this.front = front;
     }
 }
