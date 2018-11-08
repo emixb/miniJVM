@@ -5,17 +5,11 @@
  */
 package org.mini.media;
 
-import org.mini.glfw.Glfw;
-
 /**
  *
  * @author Gust
  */
 public class MiniAL {
-
-    static {
-        Glfw.loadLib();
-    }
 
     static native long mal_context_init();
 
