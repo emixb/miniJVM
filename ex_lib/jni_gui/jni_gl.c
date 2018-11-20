@@ -870,12 +870,7 @@ int org_mini_gl_GL_glBitmap(Runtime *runtime, JClass *clazz) {
     Int2Float pxmove;pxmove.i = env->localvar_getInt(runtime->localvar, pos++);
     Int2Float pymove;pymove.i = env->localvar_getInt(runtime->localvar, pos++);
     Instance *pbitmap = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_pbitmap = 0;
-    __refer ptr_pbitmap = NULL;
-    if(pbitmap){
-        offset_pbitmap *= env->data_type_bytes[pbitmap->mb.arr_type_index];
-        ptr_pbitmap = pbitmap->arr_body + offset_pbitmap;
-    } else if(offset_pbitmap) { ptr_pbitmap = (__refer)(intptr_t)offset_pbitmap;}
+    __refer ptr_pbitmap = pbitmap->arr_body ;
 
     glBitmap((GLsizei)pwidth, (GLsizei)pheight, (GLfloat)pxorig.f, (GLfloat)pyorig.f, (GLfloat)pxmove.f, (GLfloat)pymove.f, (const GLubyte*)(ptr_pbitmap));
     
@@ -902,12 +897,7 @@ int org_mini_gl_GL_glColor3bv(Runtime *runtime, JClass *clazz) {
     s32 pos = 0;
     
     Instance *pv = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_pv = 0;
-    __refer ptr_pv = NULL;
-    if(pv){
-        offset_pv *= env->data_type_bytes[pv->mb.arr_type_index];
-        ptr_pv = pv->arr_body + offset_pv;
-    } else if(offset_pv) { ptr_pv = (__refer)(intptr_t)offset_pv;}
+    __refer ptr_pv = pv->arr_body ;
 
     glColor3bv((const GLbyte*)(ptr_pv));
     
@@ -1062,12 +1052,7 @@ int org_mini_gl_GL_glColor3ubv(Runtime *runtime, JClass *clazz) {
     s32 pos = 0;
     
     Instance *pv = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_pv = 0;
-    __refer ptr_pv = NULL;
-    if(pv){
-        offset_pv *= env->data_type_bytes[pv->mb.arr_type_index];
-        ptr_pv = pv->arr_body + offset_pv;
-    } else if(offset_pv) { ptr_pv = (__refer)(intptr_t)offset_pv;}
+    __refer ptr_pv = pv->arr_body ;
 
     glColor3ubv((const GLubyte*)(ptr_pv));
     
@@ -1159,12 +1144,7 @@ int org_mini_gl_GL_glColor4bv(Runtime *runtime, JClass *clazz) {
     s32 pos = 0;
     
     Instance *pv = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_pv = 0;
-    __refer ptr_pv = NULL;
-    if(pv){
-        offset_pv *= env->data_type_bytes[pv->mb.arr_type_index];
-        ptr_pv = pv->arr_body + offset_pv;
-    } else if(offset_pv) { ptr_pv = (__refer)(intptr_t)offset_pv;}
+    __refer ptr_pv = pv->arr_body ;
 
     glColor4bv((const GLbyte*)(ptr_pv));
     
@@ -1324,12 +1304,7 @@ int org_mini_gl_GL_glColor4ubv(Runtime *runtime, JClass *clazz) {
     s32 pos = 0;
     
     Instance *pv = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_pv = 0;
-    __refer ptr_pv = NULL;
-    if(pv){
-        offset_pv *= env->data_type_bytes[pv->mb.arr_type_index];
-        ptr_pv = pv->arr_body + offset_pv;
-    } else if(offset_pv) { ptr_pv = (__refer)(intptr_t)offset_pv;}
+    __refer ptr_pv = pv->arr_body ;
 
     glColor4ubv((const GLubyte*)(ptr_pv));
     
@@ -1583,12 +1558,7 @@ int org_mini_gl_GL_glNormal3bv(Runtime *runtime, JClass *clazz) {
     s32 pos = 0;
     
     Instance *pv = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_pv = 0;
-    __refer ptr_pv = NULL;
-    if(pv){
-        offset_pv *= env->data_type_bytes[pv->mb.arr_type_index];
-        ptr_pv = pv->arr_body + offset_pv;
-    } else if(offset_pv) { ptr_pv = (__refer)(intptr_t)offset_pv;}
+    __refer ptr_pv = pv->arr_body ;
 
     glNormal3bv((const GLbyte*)(ptr_pv));
     
@@ -3470,12 +3440,7 @@ int org_mini_gl_GL_glPolygonStipple(Runtime *runtime, JClass *clazz) {
     s32 pos = 0;
     
     Instance *pmask = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_pmask = 0;
-    __refer ptr_pmask = NULL;
-    if(pmask){
-        offset_pmask *= env->data_type_bytes[pmask->mb.arr_type_index];
-        ptr_pmask = pmask->arr_body + offset_pmask;
-    } else if(offset_pmask) { ptr_pmask = (__refer)(intptr_t)offset_pmask;}
+    __refer ptr_pmask = pmask->arr_body ;
 
     glPolygonStipple((const GLubyte*)(ptr_pmask));
     
@@ -4559,12 +4524,7 @@ int org_mini_gl_GL_glGetPolygonStipple(Runtime *runtime, JClass *clazz) {
     s32 pos = 0;
     
     Instance *pmask = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_pmask = 0;
-    __refer ptr_pmask = NULL;
-    if(pmask){
-        offset_pmask *= env->data_type_bytes[pmask->mb.arr_type_index];
-        ptr_pmask = pmask->arr_body + offset_pmask;
-    } else if(offset_pmask) { ptr_pmask = (__refer)(intptr_t)offset_pmask;}
+    __refer ptr_pmask = pmask->arr_body ;
 
     glGetPolygonStipple((GLubyte*)(ptr_pmask));
     
@@ -5419,12 +5379,7 @@ int org_mini_gl_GL_glIndexubv(Runtime *runtime, JClass *clazz) {
     s32 pos = 0;
     
     Instance *pc = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_pc = 0;
-    __refer ptr_pc = NULL;
-    if(pc){
-        offset_pc *= env->data_type_bytes[pc->mb.arr_type_index];
-        ptr_pc = pc->arr_body + offset_pc;
-    } else if(offset_pc) { ptr_pc = (__refer)(intptr_t)offset_pc;}
+    __refer ptr_pc = pc->arr_body ;
 
     glIndexubv((const GLubyte*)(ptr_pc));
     
@@ -6602,12 +6557,7 @@ int org_mini_gl_GL_glSecondaryColor3bv(Runtime *runtime, JClass *clazz) {
     s32 pos = 0;
     
     Instance *pv = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_pv = 0;
-    __refer ptr_pv = NULL;
-    if(pv){
-        offset_pv *= env->data_type_bytes[pv->mb.arr_type_index];
-        ptr_pv = pv->arr_body + offset_pv;
-    } else if(offset_pv) { ptr_pv = (__refer)(intptr_t)offset_pv;}
+    __refer ptr_pv = pv->arr_body ;
 
     glSecondaryColor3bv((const GLbyte*)(ptr_pv));
     
@@ -6762,12 +6712,7 @@ int org_mini_gl_GL_glSecondaryColor3ubv(Runtime *runtime, JClass *clazz) {
     s32 pos = 0;
     
     Instance *pv = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_pv = 0;
-    __refer ptr_pv = NULL;
-    if(pv){
-        offset_pv *= env->data_type_bytes[pv->mb.arr_type_index];
-        ptr_pv = pv->arr_body + offset_pv;
-    } else if(offset_pv) { ptr_pv = (__refer)(intptr_t)offset_pv;}
+    __refer ptr_pv = pv->arr_body ;
 
     glSecondaryColor3ubv((const GLubyte*)(ptr_pv));
     
@@ -7558,12 +7503,7 @@ int org_mini_gl_GL_glBindAttribLocation(Runtime *runtime, JClass *clazz) {
     s32 pprogram = env->localvar_getInt(runtime->localvar, pos++);
     s32 pindex = env->localvar_getInt(runtime->localvar, pos++);
     Instance *pname = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_pname = 0;
-    __refer ptr_pname = NULL;
-    if(pname){
-        offset_pname *= env->data_type_bytes[pname->mb.arr_type_index];
-        ptr_pname = pname->arr_body + offset_pname;
-    } else if(offset_pname) { ptr_pname = (__refer)(intptr_t)offset_pname;}
+    __refer ptr_pname = pname->arr_body ;
 
     glBindAttribLocation((GLuint)pprogram, (GLuint)pindex, (const GLchar*)(ptr_pname));
     
@@ -7696,12 +7636,7 @@ int org_mini_gl_GL_glGetActiveAttrib(Runtime *runtime, JClass *clazz) {
         ptr_ptype = ptype->arr_body + offset_ptype;
     } else if(offset_ptype) { ptr_ptype = (__refer)(intptr_t)offset_ptype;}
     Instance *pname = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_pname = 0;
-    __refer ptr_pname = NULL;
-    if(pname){
-        offset_pname *= env->data_type_bytes[pname->mb.arr_type_index];
-        ptr_pname = pname->arr_body + offset_pname;
-    } else if(offset_pname) { ptr_pname = (__refer)(intptr_t)offset_pname;}
+    __refer ptr_pname = pname->arr_body ;
 
     glGetActiveAttrib((GLuint)pprogram, (GLuint)pindex, (GLsizei)pbufSize, (GLsizei*)(ptr_plength), (GLint*)(ptr_psize), (GLenum*)(ptr_ptype), (GLchar*)(ptr_pname));
     
@@ -7738,12 +7673,7 @@ int org_mini_gl_GL_glGetActiveUniform(Runtime *runtime, JClass *clazz) {
         ptr_ptype = ptype->arr_body + offset_ptype;
     } else if(offset_ptype) { ptr_ptype = (__refer)(intptr_t)offset_ptype;}
     Instance *pname = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_pname = 0;
-    __refer ptr_pname = NULL;
-    if(pname){
-        offset_pname *= env->data_type_bytes[pname->mb.arr_type_index];
-        ptr_pname = pname->arr_body + offset_pname;
-    } else if(offset_pname) { ptr_pname = (__refer)(intptr_t)offset_pname;}
+    __refer ptr_pname = pname->arr_body ;
 
     glGetActiveUniform((GLuint)pprogram, (GLuint)pindex, (GLsizei)pbufSize, (GLsizei*)(ptr_plength), (GLint*)(ptr_psize), (GLenum*)(ptr_ptype), (GLchar*)(ptr_pname));
     
@@ -7784,12 +7714,7 @@ int org_mini_gl_GL_glGetAttribLocation(Runtime *runtime, JClass *clazz) {
     
     s32 pprogram = env->localvar_getInt(runtime->localvar, pos++);
     Instance *pname = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_pname = 0;
-    __refer ptr_pname = NULL;
-    if(pname){
-        offset_pname *= env->data_type_bytes[pname->mb.arr_type_index];
-        ptr_pname = pname->arr_body + offset_pname;
-    } else if(offset_pname) { ptr_pname = (__refer)(intptr_t)offset_pname;}
+    __refer ptr_pname = pname->arr_body ;
 
     GLint _re_val = glGetAttribLocation((GLuint)pprogram, (const GLchar*)(ptr_pname));
     s32 ret_value = *((s32*)&_re_val);env->push_int(runtime->stack, ret_value);
@@ -7831,12 +7756,7 @@ int org_mini_gl_GL_glGetProgramInfoLog(Runtime *runtime, JClass *clazz) {
         ptr_plength = plength->arr_body + offset_plength;
     } else if(offset_plength) { ptr_plength = (__refer)(intptr_t)offset_plength;}
     Instance *pinfoLog = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_pinfoLog = 0;
-    __refer ptr_pinfoLog = NULL;
-    if(pinfoLog){
-        offset_pinfoLog *= env->data_type_bytes[pinfoLog->mb.arr_type_index];
-        ptr_pinfoLog = pinfoLog->arr_body + offset_pinfoLog;
-    } else if(offset_pinfoLog) { ptr_pinfoLog = (__refer)(intptr_t)offset_pinfoLog;}
+    __refer ptr_pinfoLog = pinfoLog->arr_body ;
 
     glGetProgramInfoLog((GLuint)pprogram, (GLsizei)pbufSize, (GLsizei*)(ptr_plength), (GLchar*)(ptr_pinfoLog));
     
@@ -7878,12 +7798,7 @@ int org_mini_gl_GL_glGetShaderInfoLog(Runtime *runtime, JClass *clazz) {
         ptr_plength = plength->arr_body + offset_plength;
     } else if(offset_plength) { ptr_plength = (__refer)(intptr_t)offset_plength;}
     Instance *pinfoLog = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_pinfoLog = 0;
-    __refer ptr_pinfoLog = NULL;
-    if(pinfoLog){
-        offset_pinfoLog *= env->data_type_bytes[pinfoLog->mb.arr_type_index];
-        ptr_pinfoLog = pinfoLog->arr_body + offset_pinfoLog;
-    } else if(offset_pinfoLog) { ptr_pinfoLog = (__refer)(intptr_t)offset_pinfoLog;}
+    __refer ptr_pinfoLog = pinfoLog->arr_body ;
 
     glGetShaderInfoLog((GLuint)pshader, (GLsizei)pbufSize, (GLsizei*)(ptr_plength), (GLchar*)(ptr_pinfoLog));
     
@@ -7905,12 +7820,7 @@ int org_mini_gl_GL_glGetShaderSource(Runtime *runtime, JClass *clazz) {
         ptr_plength = plength->arr_body + offset_plength;
     } else if(offset_plength) { ptr_plength = (__refer)(intptr_t)offset_plength;}
     Instance *psource = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_psource = 0;
-    __refer ptr_psource = NULL;
-    if(psource){
-        offset_psource *= env->data_type_bytes[psource->mb.arr_type_index];
-        ptr_psource = psource->arr_body + offset_psource;
-    } else if(offset_psource) { ptr_psource = (__refer)(intptr_t)offset_psource;}
+    __refer ptr_psource = psource->arr_body ;
 
     glGetShaderSource((GLuint)pshader, (GLsizei)pbufSize, (GLsizei*)(ptr_plength), (GLchar*)(ptr_psource));
     
@@ -7924,12 +7834,7 @@ int org_mini_gl_GL_glGetUniformLocation(Runtime *runtime, JClass *clazz) {
     
     s32 pprogram = env->localvar_getInt(runtime->localvar, pos++);
     Instance *pname = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_pname = 0;
-    __refer ptr_pname = NULL;
-    if(pname){
-        offset_pname *= env->data_type_bytes[pname->mb.arr_type_index];
-        ptr_pname = pname->arr_body + offset_pname;
-    } else if(offset_pname) { ptr_pname = (__refer)(intptr_t)offset_pname;}
+    __refer ptr_pname = pname->arr_body ;
 
     GLint _re_val = glGetUniformLocation((GLuint)pprogram, (const GLchar*)(ptr_pname));
     s32 ret_value = *((s32*)&_re_val);env->push_int(runtime->stack, ret_value);
@@ -8782,12 +8687,7 @@ int org_mini_gl_GL_glVertexAttrib4Nbv(Runtime *runtime, JClass *clazz) {
     
     s32 pindex = env->localvar_getInt(runtime->localvar, pos++);
     Instance *pv = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_pv = 0;
-    __refer ptr_pv = NULL;
-    if(pv){
-        offset_pv *= env->data_type_bytes[pv->mb.arr_type_index];
-        ptr_pv = pv->arr_body + offset_pv;
-    } else if(offset_pv) { ptr_pv = (__refer)(intptr_t)offset_pv;}
+    __refer ptr_pv = pv->arr_body ;
 
     glVertexAttrib4Nbv((GLuint)pindex, (const GLbyte*)(ptr_pv));
     
@@ -8855,12 +8755,7 @@ int org_mini_gl_GL_glVertexAttrib4Nubv(Runtime *runtime, JClass *clazz) {
     
     s32 pindex = env->localvar_getInt(runtime->localvar, pos++);
     Instance *pv = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_pv = 0;
-    __refer ptr_pv = NULL;
-    if(pv){
-        offset_pv *= env->data_type_bytes[pv->mb.arr_type_index];
-        ptr_pv = pv->arr_body + offset_pv;
-    } else if(offset_pv) { ptr_pv = (__refer)(intptr_t)offset_pv;}
+    __refer ptr_pv = pv->arr_body ;
 
     glVertexAttrib4Nubv((GLuint)pindex, (const GLubyte*)(ptr_pv));
     
@@ -8912,12 +8807,7 @@ int org_mini_gl_GL_glVertexAttrib4bv(Runtime *runtime, JClass *clazz) {
     
     s32 pindex = env->localvar_getInt(runtime->localvar, pos++);
     Instance *pv = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_pv = 0;
-    __refer ptr_pv = NULL;
-    if(pv){
-        offset_pv *= env->data_type_bytes[pv->mb.arr_type_index];
-        ptr_pv = pv->arr_body + offset_pv;
-    } else if(offset_pv) { ptr_pv = (__refer)(intptr_t)offset_pv;}
+    __refer ptr_pv = pv->arr_body ;
 
     glVertexAttrib4bv((GLuint)pindex, (const GLbyte*)(ptr_pv));
     
@@ -9055,12 +8945,7 @@ int org_mini_gl_GL_glVertexAttrib4ubv(Runtime *runtime, JClass *clazz) {
     
     s32 pindex = env->localvar_getInt(runtime->localvar, pos++);
     Instance *pv = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_pv = 0;
-    __refer ptr_pv = NULL;
-    if(pv){
-        offset_pv *= env->data_type_bytes[pv->mb.arr_type_index];
-        ptr_pv = pv->arr_body + offset_pv;
-    } else if(offset_pv) { ptr_pv = (__refer)(intptr_t)offset_pv;}
+    __refer ptr_pv = pv->arr_body ;
 
     glVertexAttrib4ubv((GLuint)pindex, (const GLubyte*)(ptr_pv));
     
@@ -9451,12 +9336,7 @@ int org_mini_gl_GL_glGetTransformFeedbackVarying(Runtime *runtime, JClass *clazz
         ptr_ptype = ptype->arr_body + offset_ptype;
     } else if(offset_ptype) { ptr_ptype = (__refer)(intptr_t)offset_ptype;}
     Instance *pname = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_pname = 0;
-    __refer ptr_pname = NULL;
-    if(pname){
-        offset_pname *= env->data_type_bytes[pname->mb.arr_type_index];
-        ptr_pname = pname->arr_body + offset_pname;
-    } else if(offset_pname) { ptr_pname = (__refer)(intptr_t)offset_pname;}
+    __refer ptr_pname = pname->arr_body ;
 
     glGetTransformFeedbackVarying((GLuint)pprogram, (GLuint)pindex, (GLsizei)pbufSize, (GLsizei*)(ptr_plength), (GLsizei*)(ptr_psize), (GLenum*)(ptr_ptype), (GLchar*)(ptr_pname));
     
@@ -9837,12 +9717,7 @@ int org_mini_gl_GL_glVertexAttribI4bv(Runtime *runtime, JClass *clazz) {
     
     s32 pindex = env->localvar_getInt(runtime->localvar, pos++);
     Instance *pv = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_pv = 0;
-    __refer ptr_pv = NULL;
-    if(pv){
-        offset_pv *= env->data_type_bytes[pv->mb.arr_type_index];
-        ptr_pv = pv->arr_body + offset_pv;
-    } else if(offset_pv) { ptr_pv = (__refer)(intptr_t)offset_pv;}
+    __refer ptr_pv = pv->arr_body ;
 
     glVertexAttribI4bv((GLuint)pindex, (const GLbyte*)(ptr_pv));
     
@@ -9875,12 +9750,7 @@ int org_mini_gl_GL_glVertexAttribI4ubv(Runtime *runtime, JClass *clazz) {
     
     s32 pindex = env->localvar_getInt(runtime->localvar, pos++);
     Instance *pv = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_pv = 0;
-    __refer ptr_pv = NULL;
-    if(pv){
-        offset_pv *= env->data_type_bytes[pv->mb.arr_type_index];
-        ptr_pv = pv->arr_body + offset_pv;
-    } else if(offset_pv) { ptr_pv = (__refer)(intptr_t)offset_pv;}
+    __refer ptr_pv = pv->arr_body ;
 
     glVertexAttribI4ubv((GLuint)pindex, (const GLubyte*)(ptr_pv));
     
@@ -9934,12 +9804,7 @@ int org_mini_gl_GL_glBindFragDataLocation(Runtime *runtime, JClass *clazz) {
     s32 pprogram = env->localvar_getInt(runtime->localvar, pos++);
     s32 pcolor = env->localvar_getInt(runtime->localvar, pos++);
     Instance *pname = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_pname = 0;
-    __refer ptr_pname = NULL;
-    if(pname){
-        offset_pname *= env->data_type_bytes[pname->mb.arr_type_index];
-        ptr_pname = pname->arr_body + offset_pname;
-    } else if(offset_pname) { ptr_pname = (__refer)(intptr_t)offset_pname;}
+    __refer ptr_pname = pname->arr_body ;
 
     glBindFragDataLocation((GLuint)pprogram, (GLuint)pcolor, (const GLchar*)(ptr_pname));
     
@@ -9953,12 +9818,7 @@ int org_mini_gl_GL_glGetFragDataLocation(Runtime *runtime, JClass *clazz) {
     
     s32 pprogram = env->localvar_getInt(runtime->localvar, pos++);
     Instance *pname = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_pname = 0;
-    __refer ptr_pname = NULL;
-    if(pname){
-        offset_pname *= env->data_type_bytes[pname->mb.arr_type_index];
-        ptr_pname = pname->arr_body + offset_pname;
-    } else if(offset_pname) { ptr_pname = (__refer)(intptr_t)offset_pname;}
+    __refer ptr_pname = pname->arr_body ;
 
     GLint _re_val = glGetFragDataLocation((GLuint)pprogram, (const GLchar*)(ptr_pname));
     s32 ret_value = *((s32*)&_re_val);env->push_int(runtime->stack, ret_value);
@@ -10842,12 +10702,7 @@ int org_mini_gl_GL_glGetActiveUniformName(Runtime *runtime, JClass *clazz) {
         ptr_plength = plength->arr_body + offset_plength;
     } else if(offset_plength) { ptr_plength = (__refer)(intptr_t)offset_plength;}
     Instance *puniformName = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_puniformName = 0;
-    __refer ptr_puniformName = NULL;
-    if(puniformName){
-        offset_puniformName *= env->data_type_bytes[puniformName->mb.arr_type_index];
-        ptr_puniformName = puniformName->arr_body + offset_puniformName;
-    } else if(offset_puniformName) { ptr_puniformName = (__refer)(intptr_t)offset_puniformName;}
+    __refer ptr_puniformName = puniformName->arr_body ;
 
     glGetActiveUniformName((GLuint)pprogram, (GLuint)puniformIndex, (GLsizei)pbufSize, (GLsizei*)(ptr_plength), (GLchar*)(ptr_puniformName));
     
@@ -10861,12 +10716,7 @@ int org_mini_gl_GL_glGetUniformBlockIndex(Runtime *runtime, JClass *clazz) {
     
     s32 pprogram = env->localvar_getInt(runtime->localvar, pos++);
     Instance *puniformBlockName = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_puniformBlockName = 0;
-    __refer ptr_puniformBlockName = NULL;
-    if(puniformBlockName){
-        offset_puniformBlockName *= env->data_type_bytes[puniformBlockName->mb.arr_type_index];
-        ptr_puniformBlockName = puniformBlockName->arr_body + offset_puniformBlockName;
-    } else if(offset_puniformBlockName) { ptr_puniformBlockName = (__refer)(intptr_t)offset_puniformBlockName;}
+    __refer ptr_puniformBlockName = puniformBlockName->arr_body ;
 
     GLuint _re_val = glGetUniformBlockIndex((GLuint)pprogram, (const GLchar*)(ptr_puniformBlockName));
     s32 ret_value = *((s32*)&_re_val);env->push_int(runtime->stack, ret_value);
@@ -10910,12 +10760,7 @@ int org_mini_gl_GL_glGetActiveUniformBlockName(Runtime *runtime, JClass *clazz) 
         ptr_plength = plength->arr_body + offset_plength;
     } else if(offset_plength) { ptr_plength = (__refer)(intptr_t)offset_plength;}
     Instance *puniformBlockName = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_puniformBlockName = 0;
-    __refer ptr_puniformBlockName = NULL;
-    if(puniformBlockName){
-        offset_puniformBlockName *= env->data_type_bytes[puniformBlockName->mb.arr_type_index];
-        ptr_puniformBlockName = puniformBlockName->arr_body + offset_puniformBlockName;
-    } else if(offset_puniformBlockName) { ptr_puniformBlockName = (__refer)(intptr_t)offset_puniformBlockName;}
+    __refer ptr_puniformBlockName = puniformBlockName->arr_body ;
 
     glGetActiveUniformBlockName((GLuint)pprogram, (GLuint)puniformBlockIndex, (GLsizei)pbufSize, (GLsizei*)(ptr_plength), (GLchar*)(ptr_puniformBlockName));
     
@@ -11294,12 +11139,7 @@ int org_mini_gl_GL_glBindFragDataLocationIndexed(Runtime *runtime, JClass *clazz
     s32 pcolorNumber = env->localvar_getInt(runtime->localvar, pos++);
     s32 pindex = env->localvar_getInt(runtime->localvar, pos++);
     Instance *pname = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_pname = 0;
-    __refer ptr_pname = NULL;
-    if(pname){
-        offset_pname *= env->data_type_bytes[pname->mb.arr_type_index];
-        ptr_pname = pname->arr_body + offset_pname;
-    } else if(offset_pname) { ptr_pname = (__refer)(intptr_t)offset_pname;}
+    __refer ptr_pname = pname->arr_body ;
 
     glBindFragDataLocationIndexed((GLuint)pprogram, (GLuint)pcolorNumber, (GLuint)pindex, (const GLchar*)(ptr_pname));
     
@@ -11313,12 +11153,7 @@ int org_mini_gl_GL_glGetFragDataIndex(Runtime *runtime, JClass *clazz) {
     
     s32 pprogram = env->localvar_getInt(runtime->localvar, pos++);
     Instance *pname = env->localvar_getRefer(runtime->localvar, pos++);
-    int offset_pname = 0;
-    __refer ptr_pname = NULL;
-    if(pname){
-        offset_pname *= env->data_type_bytes[pname->mb.arr_type_index];
-        ptr_pname = pname->arr_body + offset_pname;
-    } else if(offset_pname) { ptr_pname = (__refer)(intptr_t)offset_pname;}
+    __refer ptr_pname = pname->arr_body ;
 
     GLint _re_val = glGetFragDataIndex((GLuint)pprogram, (const GLchar*)(ptr_pname));
     s32 ret_value = *((s32*)&_re_val);env->push_int(runtime->stack, ret_value);

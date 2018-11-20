@@ -1,8 +1,9 @@
 package test;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import org.mini.glfw.Glfw;
 import org.mini.media.AudioDecoder;
 import org.mini.media.AudioDevice;
 import org.mini.media.AudioFrameListener;
@@ -11,12 +12,26 @@ import org.mini.zip.Zip;
 
 class TestAudio {
 
-    static {
-        Glfw.loadLib();
+    public static byte[] readFile(String s) {
+        try {
+            File f = new File(s);
+            byte[] b = new byte[(int) f.length()];
+
+            FileInputStream dis = new FileInputStream(f);
+            dis.read(b);
+            dis.close();
+            return b;
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return null;
     }
 
     static void t1() {
-        AudioDecoder decoder = new AudioDecoder("./bibi.flac");
+        byte[] b = readFile("./bibi.flac");
+        System.out.println("b.len" + b.length);
+//        AudioDecoder decoder = new AudioDecoder("./bibi.flac");
+        AudioDecoder decoder = new AudioDecoder(b);
         AudioDevice device = new AudioDevice();
         device.config(AudioDevice.mal_format_s16, 2, 22050, null);
         device.init(AudioDevice.mal_device_type_playback, decoder);
@@ -123,8 +138,8 @@ class TestAudio {
     }
 
     public static void main(String[] args) {
-        //t1();
-        t2();
+        t1();
+//        t2();
     }
 
 }

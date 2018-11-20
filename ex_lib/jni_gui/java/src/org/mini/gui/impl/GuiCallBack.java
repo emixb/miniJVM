@@ -162,7 +162,7 @@ public class GuiCallBack extends GlfwCallbackAdapter {
             System.out.println("Could not init nanovg.\n");
             System.out.println("callback.getNvContext() is null.");
         }
-        GToolkit.loadFont(vg);
+        GToolkit.FontHolder.loadFont(vg);
 
     }
 

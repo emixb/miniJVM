@@ -61,7 +61,7 @@ public class Nanovg_java_2_c {
             + "\n"
             + "\n"
             + "#include \"jvm.h\"\n"
-            + "#include \"jni_gui.h\"\n"
+            + "#include \"media.h\"\n"
             + "#include \"stb_jni_assist.h\"\n"
             + "\n\n\n";
 
