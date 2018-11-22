@@ -1005,6 +1005,12 @@ s32 org_mini_fs_InnerFile_listDir(Runtime *runtime, JClass *clazz) {
         dirp = opendir(utf8_cstr(filepath)); //打开目录指针
         if (dirp) {
             while ((dp = readdir(dirp)) != NULL) { //通过目录指针读目录
+                if(strcmp(dp->d_name,".")==0){
+                    continue;
+                }
+                if(strcmp(dp->d_name,"..")==0){
+                    continue;
+                }
                 Utf8String *ustr = utf8_create_c(dp->d_name);
                 Instance *jstr = jstring_create(ustr, runtime);
                 gc_refer_hold(jstr);
