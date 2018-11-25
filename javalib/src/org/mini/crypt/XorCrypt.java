@@ -47,11 +47,46 @@ public class XorCrypt {
         byte[] r = new byte[msg.length];
 
         for (int i = 0, imax = msg.length; i < imax; i++) {
-            byte v = msg[i];
+            int v = msg[i] & 0xff;
             for (int j = 0, jmax = key.length; j < jmax; j++) {
-                v = (byte) (v ^ key[j]);
+                int k = key[j] & 0xff;
+                int bitshift = k % 8;
+
+                int v1 = (v << bitshift);
+                int v2 = (v >>> (8 - bitshift));
+                v = (v1 | v2);
+
+                v = (v ^ k) & 0xff;
             }
-            r[i] = v;
+            r[i] = (byte) v;
+        }
+        return r;
+    }
+
+    /**
+     * decrypt xor info
+     *
+     * @param msg
+     * @param key
+     * @return
+     */
+    public static byte[] xor_decrypt(byte[] msg, byte[] key) {
+        byte[] r = new byte[msg.length];
+
+        for (int i = 0, imax = msg.length; i < imax; i++) {
+            int v = msg[i] & 0xff;
+            for (int j = key.length - 1; j >= 0; j--) {
+                int k = key[j] & 0xff;
+                v = (v ^ k) & 0xff;
+
+                int bitshift = k % 8;
+
+                int v1 = (v >>> bitshift);
+                int v2 = (v << (8 - bitshift));
+                v = (v1 | v2);
+
+            }
+            r[i] = (byte) v;
         }
         return r;
     }
