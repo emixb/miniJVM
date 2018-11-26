@@ -1005,10 +1005,10 @@ s32 org_mini_fs_InnerFile_listDir(Runtime *runtime, JClass *clazz) {
         dirp = opendir(utf8_cstr(filepath)); //打开目录指针
         if (dirp) {
             while ((dp = readdir(dirp)) != NULL) { //通过目录指针读目录
-                if(strcmp(dp->d_name,".")==0){
+                if (strcmp(dp->d_name, ".") == 0) {
                     continue;
                 }
-                if(strcmp(dp->d_name,"..")==0){
+                if (strcmp(dp->d_name, "..") == 0) {
                     continue;
                 }
                 Utf8String *ustr = utf8_create_c(dp->d_name);
@@ -1313,6 +1313,64 @@ s32 org_mini_zip_ZipFile_compress0(Runtime *runtime, JClass *clazz) {
     return 0;
 }
 
+s32 org_mini_crypt_XorCrypt_encrypt(Runtime *runtime, JClass *clazz) {
+    s32 pos = 0;
+    Instance *data = localvar_getRefer(runtime->localvar, pos++);
+    Instance *key = localvar_getRefer(runtime->localvar, pos++);
+    if (data && key) {
+        Instance *r = jarray_create_by_type_index(runtime, data->arr_length, DATATYPE_BYTE);
+        s32 i, j, imax, jmax;
+        for (i = 0, imax = data->arr_length; i < imax; i++) {
+            u32 v = jarray_get_field(data, i) & 0xff;
+            for (j = 0, jmax = key->arr_length; j < jmax; j++) {
+                u32 k = jarray_get_field(key, j) & 0xff;
+
+                u32 bitshift = k % 8;
+
+                u32 v1 = (v << bitshift);
+                u32 v2 = (v >> (8 - bitshift));
+                v = (v1 | v2);
+
+                v = (v ^ k) & 0xff;
+            }
+            jarray_set_field(r, i, v & 0xff);
+        }
+        push_ref(runtime->stack, r);
+    } else {
+        push_ref(runtime->stack, NULL);
+    }
+    return 0;
+}
+
+s32 org_mini_crypt_XorCrypt_decrypt(Runtime *runtime, JClass *clazz) {
+    s32 pos = 0;
+    Instance *data = localvar_getRefer(runtime->localvar, pos++);
+    Instance *key = localvar_getRefer(runtime->localvar, pos++);
+    if (data && key) {
+        Instance *r = jarray_create_by_type_index(runtime, data->arr_length, DATATYPE_BYTE);
+        s32 i, j, imax;
+        for (i = 0, imax = data->arr_length; i < imax; i++) {
+            u32 v = jarray_get_field(data, i) & 0xff;
+            for (j = key->arr_length - 1; j >= 0; j--) {
+                u32 k = jarray_get_field(key, j) & 0xff;
+                v = (v ^ k) & 0xff;
+
+                u32 bitshift = k % 8;
+
+                u32 v1 = (v >> bitshift);
+                u32 v2 = (v << (8 - bitshift));
+                v = (v1 | v2);
+
+            }
+            jarray_set_field(r, i, v & 0xff);
+        }
+        push_ref(runtime->stack, r);
+    } else {
+        push_ref(runtime->stack, NULL);
+    }
+    return 0;
+}
+
 static java_native_method method_net_table[] = {
         {"org/mini/net/SocketNative", "open0",           "()I",                              org_mini_net_SocketNative_open0},
         {"org/mini/net/SocketNative", "bind0",           "(I[BI)I",                          org_mini_net_SocketNative_bind0},
@@ -1357,6 +1415,8 @@ static java_native_method method_net_table[] = {
         {"org/mini/zip/Zip",          "isDirectory0",    "([BI)I",                           org_mini_zip_ZipFile_isDirectory0},
         {"org/mini/zip/Zip",          "extract0",        "([B)[B",                           org_mini_zip_ZipFile_extract0},
         {"org/mini/zip/Zip",          "compress0",       "([B)[B",                           org_mini_zip_ZipFile_compress0},
+        {"org/mini/crypt/XorCrypt",   "encrypt",         "([B[B)[B",                         org_mini_crypt_XorCrypt_encrypt},
+        {"org/mini/crypt/XorCrypt",   "decrypt",         "([B[B)[B",                         org_mini_crypt_XorCrypt_decrypt},
 
 };
 
