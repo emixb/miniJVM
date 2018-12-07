@@ -50,6 +50,11 @@ public class Socket extends SocketImpl {
                 }
                 return r;
             }
+
+            @Override
+            public int read(byte[] b, int offset, int len) throws IOException {
+                return SocketNative.read(fd, b, offset, len);
+            }
         };
         return inputStream;
     }
@@ -68,6 +73,11 @@ public class Socket extends SocketImpl {
                 } else if (sent == -2) {
                     throw new SocketTimeoutException("read timeout");
                 }
+            }
+
+            @Override
+            public void write(byte[] b, int offset, int len) throws IOException {
+                SocketNative.write(fd, b, offset, len);
             }
 
         };
