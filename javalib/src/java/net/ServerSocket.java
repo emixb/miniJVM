@@ -16,12 +16,8 @@ public class ServerSocket extends SocketImpl {
 
     boolean isListen = false;
 
-    public ServerSocket()
-            throws IOException {
-        fd = SocketNative.open0();
-        if (fd < 0) {
-            throw new IOException("Init socket error");
-        }
+    public ServerSocket() throws IOException {
+        super();
     }
 
     public ServerSocket(int port)

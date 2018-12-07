@@ -365,15 +365,14 @@ s32 sock_accept(s32 listenfd) {
 }
 
 s32 sock_close(s32 listenfd) {
-    if (listenfd) {
-        shutdown(listenfd, SHUT_RDWR);
-        closesocket(listenfd);
+    shutdown(listenfd, SHUT_RDWR);
+    closesocket(listenfd);
 #if __JVM_OS_VS__ || __JVM_OS_MINGW__ || __JVM_OS_CYGWIN__
-        //can not cleanup , maybe other socket is alive
+    //can not cleanup , maybe other socket is alive
 //        WSACancelBlockingCall();
 //        WSACleanup();
 #endif
-    }
+
     return 0;
 }
 

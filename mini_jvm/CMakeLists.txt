@@ -111,8 +111,8 @@ copyfile("${PROJECT_SOURCE_DIR}/../javalib/dist/minijvm_rt.jar" "${PROJECT_SOURC
 copyfile("${PROJECT_SOURCE_DIR}/../ex_lib/jni_gui/java/dist/glfw_gui.jar" "${PROJECT_SOURCE_DIR}/../binary/lib/glfw_gui.jar")
 copyfile("${PROJECT_SOURCE_DIR}/../ex_lib/luaj/dist/luaj.jar" "${PROJECT_SOURCE_DIR}/../binary/lib/luaj.jar")
 copyfile("${PROJECT_SOURCE_DIR}/../test/javalib_test/dist/minijvm_test.jar" "${PROJECT_SOURCE_DIR}/../binary/lib/minijvm_test.jar")
+#copyfile("${PROJECT_SOURCE_DIR}/../../../javaSrc/g3d/dist/g3d.jar" "${PROJECT_SOURCE_DIR}/../binary/lib/g3d.jar")
 
 
-#configure_file( "${PROJECT_SOURCE_DIR}/../test/jni_test/java/dist/jni_test.jar" "${PROJECT_SOURCE_DIR}/../binary/lib/jni_test.jar" COPYONLY)
 
 

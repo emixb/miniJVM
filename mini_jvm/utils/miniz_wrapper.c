@@ -6,6 +6,11 @@ s32 zip_loadfile(char *jarpath, char *filename, ByteBuf *buf) {
     int file_index = 0;
     mz_zip_archive zipArchive = {0};
     mz_zip_archive_file_stat file_stat = {0};
+    
+    //skit the first '/'
+    if (filename && filename[0] == '/') {
+        filename += 1;
+    }
 
     int ret = 0;
     if (mz_zip_reader_init_file(&zipArchive, jarpath, 0) == MZ_FALSE) {//
@@ -156,7 +161,7 @@ s32 zip_extract(char *zip_data, int size, ByteBuf *data) {
 s32 zip_compress(char *data, int size, ByteBuf *zip_data) {
     mz_zip_archive zipArchive = {0};
     int ret = 0;
-    if (mz_zip_writer_init_heap(&zipArchive, 0,0) == MZ_FALSE) {//
+    if (mz_zip_writer_init_heap(&zipArchive, 0, 0) == MZ_FALSE) {//
         ret = -1;
     } else {
         if (mz_zip_writer_add_mem(&zipArchive, "", data, size, MZ_DEFAULT_COMPRESSION) == MZ_FALSE) {//

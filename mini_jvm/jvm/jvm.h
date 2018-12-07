@@ -385,6 +385,8 @@ void classloader_release_classs_static_field(ClassLoader *class_loader);
 
 void classloader_destory(ClassLoader *class_loader);
 
+void classloader_add_jar_path(ClassLoader *class_loader, Utf8String *jarPath);
+
 
 //======================= class file =============================
 

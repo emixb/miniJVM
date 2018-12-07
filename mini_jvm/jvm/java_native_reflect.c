@@ -505,6 +505,19 @@ s32 org_mini_reflect_vm_RefNative_defineClass(Runtime *runtime, JClass *clazz) {
     return 0;
 }
 
+s32 org_mini_reflect_vm_RefNative_addJarToClasspath(Runtime *runtime, JClass *clazz) {
+    s32 pos = 0;
+    Instance *jstr = localvar_getRefer(runtime->localvar, pos++);
+    Utf8String *ustr = utf8_create();
+
+    jstring_2_utf8(jstr, ustr);
+
+    classloader_add_jar_path(sys_classloader, ustr);
+    utf8_destory(ustr);
+
+    return 0;
+}
+
 s32 org_mini_reflect_ReflectClass_mapReference(Runtime *runtime, JClass *clazz) {
     int pos = 0;
     Instance *ins = (Instance *) localvar_getRefer(runtime->localvar, pos++);
@@ -1090,6 +1103,7 @@ static java_native_method method_jdwp_table[] = {
         {"org/mini/reflect/vm/RefNative",  "getGarbageReferedObjs", "()[Ljava/lang/Object;",                                            org_mini_reflect_vm_RefNative_getGarbageReferedObjs},
         {"org/mini/reflect/vm/RefNative",  "getGarbageStatus",      "()I",                                                              org_mini_reflect_vm_RefNative_getGarbageStatus},
         {"org/mini/reflect/vm/RefNative",  "defineClass",           "(Ljava/lang/ClassLoader;Ljava/lang/String;[BII)Ljava/lang/Class;", org_mini_reflect_vm_RefNative_defineClass},
+        {"org/mini/reflect/vm/RefNative",  "addJarToClasspath",     "(Ljava/lang/String;)V",                                            org_mini_reflect_vm_RefNative_addJarToClasspath},
         {"org/mini/reflect/ReflectClass",  "mapReference",          "(J)V",                                                             org_mini_reflect_ReflectClass_mapReference},
         {"org/mini/reflect/ReflectField",  "mapField",              "(J)V",                                                             org_mini_reflect_ReflectField_mapField},
         {"org/mini/reflect/ReflectField",  "getFieldVal",           "(JJ)J",                                                            org_mini_reflect_ReflectField_getFieldVal},

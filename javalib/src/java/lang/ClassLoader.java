@@ -132,7 +132,7 @@ public abstract class ClassLoader {
     }
 
     protected Class findClass(String name) throws ClassNotFoundException {
-        throw new ClassNotFoundException(name);
+        return parent.findClass(name);
     }
 
     protected final Class findLoadedClass(String name) {

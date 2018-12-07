@@ -648,7 +648,7 @@ class Properties extends Hashtable<Object,Object> {
     throws IOException
     {
         BufferedWriter awriter;
-        awriter = new BufferedWriter(new OutputStreamWriter(out, "8859_1"));
+        awriter = new BufferedWriter(new OutputStreamWriter(out, "iso8859_1"));
         if (comments != null)
             writeln(awriter, "#" + comments);
         writeln(awriter, "#" + new Date().toString());

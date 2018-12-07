@@ -170,6 +170,17 @@ void classloader_release_classs_static_field(ClassLoader *class_loader) {
     }
 }
 
+void classloader_add_jar_path(ClassLoader *class_loader, Utf8String *jarPath) {
+    s32 i;
+    for (i = 0; i < class_loader->classpath->length; i++) {
+        if (utf8_equals(arraylist_get_value(class_loader->classpath, i), jarPath)) {
+            return;
+        }
+    }
+    Utf8String *jarPath1=utf8_create_copy(jarPath);
+    arraylist_push_back(class_loader->classpath,jarPath1);
+}
+
 void set_jvm_state(int state) {
     jvm_state = state;
 }

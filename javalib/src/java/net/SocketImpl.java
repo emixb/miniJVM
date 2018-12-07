@@ -15,13 +15,20 @@ import org.mini.net.SocketNative;
  */
 public class SocketImpl implements Closeable {
 
-
     int fd = -1;
 
     String host;
     int port;//remotePort
     String localHost;
     int localport;
+
+    SocketImpl() throws IOException {
+        fd = SocketNative.open0();
+        //System.out.println("open fd:" + fd);
+        if (fd < 0) {
+            throw new IOException("Init socket error");
+        }
+    }
 
     void bind(int sockfd, String host, int port) throws IOException {
         localHost = host;
@@ -47,7 +54,9 @@ public class SocketImpl implements Closeable {
     @Override
     public void close() throws IOException {
         if (fd >= 0) {
+            //System.out.println("close fd:" + fd);
             SocketNative.close0(fd);
+            fd = -1;
         }
     }
 
@@ -57,5 +66,11 @@ public class SocketImpl implements Closeable {
         super.finalize();
     }
 
+    public String getLocalIp() {
+        return localHost;
+    }
 
+    public int getFileDesc() {
+        return fd;
+    }
 }

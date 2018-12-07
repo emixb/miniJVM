@@ -19,10 +19,7 @@ public class Socket extends SocketImpl {
     }
 
     public Socket() throws IOException {
-        fd = SocketNative.open0();
-        if (fd < 0) {
-            throw new IOException("Init socket error");
-        }
+        super();
     }
 
     public Socket(InetAddress address, int port) throws IOException {
