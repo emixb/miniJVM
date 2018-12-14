@@ -5,6 +5,8 @@
  */
 package org.mini.reflect;
 
+import org.mini.reflect.vm.RefNative;
+
 /**
  * 反射一个数组实例，如
  *
@@ -40,13 +42,19 @@ public class ReflectArray {
         dmo = new DirectMemObj(body_addr, length, typeTag);
     }
 
-
     public void setValObj(int index, Object val) {
         dmo.setValObj(index, val);
     }
 
     public Object getValObj(int index) {
         return dmo.getValObj(index);
+    }
+
+    public static long getBodyPtr(Object array) {
+        if (array == null || !array.getClass().isArray()) {
+            return 0;
+        }
+        return getBodyPtr(RefNative.obj2id(array));
     }
 
 //    final native void mapArray(long classId);
