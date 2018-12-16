@@ -5,6 +5,8 @@
  */
 package org.mini.gui;
 
+import org.mini.glfm.Glfm;
+import static org.mini.gui.GObject.isInBoundle;
 import static org.mini.gui.GToolkit.nvgRGBA;
 import static org.mini.nanovg.Nanovg.NVG_HOLE;
 import static org.mini.nanovg.Nanovg.nvgBeginPath;
@@ -51,7 +53,7 @@ public class GImageItem extends GObject {
         float ix, iy, iw, ih;
         int[] imgw = {0}, imgh = {0};
 
-        nvgImageSize(vg, img.getTexture(), imgw, imgh);
+        nvgImageSize(vg, img.getTexture(vg), imgw, imgh);
         if (imgw[0] < imgh[0]) {
             iw = w;
             ih = iw * (float) imgh[0] / (float) imgw[0];
@@ -70,7 +72,7 @@ public class GImageItem extends GObject {
 
             byte[] shadowPaint, imgPaint;
 
-            imgPaint = nvgImagePattern(vg, x + ix + 2, y + iy + 2, iw - 4, ih - 4, 0.0f / 180.0f * (float) Math.PI, img.getTexture(), alpha);
+            imgPaint = nvgImagePattern(vg, x + ix + 2, y + iy + 2, iw - 4, ih - 4, 0.0f / 180.0f * (float) Math.PI, img.getTexture(vg), alpha);
             nvgBeginPath(vg);
             nvgRoundedRect(vg, x, y, w, h, 5);
             nvgFillPaint(vg, imgPaint);
@@ -91,7 +93,7 @@ public class GImageItem extends GObject {
             nvgStroke(vg);
         } else {
 
-            byte[] imgPaint = nvgImagePattern(vg, x + ix + 1, y + iy + 1, iw - 2, ih - 2, 0.0f / 180.0f * (float) Math.PI, img.getTexture(), alpha);
+            byte[] imgPaint = nvgImagePattern(vg, x + ix + 1, y + iy + 1, iw - 2, ih - 2, 0.0f / 180.0f * (float) Math.PI, img.getTexture(vg), alpha);
             nvgBeginPath(vg);
             nvgRoundedRect(vg, x, y, w, h, 0);
             nvgFillPaint(vg, imgPaint);
@@ -142,4 +144,19 @@ public class GImageItem extends GObject {
         this.drawBoader = drawBoader;
     }
 
+    boolean bt_pressed;
+
+    @Override
+    public void touchEvent(int phase, int x, int y) {
+        if (isInArea(x, y)) {
+            if (phase == Glfm.GLFMTouchPhaseBegan) {
+                bt_pressed = true;
+            } else if (phase == Glfm.GLFMTouchPhaseEnded) {
+                doAction();
+                bt_pressed = false;
+            } else if (!isInArea(x, y)) {
+                bt_pressed = false;
+            }
+        }
+    }
 }

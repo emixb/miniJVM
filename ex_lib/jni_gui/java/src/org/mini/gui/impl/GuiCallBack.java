@@ -5,6 +5,7 @@
  */
 package org.mini.gui.impl;
 
+import org.mini.apploader.GlfmMain;
 import static org.mini.gl.GL.GL_TRUE;
 import static org.mini.gl.GL.glClearColor;
 import org.mini.glfw.Glfw;
@@ -83,8 +84,12 @@ public class GuiCallBack extends GlfwCallbackAdapter {
         return display;
     }
 
-    public void setForm(GForm gf) {
-        gform = gf;
+    public GForm getForm() {
+        return gform;
+    }
+
+    public void setForm(GForm form) {
+        gform = form;
     }
 
     public long getNvContext() {
@@ -119,10 +124,9 @@ public class GuiCallBack extends GlfwCallbackAdapter {
         Glfw.glfwSetWindowTitle(display, title);
     }
 
-    public void init(int width,int height) {
-        this.winWidth=width;
-        this.winHeight=height;
-        
+    public void init(int width, int height) {
+        this.winWidth = width;
+        this.winHeight = height;
 
         if (!Glfw.glfwInit()) {
             System.out.println("glfw init error.");
@@ -136,7 +140,7 @@ public class GuiCallBack extends GlfwCallbackAdapter {
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        
+
         glfwWindowHint(GLFW_DEPTH_BITS, 16);
         glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
 
@@ -155,15 +159,14 @@ public class GuiCallBack extends GlfwCallbackAdapter {
         // Calculate pixel ration for hi-dpi devices.
         pxRatio = (float) fbWidth / (float) winWidth;
         System.out.println("fbWidth=" + fbWidth + "  ,fbHeight=" + fbHeight);
-        
-        
-        vg = nvgCreateGL3(NVG_ANTIALIAS | NVG_STENCIL_STROKES );
+
+        vg = nvgCreateGL3(NVG_ANTIALIAS | NVG_STENCIL_STROKES);
         if (vg == 0) {
             System.out.println("Could not init nanovg.\n");
             System.out.println("callback.getNvContext() is null.");
         }
         GToolkit.FontHolder.loadFont(vg);
-
+        GlfmMain.onSurfaceCreated();
     }
 
     @Override
@@ -176,6 +179,11 @@ public class GuiCallBack extends GlfwCallbackAdapter {
         while (!glfwWindowShouldClose(display)) {
             try {
                 startAt = System.currentTimeMillis();
+                if (gform != null) {
+                    if (gform.getWinContext() == 0) {
+                        gform.init();
+                    }
+                }
                 //user define contents
                 if (GObject.flushReq()) {
                     gform.display(vg);
@@ -240,7 +248,6 @@ public class GuiCallBack extends GlfwCallbackAdapter {
             switch (button) {
                 case Glfw.GLFW_MOUSE_BUTTON_1: {//left
                     if (pressed) {
-                        gform.setFocus(gform.findByXY(mouseX, mouseY));
                         drag = true;
                         hoverX = mouseX;
                         hoverY = mouseY;
@@ -251,7 +258,6 @@ public class GuiCallBack extends GlfwCallbackAdapter {
                 }
                 case Glfw.GLFW_MOUSE_BUTTON_2: {//right
                     if (pressed) {
-                        gform.setFocus(gform.findByXY(mouseX, mouseY));
                         drag = true;
                         hoverX = mouseX;
                         hoverY = mouseY;
@@ -267,17 +273,11 @@ public class GuiCallBack extends GlfwCallbackAdapter {
             //click event
             long cur = System.currentTimeMillis();
             if (pressed && cur - mouseLastPressed < CLICK_PERIOD && this.button == button) {
-                if (gform.getFocus() != null) {
-                    gform.getFocus().clickEvent(button, mouseX, mouseY);
-                } else {
-                    gform.clickEvent(button, mouseX, mouseY);
-                }
+                gform.clickEvent(button, mouseX, mouseY);
             } else //press event
-             if (gform.getFocus() != null) {
-                    gform.getFocus().mouseButtonEvent(button, pressed, mouseX, mouseY);
-                } else {
-                    gform.mouseButtonEvent(button, pressed, mouseX, mouseY);
-                }
+            {
+                gform.mouseButtonEvent(button, pressed, mouseX, mouseY);
+            }
             this.button = button;
             mouseLastPressed = cur;
         }

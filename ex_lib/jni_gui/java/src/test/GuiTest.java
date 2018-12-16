@@ -1,6 +1,7 @@
 package test;
 
 import java.util.Random;
+import org.mini.apploader.AppManager;
 import org.mini.gl.warp.GLFrameBuffer;
 import org.mini.gl.warp.GLFrameBufferPainter;
 import org.mini.gui.GApplication;
@@ -20,6 +21,7 @@ import org.mini.gui.GLabel;
 import org.mini.gui.GList;
 import org.mini.gui.GObject;
 import org.mini.gui.GScrollBar;
+import org.mini.gui.GViewPort;
 import org.mini.gui.impl.GuiCallBack;
 import org.mini.gui.event.GActionListener;
 import static org.mini.nanovg.Nanovg.nvgCreateImage;
@@ -33,16 +35,18 @@ import static org.mini.nanovg.Nanovg.nvgCreateImage;
  *
  * @author gust
  */
-public class GuiTest implements GApplication {
+public class GuiTest extends GApplication {
 
     public static void main(String[] args) {
         GuiCallBack ccb = GuiCallBack.getInstance();
         ccb.init(800, 600);//window size
 
-        GuiTest app = new GuiTest();
-        GForm form = app.createdForm(GuiCallBack.getInstance());
-        form.setTitle("登录 窗口");
-        ccb.setForm(form);
+//        GuiTest app = new GuiTest();
+//        app.setSaveRoot("./");
+//        GForm form = app.getForm(app);
+//        form.setTitle("窗口");
+//        ccb.setForm(form);
+        AppManager.getInstance().active();
 
         ccb.mainLoop();
         ccb.destory();
@@ -51,9 +55,9 @@ public class GuiTest implements GApplication {
     GForm win;
 
     @Override
-    public GForm createdForm(GuiCallBack ccb) {
+    public GForm getForm(GApplication app) {
         if (win == null) {
-            win = new GForm(ccb);
+            win = new GForm(GuiCallBack.getInstance());
             win.init();
             long vg = win.getNvContext();
             GFrame gframe = new GFrame("Github"/*"demo"*/, 50, 50, 300, 500);
@@ -65,7 +69,7 @@ public class GuiTest implements GApplication {
 
     Light light;
 
-    public void init(GContainer parent, long vg) {
+    public void init(GViewPort parent, long vg) {
         light = new Light();
 
         int x = 8, y = 10;
@@ -102,7 +106,7 @@ public class GuiTest implements GApplication {
             public void action(GObject go) {
                 Random ran = new Random();
                 GFrame sub1 = new GFrame(/*"子窗口"*/"颜色选择", 400 + ran.nextInt(100), 50 + ran.nextInt(100), 300, 400);
-                GContainer view = sub1.getView();
+                GViewPort view = sub1.getView();
                 init1(view, vg);
                 sub1.setClosable(true);
                 win.add(sub1);
@@ -148,8 +152,8 @@ public class GuiTest implements GApplication {
     GImage img;
     GList list;
 
-    public void init1(GContainer parent, long vg) {
-        img = GImage.createImage(vg, "./image4.png");
+    public void init1(GViewPort parent, long vg) {
+        img = GImage.createImage("./image4.png");
 
         int x = 10, y = 10;
         list = new GList(x, y, 280, 30);

@@ -32,6 +32,9 @@ public class GLabel extends GObject {
 
     int align = NVG_ALIGN_LEFT | NVG_ALIGN_TOP;
 
+    public static final int MODE_MULTI_SHOW = 1, MODE_SINGLE_SHOW = 2;
+    int showMode = MODE_SINGLE_SHOW;
+
     public GLabel() {
 
     }
@@ -48,6 +51,15 @@ public class GLabel extends GObject {
 
     public int getType() {
         return TYPE_LABEL;
+    }
+
+    public void setShowMode(int m) {
+        this.showMode = m;
+
+    }
+
+    public int getShowMode() {
+        return this.showMode;
     }
 
     public void setAlign(int ali) {
@@ -73,28 +85,48 @@ public class GLabel extends GObject {
         float y = getY();
         float w = getW();
         float h = getH();
+        nvgTextMetrics(vg, null, null, lineh);
 
-        drawText(vg, x, y, w, h);
+        if (showMode == MODE_MULTI_SHOW) {
+            drawMultiText(vg, x, y, w, h);
+        } else {
+            drawLine(vg, x, y, w, h);
+        }
         return true;
     }
 
-    void drawLabel(long vg, float x, float y, float w, float h) {
+    void drawLine(long vg, float x, float y, float w, float h) {
         //NVG_NOTUSED(w);
         nvgFontSize(vg, GToolkit.getStyle().getTextFontSize());
         nvgFontFace(vg, GToolkit.getFontWord());
         nvgFillColor(vg, GToolkit.getStyle().getTextFontColor());
 
         nvgTextAlign(vg, align);
-        nvgTextJni(vg, x, y + h * 0.5f, text_arr, 0, text_arr.length);
+        if (text_arr != null) {
+            float dx, dy;
+            dx = x + 2;
+            dy = y + 2;
+            if ((align & Nanovg.NVG_ALIGN_CENTER) != 0) {
+                dx += w * .5f;
+            } else if ((align & Nanovg.NVG_ALIGN_RIGHT) != 0) {
+                dx += w;
+            }
+
+            if ((align & Nanovg.NVG_ALIGN_MIDDLE) != 0) {
+                dy += h * .5;
+            } else if ((align & Nanovg.NVG_ALIGN_BOTTOM) != 0) {
+                dy += h;
+            }
+            nvgTextJni(vg, dx, dy, text_arr, 0, text_arr.length);
+        }
 
     }
 
-    void drawText(long vg, float x, float y, float w, float h) {
+    void drawMultiText(long vg, float x, float y, float w, float h) {
 
         nvgFontSize(vg, GToolkit.getStyle().getTextFontSize());
         nvgFillColor(vg, GToolkit.getStyle().getTextFontColor());
         nvgFontFace(vg, GToolkit.getFontWord());
-        nvgTextMetrics(vg, null, null, lineh);
 
         nvgTextAlign(vg, align);
         float[] area = new float[]{x + 2f, y + 2f, w - 4f, h - 4f};

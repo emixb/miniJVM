@@ -244,6 +244,13 @@ public class GToolkit {
         nvgFill(vg);
     }
 
+    public static void drawRoundedRect(long vg, float x, float y, float w, float h, float r, float[] color) {
+        nvgBeginPath(vg);
+        nvgFillColor(vg, color);
+        nvgRoundedRect(vg, x, y, w, h, r);
+        nvgFill(vg);
+    }
+
     public static float[] getTextBoundle(long vg, String s, float width) {
         float[] bond = new float[4];
         byte[] b = toUtf8(s);
@@ -284,6 +291,10 @@ public class GToolkit {
     }
 
     public static void drawImage(long vg, GImage img, float px, float py, float pw, float ph) {
+        drawImage(vg, img, px, py, pw, ph, true, 1.f);
+    }
+
+    public static void drawImage(long vg, GImage img, float px, float py, float pw, float ph, boolean border, float alpha) {
         if (img == null) {
             return;
         }
@@ -292,7 +303,7 @@ public class GToolkit {
         float ix, iy, iw, ih;
         int[] imgW = {0}, imgH = {0};
 
-        nvgImageSize(vg, img.getTexture(), imgW, imgH);
+        nvgImageSize(vg, img.getTexture(vg), imgW, imgH);
         if (imgW[0] < imgH[0]) {
             iw = pw;
             ih = iw * (float) imgH[0] / (float) imgW[0];
@@ -305,25 +316,27 @@ public class GToolkit {
             iy = 0;
         }
 
-        imgPaint = nvgImagePattern(vg, px + ix + 1, py + iy + 1, iw - 2, ih - 2, 0.0f / 180.0f * (float) Math.PI, img.getTexture(), 1.0f);
+        imgPaint = nvgImagePattern(vg, px + ix + 1, py + iy + 1, iw - 2, ih - 2, 0.0f / 180.0f * (float) Math.PI, img.getTexture(vg), alpha);
         nvgBeginPath(vg);
         nvgRoundedRect(vg, px, py, pw, ph, 5);
         nvgFillPaint(vg, imgPaint);
         nvgFill(vg);
 
-        shadowPaint = nvgBoxGradient(vg, px, py, pw, ph, 5, 3, nvgRGBA(0, 0, 0, 128), nvgRGBA(0, 0, 0, 0));
-        nvgBeginPath(vg);
-        nvgRect(vg, px - 5, py - 5, pw + 10, ph + 10);
-        nvgRoundedRect(vg, px, py, pw, ph, 6);
-        nvgPathWinding(vg, NVG_HOLE);
-        nvgFillPaint(vg, shadowPaint);
-        nvgFill(vg);
+        if (border) {
+//            shadowPaint = nvgBoxGradient(vg, px, py, pw, ph, 5, 3, nvgRGBA(0, 0, 0, 128), nvgRGBA(0, 0, 0, 0));
+//            nvgBeginPath(vg);
+//            //nvgRect(vg, px - 5, py - 5, pw + 10, ph + 10);
+//            nvgRoundedRect(vg, px, py, pw, ph, 6);
+//            nvgPathWinding(vg, NVG_HOLE);
+//            nvgFillPaint(vg, shadowPaint);
+//            nvgFill(vg);
 
-        nvgBeginPath(vg);
-        nvgRoundedRect(vg, px + 1, py + 1, pw - 2, ph - 2, 4 - 0.5f);
-        nvgStrokeWidth(vg, 1.0f);
-        nvgStrokeColor(vg, nvgRGBA(255, 255, 255, 192));
-        nvgStroke(vg);
+            nvgBeginPath(vg);
+            nvgRoundedRect(vg, px + 1, py + 1, pw - 2, ph - 2, 4 - 0.5f);
+            nvgStrokeWidth(vg, 1.0f);
+            nvgStrokeColor(vg, nvgRGBA(255, 255, 255, 192));
+            nvgStroke(vg);
+        }
     }
 
     /**
@@ -354,21 +367,28 @@ public class GToolkit {
         });
 
         GContainer gp = frame.getView();
-        float x = 10, y = 10, w = gp.getViewW() - 20;
+        float x = 10, y = 10, w = gp.getW() - 20;
 
         GLabel lb1 = new GLabel(msg, x, y, w, 80);
+        lb1.setShowMode(GLabel.MODE_MULTI_SHOW);
         gp.add(lb1);
         y += 85;
 
-        GButton leftBtn = new GButton(left, x, y, 135, 28);
-        leftBtn.setBgColor(128, 16, 8, 255);
-        gp.add(leftBtn);
-        leftBtn.setActionListener(leftListener);
+        if (left != null) {
+            GButton leftBtn = new GButton(left, x, y, 135, 28);
+            leftBtn.setBgColor(128, 16, 8, 255);
+            gp.add(leftBtn);
+            leftBtn.setActionListener(leftListener);
+        }
 
-        GButton rightBtn = new GButton(right, x + 145, y, 135, 28);
+        GButton rightBtn = new GButton(right == null ? GLanguage.getString("Cancel") : right, x + 145, y, 135, 28);
         gp.add(rightBtn);
-
-        rightBtn.setActionListener(rightListener);
+        rightBtn.setActionListener(rightListener == null ? new GActionListener() {
+            @Override
+            public void action(GObject gobj) {
+                frame.close();
+            }
+        } : rightListener);
 
         return frame;
     }
@@ -396,28 +416,26 @@ public class GToolkit {
 
             @Override
             public void focusLost(GObject go) {
-                if (frame.getForm() != null) {
-                    frame.getForm().remove(frame);
-                }
+                frame.close();
             }
         });
         GContainer view = frame.getView();
 
-        GTextField search = new GTextField("", "search", pad, y, frame.getViewW() - pad * 2, 30);
+        GTextField search = new GTextField("", "search", pad, y, frame.getW() - pad * 2, 30);
         search.setName("search");
         search.setBoxStyle(GTextField.BOX_STYLE_SEARCH);
         view.add(search);
         y += 30 + pad;
 
-        float h = view.getViewH() - y - 30 - pad * 4;
-        GList glist = new GList(0, y, view.getViewW(), h);
+        float h = view.getH() - y - 30 - pad * 4;
+        GList glist = new GList(0, y, view.getW(), h);
         glist.setName("list");
         glist.setShowMode(GList.MODE_MULTI_SHOW);
         glist.setSelectMode(GList.MODE_MULTI_SELECT);
         frame.getView().add(glist);
         y += h + pad;
 
-        GCheckBox chbox = new GCheckBox(GLanguage.getString("SeleAll"), false, pad, y, view.getViewW() * .5f, btnH);
+        GCheckBox chbox = new GCheckBox(GLanguage.getString("SeleAll"), false, pad, y, view.getW() * .5f, btnH);
         view.add(chbox);
         chbox.setActionListener(new GActionListener() {
             @Override
@@ -430,7 +448,7 @@ public class GToolkit {
             }
         });
 
-        GButton btn = new GButton(GLanguage.getString("Perform"), (view.getViewW() - btnW - pad), y, btnW, btnH);
+        GButton btn = new GButton(GLanguage.getString("Perform"), (view.getW() - btnW - pad), y, btnW, btnH);
         btn.setName("perform");
         frame.getView().add(btn);
         btn.setActionListener(buttonListener);
@@ -447,14 +465,12 @@ public class GToolkit {
         frame.setFront(true);
         frame.setFocusListener(new GFocusChangeListener() {
             @Override
-            public void focusGot(GObject go) {
+            public void focusGot(GObject oldgo) {
             }
 
             @Override
-            public void focusLost(GObject go) {
-                if (go.getForm() != null) {
-                    go.getForm().remove(frame);
-                }
+            public void focusLost(GObject newgo) {
+                frame.close();
             }
         });
         GContainer view = frame.getView();
@@ -508,13 +524,13 @@ public class GToolkit {
         list.setBgColor(GToolkit.getStyle().getFrameBackground());
         list.setFocusListener(new GFocusChangeListener() {
             @Override
-            public void focusGot(GObject go) {
+            public void focusGot(GObject oldgo) {
             }
 
             @Override
-            public void focusLost(GObject go) {
-                if (go.getForm() != null) {
-                    go.getForm().remove(list);
+            public void focusLost(GObject newgo) {
+                if (list.getForm() != null) {
+                    list.getForm().remove(list);
                 }
             }
         });
@@ -531,7 +547,7 @@ public class GToolkit {
             size = 8;
         }
         list.setSize(200, size * list.list_item_heigh);
-        list.setViewSize(200, size * list.list_item_heigh);
+        list.setInnerSize(200, size * list.list_item_heigh);
         list.setFront(true);
 
         return list;
@@ -542,13 +558,13 @@ public class GToolkit {
         GMenu menu = new GMenu(0, 0, 150, 120);
         menu.setFocusListener(new GFocusChangeListener() {
             @Override
-            public void focusGot(GObject go) {
+            public void focusGot(GObject oldgo) {
             }
 
             @Override
-            public void focusLost(GObject go) {
-                if (go.getForm() != null) {
-                    go.getForm().remove(menu);
+            public void focusLost(GObject newgo) {
+                if (menu.getForm() != null) {
+                    menu.getForm().remove(menu);
                 }
             }
         });
@@ -613,13 +629,13 @@ public class GToolkit {
         };
         view.setFocusListener(new GFocusChangeListener() {
             @Override
-            public void focusGot(GObject go) {
+            public void focusGot(GObject oldgo) {
             }
 
             @Override
-            public void focusLost(GObject go) {
-                if (go.getForm() != null) {
-                    go.getForm().remove(go);
+            public void focusLost(GObject newgo) {
+                if (view.getForm() != null) {
+                    view.getForm().remove(view);
                 }
             }
         });
@@ -629,8 +645,8 @@ public class GToolkit {
         float imgW = img.getWidth();
         float imgH = img.getHeight();
 
-        float formW = form.getViewW();
-        float formH = form.getViewH();
+        float formW = form.getW();
+        float formH = form.getH();
 
         float ratioW = formW / imgW;
         float ratioH = formH / imgH;
@@ -643,9 +659,7 @@ public class GToolkit {
             imgH *= ratioH;
         }
         view.setSize(imgW, imgH);
-        view.setViewSize(imgW, imgH);
         view.setLocation((formW - view.getW()) / 2, (formH - view.getH()) / 2);
-        view.setViewLocation((formW - view.getW()) / 2, (formH - view.getH()) / 2);
 
         return view;
     }

@@ -26,6 +26,8 @@ import static org.mini.gl.GL.glTexImage2D;
 import static org.mini.gl.GL.glTexParameterf;
 import static org.mini.nanovg.Nanovg.stbi_load;
 import org.mini.reflect.DirectMemObj;
+import org.mini.reflect.ReflectArray;
+import org.mini.reflect.vm.RefNative;
 
 /**
  *
@@ -129,61 +131,61 @@ public class Gutil {
     }
 
     static public void gluPerspective(double fov, double aspectRatio, double zNear, double zFar) {
-        // 使用glu库函数，需要添加glu.h头文件
-        //gluPerspective( fov, aspectRatio, zNear, zFar );
-
-        // 使用OpenGL函数，但是需要添加math.h头文件
-        double rFov = fov * 3.14159265 / 180.0;
-        GL.glFrustum(-zNear * Math.tan(rFov / 2.0) * aspectRatio,
-                zNear * Math.tan(rFov / 2.0) * aspectRatio,
-                -zNear * Math.tan(rFov / 2.0),
-                zNear * Math.tan(rFov / 2.0),
-                zNear, zFar);
+//        // 使用glu库函数，需要添加glu.h头文件
+//        //gluPerspective( fov, aspectRatio, zNear, zFar );
+//
+//        // 使用OpenGL函数，但是需要添加math.h头文件
+//        double rFov = fov * 3.14159265 / 180.0;
+//        GL.glFrustum(-zNear * Math.tan(rFov / 2.0) * aspectRatio,
+//                zNear * Math.tan(rFov / 2.0) * aspectRatio,
+//                -zNear * Math.tan(rFov / 2.0),
+//                zNear * Math.tan(rFov / 2.0),
+//                zNear, zFar);
     }
 
     static public void gluLookAt(double eX, double eY, double eZ, double cX, double cY,
             double cZ, double upX, double upY, double upZ) {
-        // eye and center are points, but up is a vector
-        // 1. change center into a vector:
-        // glTranslated(-eX, -eY, -eZ);
-        cX = cX - eX;
-        cY = cY - eY;
-        cZ = cZ - eZ;
-        // 2. The angle of center on xz plane and x axis
-        // i.e. angle to rot so center in the neg. yz plane
-        double a = Math.atan(cZ / cX);
-        if (cX >= 0) {
-            a = a + Math.PI / 2;
-        } else {
-            a = a - Math.PI / 2;
-        }
-        // 3. The angle between the center and y axis
-        // i.e. angle to rot so center in the negative z axis
-        double b = Math.acos(cY / Math.sqrt(cX * cX + cY * cY + cZ * cZ));
-        b = b - Math.PI / 2;
-        // 4. up rotate around y axis (a) radians
-        double upx = upX * Math.cos(a) + upZ * Math.sin(a);
-        double upz = -upX * Math.sin(a) + upZ * Math.cos(a);
-        upX = upx;
-        upZ = upz;
-        // 5. up rotate around x axis (b) radians
-        double upy = upY * Math.cos(b) - upZ * Math.sin(b);
-        upz = upY * Math.sin(b) + upZ * Math.cos(b);
-        upY = upy;
-        upZ = upz;
-        double c = Math.atan(upX / upY);
-        if (upY < 0) {
-            // 6. the angle between up on xy plane and y axis
-            c = c + Math.PI;
-        }
-        GL.glRotated(Math.toDegrees(c), 0, 0, 1);
-        // up in yz plane
-        GL.glRotated(Math.toDegrees(b), 1, 0, 0);
-        // center in negative z axis
-        GL.glRotated(Math.toDegrees(a), 0, 1, 0);
-        // center in yz plane
-        GL.glTranslated(-eX, -eY, -eZ);
-        // eye at the origin
+//        // eye and center are points, but up is a vector
+//        // 1. change center into a vector:
+//        // glTranslated(-eX, -eY, -eZ);
+//        cX = cX - eX;
+//        cY = cY - eY;
+//        cZ = cZ - eZ;
+//        // 2. The angle of center on xz plane and x axis
+//        // i.e. angle to rot so center in the neg. yz plane
+//        double a = Math.atan(cZ / cX);
+//        if (cX >= 0) {
+//            a = a + Math.PI / 2;
+//        } else {
+//            a = a - Math.PI / 2;
+//        }
+//        // 3. The angle between the center and y axis
+//        // i.e. angle to rot so center in the negative z axis
+//        double b = Math.acos(cY / Math.sqrt(cX * cX + cY * cY + cZ * cZ));
+//        b = b - Math.PI / 2;
+//        // 4. up rotate around y axis (a) radians
+//        double upx = upX * Math.cos(a) + upZ * Math.sin(a);
+//        double upz = -upX * Math.sin(a) + upZ * Math.cos(a);
+//        upX = upx;
+//        upZ = upz;
+//        // 5. up rotate around x axis (b) radians
+//        double upy = upY * Math.cos(b) - upZ * Math.sin(b);
+//        upz = upY * Math.sin(b) + upZ * Math.cos(b);
+//        upY = upy;
+//        upZ = upz;
+//        double c = Math.atan(upX / upY);
+//        if (upY < 0) {
+//            // 6. the angle between up on xy plane and y axis
+//            c = c + Math.PI;
+//        }
+//        GL.glRotated(Math.toDegrees(c), 0, 0, 1);
+//        // up in yz plane
+//        GL.glRotated(Math.toDegrees(b), 1, 0, 0);
+//        // center in negative z axis
+//        GL.glRotated(Math.toDegrees(a), 0, 1, 0);
+//        // center in yz plane
+//        GL.glTranslated(-eX, -eY, -eZ);
+//        // eye at the origin
     }
 
     static public void drawCood() {
@@ -293,8 +295,22 @@ public class Gutil {
 
         return tex[0];
     }
+
+    public static void image_load_whd(byte[] fileCont, int[] w_h_d) {
+        int[] x = {0}, y = {0}, n = {0};
+        long ptr = ReflectArray.getBodyPtr(fileCont);
+        long data = Nanovg.stbi_load_from_memory(ptr, fileCont.length, x, y, n, 0);
+        if (data == 0) {
+            System.out.println("ERROR: failed to load image: " + fileCont);
+            return;
+        }
+        w_h_d[0] = x[0];
+        w_h_d[1] = y[0];
+        w_h_d[2] = n[0];
+    }
+
 //
-//    public static int image_load_data(byte[] fileCont, int[] w_h_d) {
+//    public static int image_load_whd(byte[] fileCont, int[] w_h_d) {
 //        int[] x = {0}, y = {0}, n = {0};
 //        int[] tex = {0};
 //        long ptr = new ReflectArray(RefNative.obj2id(fileCont)).getDataPtr();
@@ -340,7 +356,6 @@ public class Gutil {
 //        return tex[0];
 //
 //    }
-
     static public int genTexture2D(byte[] data, int w, int h, int gl_inner_format, int gl_format) {
         int[] tex = {0};
         glGenTextures(1, tex, 0);

@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.mini.gui.event;
+package org.mini.gui;
 
 /**
  *
- * @author gust
+ * @author Gust
  */
-public interface GListener{
+public interface GCallback {
     
 }

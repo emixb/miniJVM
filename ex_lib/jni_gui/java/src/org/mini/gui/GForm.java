@@ -7,6 +7,8 @@ package org.mini.gui;
 
 import org.mini.gui.impl.GuiCallBack;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -34,6 +36,13 @@ import static org.mini.nanovg.Nanovg.nvgFillColor;
 import static org.mini.nanovg.Nanovg.nvgFontFace;
 import static org.mini.nanovg.Nanovg.nvgFontSize;
 import static org.mini.nanovg.Nanovg.nvgTextAlign;
+import static org.mini.gui.GObject.flush;
+import static org.mini.gui.GObject.flush;
+import static org.mini.gui.GObject.flush;
+import static org.mini.gui.GObject.flush;
+import static org.mini.gui.GObject.flush;
+import static org.mini.gui.GObject.flush;
+import static org.mini.gui.GObject.flush;
 
 /**
  *
@@ -61,29 +70,16 @@ public class GForm extends GViewPort {
     GAppActiveListener activeListener;
     GNotifyListener notifyListener;
 
-    final static List<Integer> pendingDeleteImage = new ArrayList();
+//    final static List<Integer> pendingDeleteImage = Collections.synchronizedList(new ArrayList());
+    final static Timer timer = new Timer(true);//用于更新画面，UI系统采取按需刷新的原则
 
-    static Timer timer = new Timer(true);//用于更新画面，UI系统采取按需刷新的原则
+
+    static byte[] curShowMessage;
+    static GCmdHandler cmdHandler = new GCmdHandler();
 
     public GForm(GuiCallBack ccb) {
         this.title = title;
-
         callback = ccb;
-
-        fbWidth = ccb.getFrameBufferWidth();
-        fbHeight = ccb.getFrameBufferHeight();
-        int winWidth, winHeight;
-        winWidth = ccb.getDeviceWidth();
-        winHeight = ccb.getDeviceHeight();
-
-        pxRatio = ccb.getDeviceRatio();
-
-        setLocation(0, 0);
-        setSize(winWidth, winHeight);
-
-        setViewLocation(0, 0);
-        setViewSize(winWidth, winHeight);
-
     }
 
     public int getType() {
@@ -130,6 +126,16 @@ public class GForm extends GViewPort {
             System.out.println("callback.getNvContext() is null.");
         }
 
+        fbWidth = callback.getFrameBufferWidth();
+        fbHeight = callback.getFrameBufferHeight();
+        int winWidth, winHeight;
+        winWidth = callback.getDeviceWidth();
+        winHeight = callback.getDeviceHeight();
+
+        pxRatio = callback.getDeviceRatio();
+
+        setLocation(0, 0);
+        setSize(winWidth, winHeight);
         //System.out.println("fbWidth=" + fbWidth + "  ,fbHeight=" + fbHeight);
         flush();
     }
@@ -155,9 +161,11 @@ public class GForm extends GViewPort {
 
             nvgBeginFrame(vg, winWidth, winHeight, pxRatio);
             //drawDebugInfo(vg);
+            Nanovg.nvgReset(vg);
             Nanovg.nvgResetScissor(vg);
             Nanovg.nvgScissor(vg, 0, 0, winWidth, winHeight);
             update(vg);
+            cmdHandler.update(this);
             nvgEndFrame(vg);
 
             //
@@ -173,16 +181,7 @@ public class GForm extends GViewPort {
 //                if (cost < 1000 / fpsExpect) {
 //                    Thread.sleep((long) (1000 / fpsExpect - cost));
 //                }
-            synchronized (pendingDeleteImage) {
-                for (int i = pendingDeleteImage.size() - 1; i >= 0; i--) {
-                    Integer tex = pendingDeleteImage.get(i);
-                    if (tex != null) {
-                        Nanovg.nvgDeleteImage(vg, tex);
-                        System.out.println("delete image " + tex);
-                    }
-                }
-                pendingDeleteImage.clear();
-            }
+            cmdHandler.process(this);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -202,12 +201,12 @@ public class GForm extends GViewPort {
         b = Gutil.toUtf8("touch x,y:" + cb.mouseX + "," + cb.mouseY);
         Nanovg.nvgTextJni(vg, dx, dy, b, 0, b.length);
         dy += font_size;
-        b = Gutil.toUtf8("form:" + getX() + "," + getY() + "," + getW() + "," + getH() + "  " + getViewX() + "," + getViewY() + "," + getViewW() + "," + getViewH());
+        b = Gutil.toUtf8("form:" + getX() + "," + getY() + "," + getW() + "," + getH() + "  " + getInnerX() + "," + getInnerY() + "," + getInnerW() + "," + getInnerH());
 
         Nanovg.nvgTextJni(vg, dx, dy, b, 0, b.length);
         dy += font_size;
         if (focus != null) {
-            b = Gutil.toUtf8("focus:" + focus.getX() + "," + focus.getY() + "," + focus.getW() + "," + focus.getH() + "  " + ((focus instanceof GContainer) ? ((GContainer) focus).getViewX() + "," + ((GContainer) focus).getViewY() + "," + ((GContainer) focus).getViewW() + "," + ((GContainer) focus).getViewH() : ""));
+            b = Gutil.toUtf8("focus:" + focus.getX() + "," + focus.getY() + "," + focus.getW() + "," + focus.getH() + "  " + ((focus instanceof GContainer) ? ((GContainer) focus).getInnerX() + "," + ((GContainer) focus).getInnerY() + "," + ((GContainer) focus).getInnerW() + "," + ((GContainer) focus).getInnerH() : ""));
             Nanovg.nvgTextJni(vg, dx, dy, b, 0, b.length);
         }
     }
@@ -274,9 +273,7 @@ public class GForm extends GViewPort {
     }
 
     public static void deleteImage(int texture) {
-        synchronized (pendingDeleteImage) {
-            pendingDeleteImage.add(texture);
-        }
+        cmdHandler.addCmd(GCmd.GCMD_DESTORY_TEXTURE, texture);
     }
 
     public void onAppFocus(boolean focus) {
@@ -284,6 +281,7 @@ public class GForm extends GViewPort {
         if (activeListener != null) {
             activeListener.onAppActive(focus);
         }
+        flush();
     }
 
     public void onNotify(String key, String val) {
@@ -318,6 +316,26 @@ public class GForm extends GViewPort {
      */
     public void setNotifyListener(GNotifyListener notifyListener) {
         this.notifyListener = notifyListener;
+    }
+
+    /**
+     *
+     * @param s
+     */
+    public static void addMessage(String s) {
+        cmdHandler.addCmd(GCmd.GCMD_SHOW_MESSAGE, s);
+    }
+
+    public static void clearMessage() {
+        cmdHandler.addCmd(GCmd.GCMD_CLEAR_MESSAGE);
+    }
+    
+    public static void showKeyboard(){
+        cmdHandler.addCmd(GCmd.GCMD_SHOW_KEYBOARD);
+    }
+    
+    public static void hideKeyboard(){
+        cmdHandler.addCmd(GCmd.GCMD_HIDE_KEYBOARD);
     }
 
 }

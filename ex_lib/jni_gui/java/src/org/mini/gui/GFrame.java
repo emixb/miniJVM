@@ -38,7 +38,9 @@ import static org.mini.nanovg.Nanovg.nvgTextJni;
  *
  * @author gust
  */
-public class GFrame extends GPanel {
+public class GFrame extends GContainer {
+
+    static final float TITLE_HEIGHT = 30.f, PAD = 2.f;
 
     String title;
     byte[] title_arr;
@@ -56,7 +58,7 @@ public class GFrame extends GPanel {
     boolean closable = true;
 
     public GFrame() {
-
+        this("", (float) 0, (float) 0, (float) 300, (float) 200);
     }
 
     public GFrame(String title, int left, int top, int width, int height) {
@@ -67,23 +69,20 @@ public class GFrame extends GPanel {
         setTitle(title);
         setLocation(left, top);
         setSize(width, height);
-        setViewLocation(left, top);
-        setViewSize(width, height);
 
-        panel.setLocation(2, 32);
-        panel.setSize(width - 4, height - 34);
-        panel.setViewLocation(2, 32);
-        panel.setViewSize(width - 4, height - 34);
+        panel.setLocation(PAD, TITLE_HEIGHT + PAD);
+        panel.setSize(width - PAD * 2, height - TITLE_HEIGHT - PAD * 2);
         add(panel);
 
         title_panel.setLocation(1, 1);
-        title_panel.setSize(width - 2, 30);
+        title_panel.setSize(width - PAD, TITLE_HEIGHT);
         add(title_panel);
     }
 
     @Override
     public void setSize(float w, float h) {
-        panel.setSize(w - 4, h - 34);
+        title_panel.setSize(w - PAD, TITLE_HEIGHT);
+        panel.setSize(w - PAD * 2, h - TITLE_HEIGHT - PAD * 2);
         super.setSize(w, h);
     }
 
@@ -92,9 +91,45 @@ public class GFrame extends GPanel {
         return TYPE_FRAME;
     }
 
+    @Override
+    public float getInnerX() {
+        return getX();
+    }
+
+    @Override
+    public float getInnerY() {
+        return getY();
+    }
+
+    @Override
+    public float getInnerW() {
+        return getW();
+    }
+
+    @Override
+    public float getInnerH() {
+        return getH();
+    }
+
+    @Override
+    public void setInnerLocation(float x, float y) {
+        setLocation(x, y);
+    }
+
+    @Override
+    public void setInnerSize(float x, float y) {
+        setSize(x, y);
+    }
+
+    @Override
+    public float[] getInnerBoundle() {
+        return getBoundle();
+    }
+
     public void close() {
         if (parent != null) {
             parent.remove(this);
+
         }
     }
 
@@ -119,7 +154,7 @@ public class GFrame extends GPanel {
         background_rgba = rgba;
     }
 
-    public GContainer getView() {
+    public GViewPort getView() {
         return panel;
     }
 
@@ -147,18 +182,18 @@ public class GFrame extends GPanel {
             return;
         }
         if ((align_mod & GGraphics.LEFT) != 0) {
-            move(-getViewX(), 0);
+            move(-getX(), 0);
         } else if ((align_mod & GGraphics.RIGHT) != 0) {
-            move(getForm().getDeviceWidth() - (getViewX() + getViewW()), 0);
+            move(getForm().getDeviceWidth() - (getX() + getW()), 0);
         } else if ((align_mod & GGraphics.HCENTER) != 0) {
-            move(getForm().getDeviceWidth() / 2 - (getViewX() + getViewW() / 2), 0);
+            move(getForm().getDeviceWidth() / 2 - (getX() + getW() / 2), 0);
         }
         if ((align_mod & GGraphics.TOP) != 0) {
-            move(0, -getViewY());
+            move(0, -getY());
         } else if ((align_mod & GGraphics.BOTTOM) != 0) {
-            move(0, getForm().getDeviceHeight() - (getViewY() + getViewH()));
+            move(0, getForm().getDeviceHeight() - (getY() + getH()));
         } else if ((align_mod & GGraphics.HCENTER) != 0) {
-            move(0, getForm().getDeviceHeight() / 2 - (getViewY() + getViewH() / 2));
+            move(0, getForm().getDeviceHeight() / 2 - (getY() + getH() / 2));
         }
     }
 
@@ -172,10 +207,10 @@ public class GFrame extends GPanel {
     @Override
     public boolean update(long vg) {
         this.vg = vg;
-        float x = getViewX();
-        float y = getViewY();
-        float w = getViewW();
-        float h = getViewH();
+        float x = getX();
+        float y = getY();
+        float w = getW();
+        float h = getH();
         drawWindow(vg, title, x, y, w, h);
         super.update(this.vg);
         return true;
@@ -204,15 +239,15 @@ public class GFrame extends GPanel {
         // Header
         headerPaint = nvgLinearGradient(vg, x, y, x, y + 15, nvgRGBA(255, 255, 255, 8), nvgRGBA(0, 0, 0, 16));
         nvgBeginPath(vg);
-
         nvgRoundedRect(vg,
-                title_panel.getViewX(),
-                title_panel.getViewY(),
-                title_panel.getViewW(),
-                title_panel.getViewH(),
+                title_panel.getX(),
+                title_panel.getY(),
+                title_panel.getW(),
+                title_panel.getH(),
                 cornerRadius - 1);
         nvgFillPaint(vg, headerPaint);
         nvgFill(vg);
+
         nvgBeginPath(vg);
         nvgMoveTo(vg, x + 0.5f, y + 0.5f + 30);
         nvgLineTo(vg, x + 0.5f + w - 1, y + 0.5f + 30);
@@ -255,7 +290,7 @@ public class GFrame extends GPanel {
             case Glfw.GLFW_MOUSE_BUTTON_1: {//left
                 if (pressed) {
                     if (closable && isInBoundle(close_boundle, x, y)) {
-                        parent.remove(this);
+                        close();
                     } else if (title_panel.isInArea(x, y)) {
                         dragFrame = true;
                     }
@@ -301,7 +336,7 @@ public class GFrame extends GPanel {
         switch (phase) {
             case Glfm.GLFMTouchPhaseBegan:
                 if (closable && isInBoundle(close_boundle, x, y)) {
-                    parent.remove(this);
+                    close();
                 } else if (title_panel.isInArea(x, y)) {
                     dragFrame = true;
                 }

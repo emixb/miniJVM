@@ -71,6 +71,16 @@ public class GTextField extends GTextObject {
         return TYPE_TEXTFIELD;
     }
 
+    @Override
+    void onSetText(String text) {
+        if (text != null) {
+            caretIndex = text.length();
+        } else {
+            caretIndex = 0;
+        }
+        resetSelect();
+    }
+
     public void setBoxStyle(int boxStyle) {
         this.boxStyle = boxStyle;
     }
@@ -89,8 +99,8 @@ public class GTextField extends GTextObject {
 
     @Override
     public void mouseButtonEvent(int button, boolean pressed, int x, int y) {
-        int rx = (int) (x - parent.getX());
-        int ry = (int) (y - parent.getY());
+        int rx = (int) (x - parent.getInnerX());
+        int ry = (int) (y - parent.getInnerY());
         if (isInArea(x, y)) {
             if (button == Glfw.GLFW_MOUSE_BUTTON_1) {
                 if (pressed) {
@@ -122,13 +132,15 @@ public class GTextField extends GTextObject {
         }
         if (action == Glfw.GLFW_PRESS || action == Glfw.GLFW_REPEAT) {
             if (key == Glfw.GLFW_KEY_BACKSPACE) {
-                if (textsb.length() > 0 && caretIndex > 0) {
-                    int[] selectFromTo = getSelected();
-                    if (selectFromTo != null) {
-                        deleteSelectedText();
-                    } else {
-                        setCaretIndex(caretIndex - 1);
-                        deleteTextByIndex(caretIndex);
+                if (editable) {
+                    if (textsb.length() > 0 && caretIndex > 0) {
+                        int[] selectFromTo = getSelected();
+                        if (selectFromTo != null) {
+                            deleteSelectedText();
+                        } else {
+                            setCaretIndex(caretIndex - 1);
+                            deleteTextByIndex(caretIndex);
+                        }
                     }
                 }
             }
@@ -145,8 +157,8 @@ public class GTextField extends GTextObject {
 
     @Override
     public void touchEvent(int phase, int x, int y) {
-        int rx = (int) (x - parent.getX());
-        int ry = (int) (y - parent.getY());
+        int rx = (int) (x - parent.getInnerX());
+        int ry = (int) (y - parent.getInnerY());
         if (isInBoundle(boundle, rx, ry)) {
             if (phase == Glfm.GLFMTouchPhaseEnded) {
                 if (isInBoundle(reset_boundle, rx, ry)) {
@@ -183,9 +195,11 @@ public class GTextField extends GTextObject {
      */
     @Override
     public void characterEvent(char character) {
-        if (character != '\n' && character != '\r' && textsb.length() < text_max) {
-            insertTextByIndex(caretIndex, character);
-            setCaretIndex(caretIndex + 1);
+        if (editable) {
+            if (character != '\n' && character != '\r' && textsb.length() < text_max) {
+                insertTextByIndex(caretIndex, character);
+                setCaretIndex(caretIndex + 1);
+            }
         }
     }
 
@@ -194,14 +208,16 @@ public class GTextField extends GTextObject {
 
         if (action == Glfm.GLFMKeyActionPressed || action == Glfm.GLFMKeyActionRepeated) {
             if (key == Glfm.GLFMKeyBackspace) {
-                if (textsb.length() > 0 && caretIndex > 0) {
-                    int[] selectFromTo = getSelected();
-                    if (selectFromTo != null) {
-                        deleteSelectedText();
-                        text_arr = null;
-                    } else {
-                        setCaretIndex(caretIndex - 1);
-                        deleteTextByIndex(caretIndex);
+                if (editable) {
+                    if (textsb.length() > 0 && caretIndex > 0) {
+                        int[] selectFromTo = getSelected();
+                        if (selectFromTo != null) {
+                            deleteSelectedText();
+                            text_arr = null;
+                        } else {
+                            setCaretIndex(caretIndex - 1);
+                            deleteTextByIndex(caretIndex);
+                        }
                     }
                 }
             }
@@ -254,6 +270,7 @@ public class GTextField extends GTextObject {
         textsb.delete(sarr[0], sarr[1]);
         text_arr = null;
         resetSelect();
+        doStateChange();
     }
 
     @Override
@@ -277,6 +294,7 @@ public class GTextField extends GTextObject {
             char character = str.charAt(i);
             textsb.insert(caretIndex, character);
             setCaretIndex(caretIndex + 1);
+            doStateChange();
         }
         text_arr = null;
     }
@@ -397,7 +415,7 @@ public class GTextField extends GTextObject {
             }
             nvgFillColor(vg, GToolkit.getStyle().getTextFontColor());
             Nanovg.nvgScissor(vg, text_show_area_x, y, text_show_area_w, h);
-            Nanovg.nvgIntersectScissor(vg, parent.getX(), parent.getY(), parent.getViewW(), parent.getViewH());
+            Nanovg.nvgIntersectScissor(vg, parent.getX(), parent.getY(), parent.getW(), parent.getH());
             nvgTextJni(vg, wordx, wordy, text_arr, 0, text_arr.length);
         }
         return true;

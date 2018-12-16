@@ -23,33 +23,112 @@ abstract public class GContainer extends GObject {
     private final List<GObject> fronts = new ArrayList();
     GObject focus;
 
-    public abstract float getViewX();
+    public abstract float getInnerX();
 
-    public abstract float getViewY();
+    public abstract float getInnerY();
 
-    public abstract float getViewW();
+    public abstract float getInnerW();
 
-    public abstract float getViewH();
+    public abstract float getInnerH();
 
-    public abstract void setViewLocation(float x, float y);
+    public abstract void setInnerLocation(float x, float y);
 
-    public abstract void setViewSize(float x, float y);
+    public abstract void setInnerSize(float x, float y);
 
-    public abstract float[] getViewBoundle();
+    public abstract float[] getInnerBoundle();
 
     public boolean isInArea(float x, float y) {
-        float absx = getViewX();
-        float absy = getViewY();
-        return x >= absx && x <= absx + getViewW()
-                && y >= absy && y <= absy + getViewH();
+        float absx = getX();
+        float absy = getY();
+        return x >= absx && x <= absx + getW()
+                && y >= absy && y <= absy + getH();
     }
 
-    public List<GObject> getElements() {
+    List<GObject> getElements() {
         return elements;
     }
 
-    public int getElementSize() {
+    int getElementSize() {
         return elements.size();
+    }
+
+    void add(GObject nko) {
+        if (nko != null) {
+            add(elements.size(), nko);
+            if (nko.isFront()) {
+                setFocus(nko);
+            }
+        }
+    }
+
+    void add(int index, GObject nko) {
+        if (nko != null) {
+            synchronized (elements) {
+                if (!elements.contains(nko)) {
+                    elements.add(index, nko);
+                    nko.setParent(this);
+                    nko.init();
+                    onAdd(nko);
+                }
+            }
+        }
+    }
+
+    void remove(GObject nko) {
+        if (nko != null) {
+            synchronized (elements) {
+                nko.setParent(null);
+                nko.destory();
+                boolean b = elements.remove(nko);
+                if (focus == nko) {
+                    if (b) {
+                        focus.doFocusLost(null);
+                    }
+                    focus = null;
+                }
+                onRemove(nko);
+            }
+        }
+    }
+
+    void remove(int index) {
+        synchronized (elements) {
+            GObject nko = elements.get(index);
+            remove(nko);
+        }
+    }
+
+    boolean contains(GObject son) {
+        return elements.contains(son);
+    }
+
+    void clear() {
+        synchronized (elements) {
+            int size = elements.size();
+            for (int i = 0; i < size; i++) {
+                remove(elements.size() - 1);
+            }
+        }
+    }
+
+    public GObject findByName(String name) {
+        if (name == null) {
+            return null;
+        }
+        synchronized (elements) {
+            for (GObject go : elements) {
+                if (name.equals(go.name)) {
+                    return go;
+                }
+                if (go instanceof GContainer) {
+                    GObject sub = ((GContainer) go).findByName(name);
+                    if (sub != null) {
+                        return sub;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public GObject findByXY(float x, float y) {
@@ -79,89 +158,22 @@ abstract public class GContainer extends GObject {
             return;
         }
         if (this.focus != go) {
-            if (focus != null) {
-                if (focus.focusListener != null) {
-                    focus.focusListener.focusLost(focus);
-                }
-            }
+            GObject old = this.focus;
             this.focus = go;
+            //notify all focus of sons
+            GObject tmp = old;
+            while (tmp != null) {
+                tmp.doFocusLost(go);
+                if (tmp instanceof GContainer) {
+                    tmp = ((GContainer) tmp).focus;
+                } else {
+                    break;
+                }
+            }
             if (focus != null) {
-                if (focus.focusListener != null) {
-                    focus.focusListener.focusGot(focus);
-                }
+                focus.doFocusGot(old);
             }
         }
-    }
-
-    public void add(GObject nko) {
-        if (nko != null) {
-            add(elements.size(), nko);
-        }
-    }
-
-    public void add(int index, GObject nko) {
-        if (nko != null) {
-            synchronized (elements) {
-                elements.add(index, nko);
-                nko.setParent(this);
-                nko.init();
-                onAdd(nko);
-            }
-        }
-    }
-
-    public void remove(GObject nko) {
-        if (nko != null) {
-            synchronized (elements) {
-                nko.setParent(null);
-                nko.destory();
-                elements.remove(nko);
-                if (focus == nko) {
-                    focus = null;
-                }
-                onRemove(nko);
-            }
-        }
-    }
-
-    public void remove(int index) {
-        synchronized (elements) {
-            GObject nko = elements.get(index);
-            remove(nko);
-        }
-    }
-
-    public boolean contains(GObject son) {
-        return elements.contains(son);
-    }
-
-    public void clear() {
-        synchronized (elements) {
-            int size = elements.size();
-            for (int i = 0; i < size; i++) {
-                remove(elements.size() - 1);
-            }
-        }
-    }
-
-    public GObject findByName(String name) {
-        if (name == null) {
-            return null;
-        }
-        synchronized (elements) {
-            for (GObject go : elements) {
-                if (name.equals(go.name)) {
-                    return go;
-                }
-                if (go instanceof GContainer) {
-                    GObject sub = ((GContainer) go).findByName(name);
-                    if (sub != null) {
-                        return sub;
-                    }
-                }
-            }
-        }
-        return null;
     }
 
     public void onAdd(GObject obj) {
@@ -230,47 +242,48 @@ abstract public class GContainer extends GObject {
 
     private void drawObj(long ctx, GObject nko) {
         float x, y, w, h;
-        if (nko instanceof GContainer) {
-            GContainer c = (GContainer) nko;
-            x = c.getViewX();
-            y = c.getViewY();
-            w = c.getViewW();
-            h = c.getViewH();
-
-        } else {
-            x = nko.getX();
-            y = nko.getY();
-            w = nko.getW();
-            h = nko.getH();
-        }
+//        if (nko instanceof GContainer) {
+//            GContainer c = (GContainer) nko;
+//            x = c.getX();
+//            y = c.getY();
+//            w = c.getW();
+//            h = c.getH();
+//
+//        } else {
+        x = nko.getX();
+        y = nko.getY();
+        w = nko.getW();
+        h = nko.getH();
+//        }
 
         nvgSave(ctx);
+//        Nanovg.nvgReset(ctx);
         nvgScissor(ctx, x, y, w, h);
-        float vx = getViewX();
-        float vy = getViewY();
-        float vw = getViewW();
-        float vh = getViewH();
+        float vx = this.getX();
+        float vy = this.getY();
+        float vw = this.getW();
+        float vh = this.getH();
         if (vx + vw < x || vx > x + w || vy > y + h || vy + vh < y) {
         } else {
             Nanovg.nvgIntersectScissor(ctx, vx, vy, vw, vh);
 
             nko.update(ctx);
 
-//        if (focus == nko) {
-//            nvgScissor(ctx, x, y, w, h);
-//            nvgBeginPath(ctx);
-//            Nanovg.nvgRect(ctx, x + 1, y + 1, w - 2, h - 2);
-//            nvgStrokeColor(ctx, nvgRGBA(255, 0, 0, 255));
-//            nvgStroke(ctx);
+//            if (focus == nko) {
+//                Nanovg.nvgScissor(ctx, x, y, w, h);
+//                Nanovg.nvgBeginPath(ctx);
+//                Nanovg.nvgRect(ctx, x + 1, y + 1, w - 2, h - 2);
+//                Nanovg.nvgStrokeColor(ctx, Nanovg.nvgRGBA((byte) 255, (byte) 0, (byte) 0, (byte) 255));
+//                Nanovg.nvgStroke(ctx);
 //
-//            nvgBeginPath(ctx);
-//            Nanovg.nvgRect(ctx, nko.getX() + 2, nko.getY() + 2, nko.getW() - 4, nko.getH() - 4);
-//            nvgStrokeColor(ctx, nvgRGBA(0, 0, 255, 255));
-//            nvgStroke(ctx);
+//                Nanovg.nvgBeginPath(ctx);
+//                Nanovg.nvgRect(ctx, nko.getX() + 2, nko.getY() + 2, nko.getW() - 4, nko.getH() - 4);
+//                Nanovg.nvgStrokeColor(ctx, Nanovg.nvgRGBA((byte) 0, (byte) 0, (byte) 255, (byte) 255));
+//                Nanovg.nvgStroke(ctx);
 //
-//        }
-            Nanovg.nvgRestore(ctx);
+//            }
         }
+        Nanovg.nvgRestore(ctx);
     }
 
     @Override
@@ -289,12 +302,8 @@ abstract public class GContainer extends GObject {
 
     @Override
     public void mouseButtonEvent(int button, boolean pressed, int x, int y) {
-        setFocus(findByXY(x, y));
-
-        if (focus != null) {
-            focus.mouseButtonEvent(button, pressed, x, y);
-        }
-
+        int phase = pressed ? Glfm.GLFMTouchPhaseBegan : Glfm.GLFMTouchPhaseEnded;
+        touchEvent(phase, x, y);
     }
 
     @Override
@@ -336,7 +345,6 @@ abstract public class GContainer extends GObject {
             return found.dragEvent(dx, dy, x, y);
         }
 
-        setFocus(found);
         if (focus != null && focus.isInArea(x, y)) {
             return focus.dragEvent(dx, dy, x, y);
         }
@@ -362,6 +370,9 @@ abstract public class GContainer extends GObject {
     public void touchEvent(int phase, int x, int y) {
         GObject found = findByXY(x, y);
         if (found instanceof GMenu) {
+            if (!((GMenu) found).isContextMenu()) {
+                setFocus(null);
+            }
             found.touchEvent(phase, x, y);
             return;
         }
@@ -390,6 +401,9 @@ abstract public class GContainer extends GObject {
     public void longTouchedEvent(int x, int y) {
         GObject found = findByXY(x, y);
         if (found instanceof GMenu) {
+            if (!((GMenu) found).isContextMenu()) {
+                setFocus(null);
+            }
             found.longTouchedEvent(x, y);
             return;
         }

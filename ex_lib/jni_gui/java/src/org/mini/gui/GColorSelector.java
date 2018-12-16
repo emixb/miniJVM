@@ -71,8 +71,6 @@ public class GColorSelector extends GObject {
 
     @Override
     public void cursorPosEvent(int x, int y) {
-        int rx = (int) (x - parent.getX());
-        int ry = (int) (y - parent.getY());
         if (isInArea(x, y)) {
 
         }
@@ -80,8 +78,6 @@ public class GColorSelector extends GObject {
 
     @Override
     public void mouseButtonEvent(int button, boolean pressed, int x, int y) {
-        int rx = (int) (x - parent.getX());
-        int ry = (int) (y - parent.getY());
         if (isInArea(x, y)) {
             if (!pressed) {
                 float offX = x - (getX() + centX);
@@ -100,18 +96,14 @@ public class GColorSelector extends GObject {
                     selectX = (float) (Math.cos(angel) * oldX - Math.sin(angel) * oldY);//(float) Math.cos(120.0f / 180.0f * Math.PI) * r * 0.3f;
                     selectY = (float) (Math.sin(angel) * oldX + Math.cos(angel) * oldY);//(float) Math.sin(120.0f / 180.0f * Math.PI) * r * 0.4f;
                 }
-            } else if (actionListener != null) {
-                actionListener.action(this);
-            }
+            } else doAction();
         }
 
     }
 
     @Override
     public void touchEvent(int phase, int x, int y) {
-        int rx = (int) (x - parent.getX());
-        int ry = (int) (y - parent.getY());
-        if (isInBoundle(boundle, rx, ry)) {
+        if (isInArea(x, y)) {
             if (phase != Glfm.GLFMTouchPhaseBegan) {
                 float offX = x - (getX() + centX);
                 float offY = y - (getY() + centY);
@@ -130,9 +122,7 @@ public class GColorSelector extends GObject {
                     selectY = (float) (Math.sin(angel) * oldX + Math.cos(angel) * oldY);//(float) Math.sin(120.0f / 180.0f * Math.PI) * r * 0.4f;
                 }
             } else if (phase != Glfm.GLFMTouchPhaseEnded) {
-                if (actionListener != null) {
-                    actionListener.action(this);
-                }
+                doAction();
             } else {
 
             }
@@ -252,6 +242,7 @@ public class GColorSelector extends GObject {
             nvgPathWinding(vg, NVG_HOLE);
             nvgFillPaint(vg, paint);
             nvgFill(vg);
+            nvgTranslate(vg, -cx, -cy);
         }
         nvgRestore(vg);
 

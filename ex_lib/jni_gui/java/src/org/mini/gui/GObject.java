@@ -221,14 +221,14 @@ abstract public class GObject {
 
     public float getX() {
         if (parent != null && !fixedLocation) {
-            return parent.getX() + boundle[LEFT];
+            return parent.getInnerX() + boundle[LEFT];
         }
         return boundle[LEFT];
     }
 
     public float getY() {
         if (parent != null && !fixedLocation) {
-            return parent.getY() + boundle[TOP];
+            return parent.getInnerY() + boundle[TOP];
         }
         return boundle[TOP];
     }
@@ -311,22 +311,18 @@ abstract public class GObject {
 
     public GForm getForm() {
         GObject go = this;
-        do {
-            if (go instanceof GForm) {
-                return (GForm) go;
-            }
-        } while ((go = go.parent) != null);
-        return null;
+        while (!(go instanceof GForm)) {
+            go = go.parent;
+        }
+        return (GForm) go;
     }
 
     public GFrame getFrame() {
         GObject go = this;
-        while ((go = go.parent) != null) {
-            if (go instanceof GFrame) {
-                return (GFrame) go;
-            }
+        while (!(go instanceof GFrame)) {
+            go = go.parent;
         }
-        return null;
+        return (GFrame) go;
     }
 
     /**
@@ -383,5 +379,23 @@ abstract public class GObject {
      */
     public void setFront(boolean front) {
         this.front = front;
+    }
+
+    void doAction() {
+        if (actionListener != null) {
+            actionListener.action(this);
+        }
+    }
+
+    void doFocusLost(GObject newgo) {
+        if (focusListener != null) {
+            focusListener.focusLost(newgo);
+        }
+    }
+
+    void doFocusGot(GObject oldgo) {
+        if (focusListener != null) {
+            focusListener.focusGot(oldgo);
+        }
     }
 }

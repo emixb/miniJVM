@@ -5,6 +5,7 @@
  */
 package org.mini.gui;
 
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import org.mini.glfm.Glfm;
@@ -31,51 +32,90 @@ public class GViewPort extends GContainer {
     }
 
     @Override
-    public void setViewLocation(float x, float y) {
+    public void setLocation(float x, float y) {
         viewBoundle[LEFT] = x;
         viewBoundle[TOP] = y;
         if (parent != null) {
             parent.reBoundle();
         }
+        setInnerLocation(x, y);
     }
 
     @Override
-    public void setViewSize(float w, float h) {
+    public void setSize(float w, float h) {
         viewBoundle[WIDTH] = w;
         viewBoundle[HEIGHT] = h;
         if (parent != null) {
             parent.reBoundle();
         }
+        setInnerSize(w, h);
+        reBoundle();
     }
 
     @Override
-    public float getViewX() {
+    public float getX() {
         if (parent != null) {
-            return parent.getX() + viewBoundle[LEFT];
+            return parent.getInnerX() + viewBoundle[LEFT];
         }
         return viewBoundle[LEFT];
     }
 
     @Override
-    public float getViewY() {
+    public float getY() {
         if (parent != null) {
-            return parent.getY() + viewBoundle[TOP];
+            return parent.getInnerY() + viewBoundle[TOP];
         }
         return viewBoundle[TOP];
     }
 
     @Override
-    public float getViewW() {
+    public float getW() {
         return viewBoundle[WIDTH];
     }
 
     @Override
-    public float getViewH() {
+    public float getH() {
         return viewBoundle[HEIGHT];
     }
 
-    public float[] getViewBoundle() {
+    @Override
+    public float[] getBoundle() {
         return viewBoundle;
+    }
+
+    @Override
+    public float getInnerX() {
+        return super.getX();
+    }
+
+    @Override
+    public float getInnerY() {
+        return super.getY();
+    }
+
+    @Override
+    public float getInnerW() {
+        return super.getW();
+    }
+
+    @Override
+    public float getInnerH() {
+        return super.getH();
+    }
+
+    @Override
+    public void setInnerLocation(float x, float y) {
+        super.setLocation(x, y);
+    }
+
+    @Override
+    public void setInnerSize(float x, float y) {
+        super.setSize(x, y);
+    }
+
+    @Override
+    public float[] getInnerBoundle() {
+        return super.getBoundle();
     }
 
     @Override
@@ -112,7 +152,7 @@ public class GViewPort extends GContainer {
             float[] bond = null;
             if (nko instanceof GContainer) {
                 GContainer con = (GContainer) nko;
-                bond = con.getViewBoundle();
+                bond = con.getBoundle();
 
             } else {
                 bond = nko.getBoundle();
@@ -172,7 +212,7 @@ public class GViewPort extends GContainer {
     //总共做多少次操作
     long maxMoveCount = 120;
     //初速度加成
-    float addOn = 2.2f;
+    float addOn = 1.2f;
     //惯性任务
     TimerTask task;
 
@@ -190,7 +230,7 @@ public class GViewPort extends GContainer {
         maxMoveCount = (long) (120 * (moveTime / 200f));
         //System.out.println("inertia time: " + moveTime + " , count: " + maxMoveCount + " pos: x1,y1,x2,y2 = " + x1 + "," + y1 + "," + x2 + "," + y2);
         if (Math.abs(dy) > Math.abs(dx)) {
-            if (getH() <= getViewH()) {
+            if (getInnerH() <= getH()) {
                 return false;
             }
             task = new TimerTask() {
@@ -224,7 +264,7 @@ public class GViewPort extends GContainer {
                 }
             };
         } else {
-            if (getW() <= getViewW()) {
+            if (getInnerW() <= getW()) {
                 return false;
             }
             task = new TimerTask() {
@@ -379,4 +419,43 @@ public class GViewPort extends GContainer {
         return boundle[WIDTH] - viewBoundle[WIDTH];
     }
 
+    @Override
+    public List<GObject> getElements() {
+        return super.getElements();
+    }
+
+    @Override
+    public int getElementSize() {
+        return elements.size();
+    }
+
+    @Override
+    public void add(GObject nko) {
+        super.add(nko);
+    }
+
+    @Override
+    public void add(int index, GObject nko) {
+        super.add(index, nko);
+    }
+
+    @Override
+    public void remove(GObject nko) {
+        super.remove(nko);
+    }
+
+    @Override
+    public void remove(int index) {
+        super.remove(index);
+    }
+
+    @Override
+    public boolean contains(GObject son) {
+        return super.contains(son);
+    }
+
+    @Override
+    public void clear() {
+        super.clear();
+    }
 }

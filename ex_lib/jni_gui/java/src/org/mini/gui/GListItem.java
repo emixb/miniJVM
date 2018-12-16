@@ -98,9 +98,7 @@ public class GListItem extends GObject {
         list.pulldown = false;
         list.changeCurPanel();
         flush();
-        if (actionListener != null) {
-            actionListener.action(this);
-        }
+        doAction();
     }
 
     @Override
@@ -110,6 +108,10 @@ public class GListItem extends GObject {
         float w = getW();
         float h = getH();
 
+        boolean outOfFilter = false;
+        if (list.isOutOfFilter(getIndex())) {
+            outOfFilter = true;
+        }
         float pad = 5;
         float ix, iy, iw, ih;
         float thumb = list.list_item_heigh - pad;
@@ -126,7 +128,7 @@ public class GListItem extends GObject {
         }
 
         if (img != null) {
-            nvgImageSize(vg, img.getTexture(), imgw, imgh);
+            nvgImageSize(vg, img.getTexture(vg), imgw, imgh);
             if (imgw[0] < imgh[0]) {
                 iw = thumb;
                 ih = iw * (float) imgh[0] / (float) imgw[0];
@@ -138,9 +140,11 @@ public class GListItem extends GObject {
                 ix = -(iw - thumb) * 0.5f;
                 iy = 0;
             }
-            GList.drawImage(vg, tx, ty, thumb, thumb, img);
+//            GList.drawImage(vg, tx, ty, thumb, thumb, img);
+            GToolkit.drawImage(vg, img, tx, ty, thumb, thumb, !outOfFilter, outOfFilter ? 0.5f : 0.8f);
         }
-        GList.drawText(vg, tx + thumb + pad, ty + thumb / 2, thumb, thumb, label);
+        float[] c = outOfFilter ? GToolkit.getStyle().getHintFontColor() : GToolkit.getStyle().getTextFontColor();
+        GList.drawText(vg, tx + thumb + pad, ty + thumb / 2, thumb, thumb, label, c);
         return true;
     }
 

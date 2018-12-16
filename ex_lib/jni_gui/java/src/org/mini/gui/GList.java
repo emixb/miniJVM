@@ -46,7 +46,7 @@ import static org.mini.nanovg.Nanovg.nvgTextMetrics;
  *
  * @author gust
  */
-public class GList extends GPanel implements GFocusChangeListener {
+public class GList extends GContainer implements GFocusChangeListener {
 
     char preicon;
     byte[] preicon_arr = toUtf8("" + ICON_CHEVRON_RIGHT);
@@ -66,12 +66,17 @@ public class GList extends GPanel implements GFocusChangeListener {
     float list_rows_max = 7;
     float list_rows_min = 3;
     float pad = 5;
-    int menuWidth = 20;
+    int scrollbarWidth = 20;
 
     boolean showScrollbar = false;
 
     float left, top, width, height;
+    //
+    final List<Integer> outOffilterList = new ArrayList();//if a item in this list , it would show dark text color
 
+    /**
+     *
+     */
     public GList() {
 
     }
@@ -86,34 +91,41 @@ public class GList extends GPanel implements GFocusChangeListener {
         this.width = width;
         this.height = height;
 
-        setBgColor(GToolkit.getStyle().getBackgroundColor());
-
-        setViewLocation(left, top);
-        setViewSize(width, height);
+        setLocation(left, top);
+        setSize(width, height);
 
         //
-        scrollBar = new GScrollBar(0, GScrollBar.VERTICAL, 0, 0, menuWidth, 100);
+        scrollBar = new GScrollBar(0, GScrollBar.VERTICAL, 0, 0, scrollbarWidth, 100);
         scrollBar.setActionListener(new ScrollBarActionListener());
         popWin.add(scrollBar);
         popWin.add(popView);
         setFocusListener(this);
-        showScrollBar(false);
+        setScrollBar(false);
         reSize();
         changeCurPanel();
+
+        setShowMode(MODE_SINGLE_SHOW);
     }
-    
+
     @Override
-    public void setViewSize(float w,float h){
-        super.setViewSize(w, h);
+    public void setSize(float w, float h) {
+        super.setSize(w, h);
         reSize();
     }
 
-    public void showScrollBar(boolean show) {
+    @Override
+    public void setInnerSize(float w, float h) {
+        width = w;
+        height = h;
+        super.setSize(w, h);
+    }
+
+    public void setScrollBar(boolean show) {
         this.showScrollbar = show;
         if (show) {
-            menuWidth = 20;
+            scrollbarWidth = 20;
         } else {
-            menuWidth = 0;
+            scrollbarWidth = 0;
         }
     }
 
@@ -129,6 +141,36 @@ public class GList extends GPanel implements GFocusChangeListener {
     @Override
     public int getType() {
         return TYPE_LIST;
+    }
+
+    @Override
+    public float getInnerX() {
+        return getX();
+    }
+
+    @Override
+    public float getInnerY() {
+        return getY();
+    }
+
+    @Override
+    public float getInnerW() {
+        return getW();
+    }
+
+    @Override
+    public float getInnerH() {
+        return getH();
+    }
+
+    @Override
+    public void setInnerLocation(float x, float y) {
+        setLocation(x, y);
+    }
+
+    @Override
+    public float[] getInnerBoundle() {
+        return getBoundle();
     }
 
     public void setIcon(char icon) {
@@ -191,8 +233,8 @@ public class GList extends GPanel implements GFocusChangeListener {
         }
 
         if (showMode == MODE_MULTI_SHOW) {
-            popWin.setViewLocation(0, 0);
-            popWin.setViewSize(width, height);
+            popWin.setLocation(0, 0);
+            popWin.setSize(width, height);
 
         } else {
             float popH = itemcount * list_item_heigh;
@@ -203,8 +245,8 @@ public class GList extends GPanel implements GFocusChangeListener {
                 popH = list_rows_max * list_item_heigh;
             }
 
-            popWin.setViewLocation(0, 0);
-            popWin.setViewSize(width, popH);
+            popWin.setLocation(0, 0);
+            popWin.setSize(width, popH);
 
         }
 
@@ -221,20 +263,20 @@ public class GList extends GPanel implements GFocusChangeListener {
         int i = 0;
         for (GObject go : popView.getElements()) {
             go.setLocation(pad, i * list_item_heigh);
-            go.setSize(popView.getViewW() - pad * 2, list_item_heigh);
+            go.setSize(popView.getW() - pad * 2, list_item_heigh);
             i++;
         }
-        selected.clear();
+        //selected.clear();
     }
 
     void changeCurPanel() {
         int itemcount = popView.elements.size();
-        clear();
+        super.clear();
 
         if (showMode == MODE_MULTI_SHOW) {
             setLocation(left, top);
             setSize(width, height);
-            add(popWin);
+            super.add(popWin);
         } else if (pulldown && itemcount > 0) {
             float popH = itemcount * list_item_heigh;
             if (itemcount < list_rows_min) {
@@ -244,20 +286,20 @@ public class GList extends GPanel implements GFocusChangeListener {
                 popH = list_rows_max * list_item_heigh;
             }
             float popY = 0;
-            if (popH > parent.getViewH()) {// small than frame height
+            if (popH > parent.getH()) {// small than frame height
                 popY = parent.getY();
-            } else if (top + popH < parent.getViewH()) {
+            } else if (top + popH < parent.getH()) {
                 popY = top;
             } else {
-                popY = parent.getViewH() - popH;
+                popY = parent.getH() - popH;
             }
             setLocation(left, popY);
-            setSize(popWin.getViewW(), popWin.getViewH());
-            add(popWin);
+            setSize(popWin.getW(), popWin.getH());
+            super.add(popWin);
         } else {
             setLocation(left, top);
             setSize(width, height);
-            add(normalPanel);
+            super.add(normalPanel);
         }
     }
 
@@ -274,6 +316,13 @@ public class GList extends GPanel implements GFocusChangeListener {
 
     public void setShowMode(int m) {
         this.showMode = m;
+
+        if (showMode == MODE_MULTI_SHOW) {
+            setBgColor(GToolkit.getStyle().getBackgroundColor());
+        } else {
+            setBgColor(GToolkit.getStyle().getPopBackgroundColor());
+        }
+
         reSize();
         changeCurPanel();
     }
@@ -363,6 +412,40 @@ public class GList extends GPanel implements GFocusChangeListener {
         return (GListItem) popView.elements.get(index);
     }
 
+    public void addOutOfFilter(int index) {
+        outOffilterList.add(index);
+    }
+
+    public void removeOutOfFilter(int index) {
+        outOffilterList.remove(index);
+    }
+
+    public void clearOutOfFilter() {
+        outOffilterList.clear();
+    }
+
+    public boolean isOutOfFilter(int index) {
+        return outOffilterList.contains(index);
+    }
+
+    public void filterLabelWithKey(String key) {
+        if (key == null) {
+            return;
+        }
+        clearOutOfFilter();
+        List<GObject> list = getItemList();
+        for (GObject go : list) {
+            GListItem gli = (GListItem) go;
+            if (gli.getLabel() != null && gli.getLabel().toLowerCase().contains(key.toLowerCase())) {
+
+            } else {
+                addOutOfFilter(getItemIndex(gli));
+                //System.out.println("except item:" + getItemIndex(gli));
+            }
+        }
+
+    }
+
     @Override
     public void focusGot(GObject go) {
     }
@@ -381,6 +464,10 @@ public class GList extends GPanel implements GFocusChangeListener {
     @Override
     public boolean update(long vg) {
 
+//        if (pulldown && parent.getFocus() != this) {
+//            pulldown = false;
+//            GList.this.changeCurPanel();
+//        }
         //int itemcount = popView.elements.size();
         nvgFontSize(vg, GToolkit.getStyle().getTextFontSize());
         nvgFontFace(vg, GToolkit.getFontWord());
@@ -389,15 +476,18 @@ public class GList extends GPanel implements GFocusChangeListener {
         nvgTextMetrics(vg, null, null, lineh);
 
         Nanovg.nvgResetScissor(vg);
-        Nanovg.nvgScissor(vg, getViewX(), getViewY(), getViewW(), getViewH());
+        Nanovg.nvgScissor(vg, getX(), getY(), getW(), getH());
         return super.update(vg);
     }
 
-    static void drawText(long vg, float tx, float ty, float pw, float ph, String s) {
+    static void drawText(long vg, float tx, float ty, float pw, float ph, String s, float[] color) {
         if (s == null) {
             return;
         }
-        nvgFillColor(vg, GToolkit.getStyle().getTextFontColor());
+        nvgFontSize(vg, GToolkit.getStyle().getTextFontSize());
+        nvgFontFace(vg, GToolkit.getFontWord());
+        nvgTextAlign(vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
+        nvgFillColor(vg, color);
         byte[] b = toUtf8(s);
         Nanovg.nvgTextJni(vg, tx, ty, b, 0, b.length);
     }
@@ -411,7 +501,7 @@ public class GList extends GPanel implements GFocusChangeListener {
         float thumb = pw;
         int[] imgw = {0}, imgh = {0};
 
-        nvgImageSize(vg, img.getTexture(), imgw, imgh);
+        nvgImageSize(vg, img.getTexture(vg), imgw, imgh);
         if (imgw[0] < imgh[0]) {
             iw = thumb;
             ih = iw * (float) imgh[0] / (float) imgw[0];
@@ -424,7 +514,7 @@ public class GList extends GPanel implements GFocusChangeListener {
             iy = 0;
         }
 
-        imgPaint = nvgImagePattern(vg, px + ix, py + iy, iw, ih, 0.0f / 180.0f * (float) Math.PI, img.getTexture(), 0.8f);
+        imgPaint = nvgImagePattern(vg, px + ix, py + iy, iw, ih, 0.0f / 180.0f * (float) Math.PI, img.getTexture(vg), 0.8f);
         nvgBeginPath(vg);
         nvgRoundedRect(vg, px, py, thumb, thumb, 5);
         nvgFillPaint(vg, imgPaint);
@@ -516,11 +606,7 @@ public class GList extends GPanel implements GFocusChangeListener {
         void drawNormal(long vg, float x, float y, float w, float h) {
             byte[] bg;
 
-            if (pulldown) {
-                bg = nvgLinearGradient(vg, x, y + h, x, y, nvgRGBA(255, 255, 255, 16), nvgRGBA(0, 0, 0, 16));
-            } else {
-                bg = nvgLinearGradient(vg, x, y, x, y + h, nvgRGBA(255, 255, 255, 16), nvgRGBA(0, 0, 0, 16));
-            }
+            bg = nvgLinearGradient(vg, x, y, x, y + h, nvgRGBA(255, 255, 255, 16), nvgRGBA(0, 0, 0, 16));
             float cornerRadius = 4.0f;
             nvgBeginPath(vg);
             nvgRoundedRect(vg, x + 1, y + 1, w - 2, h - 2, cornerRadius - 1);
@@ -532,20 +618,19 @@ public class GList extends GPanel implements GFocusChangeListener {
             nvgStrokeColor(vg, nvgRGBA(0, 0, 0, 48));
             nvgStroke(vg);
 
+            float thumb = h - pad;
+            nvgFontSize(vg, GToolkit.getStyle().getIconFontSize());
+            nvgFontFace(vg, GToolkit.getFontIcon());
+            nvgFillColor(vg, GToolkit.getStyle().getTextFontColor());
             if (popView.elements.size() > 0) {
-                float thumb = h - pad;
                 int selectIndex = getSelectedIndex();
                 if (selectIndex >= 0) {
                     GListItem gli = (GListItem) getItem(selectIndex);
                     drawImage(vg, x + pad, y + h * 0.5f - thumb / 2, thumb, thumb, gli.img);
-
-                    drawText(vg, x + thumb + pad + pad, y + h / 2, thumb, thumb, gli.label);
-
-                    nvgFontSize(vg, GToolkit.getStyle().getIconFontSize());
-                    nvgFontFace(vg, GToolkit.getFontIcon());
-                    nvgTextJni(vg, x + w - thumb, y + h * 0.5f, preicon_arr, 0, preicon_arr.length);
+                    drawText(vg, x + thumb + pad + pad, y + h / 2, thumb, thumb, gli.label, GToolkit.getStyle().getTextFontColor());
                 }
             }
+            nvgTextJni(vg, x + w - thumb, y + h * 0.5f, preicon_arr, 0, preicon_arr.length);
         }
     };
 
@@ -597,11 +682,9 @@ public class GList extends GPanel implements GFocusChangeListener {
             super.setSize(width, height);
 
             popView.setLocation(0, 0);
-            popView.setSize(width - menuWidth, height);
-            popView.setViewLocation(0, 0);
-            popView.setViewSize(width - menuWidth, height);
+            popView.setSize(width - scrollbarWidth, height);
 
-            scrollBar.setLocation(width - menuWidth, 0);
+            scrollBar.setLocation(width - scrollbarWidth, 0);
             scrollBar.setSize(20, height);
         }
 

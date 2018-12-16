@@ -5,6 +5,9 @@
  */
 package org.mini.glfm;
 
+import java.io.File;
+import org.mini.gui.GCallback;
+
 /**
  *
  * @author gust
@@ -98,5 +101,38 @@ public class Glfm {
 
     public static boolean glfmGetKeyboardVisible(long display) {
         return true;
+    }
+
+    public static void glfmPickPhotoAlbum(long display, int uid, int type) {
+
+    }
+
+    public static void glfmPickPhotoCamera(long display, int uid, int type) {
+
+    }
+
+    public static void glfmImageCrop(long display, int uid, String uris, int x, int y, int width, int height) {
+
+    }
+
+    public static void glfmSetDisplayConfig(long display,
+            int preferredAPI,
+            int colorFormat,
+            int depthFormat,
+            int stencilFormat,
+            int multisample) {
+
+    }
+
+    public static void glfmSetCallBack(long display, GCallback app) {
+
+    }
+
+    public static String glfmGetSaveRoot() {
+        return new File("./").getAbsolutePath();
+    }
+
+    public static String glfmGetResRoot() {
+        return new File("./").getAbsolutePath();
     }
 }

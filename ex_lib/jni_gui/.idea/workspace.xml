@@ -102,8 +102,8 @@
       <file leaf-file-name="mini_al.h" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/deps/include/minial/mini_al.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="284805">
-              <caret line="18987" column="40" selection-start-line="18987" selection-start-column="40" selection-end-line="18987" selection-end-column="40" />
+            <state relative-caret-position="286170">
+              <caret line="19078" column="40" selection-start-line="19078" selection-start-column="40" selection-end-line="19078" selection-end-column="40" />
             </state>
           </provider>
         </entry>
@@ -221,7 +221,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -258,6 +257,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -330,18 +330,19 @@
       <workItem from="1542079116653" duration="36000" />
       <workItem from="1542080503139" duration="4360000" />
       <workItem from="1543940190890" duration="6000" />
+      <workItem from="1544896126125" duration="554000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="111410000" />
+    <option name="totallyTimeSpent" value="111964000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1280" height="733" extended-state="6" />
-    <editor active="true" />
+    <frame x="0" y="23" width="1280" height="733" extended-state="0" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.19063005" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.19386107" />
       <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info active="true" anchor="bottom" id="Messages" order="7" visible="true" weight="0.22169812" />
       <window_info anchor="bottom" id="CMake" order="7" weight="0.32873276" />
       <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
       <window_info anchor="bottom" id="Run" order="2" />
@@ -358,7 +359,6 @@
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.2798742" />
-      <window_info anchor="bottom" id="Messages" order="7" visible="true" weight="0.22169812" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -597,8 +597,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/deps/include/minial/mini_al.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="284805">
-          <caret line="18987" column="40" selection-start-line="18987" selection-start-column="40" selection-end-line="18987" selection-end-column="40" />
+        <state relative-caret-position="286170">
+          <caret line="19078" column="40" selection-start-line="19078" selection-start-column="40" selection-end-line="19078" selection-end-column="40" />
         </state>
       </provider>
     </entry>

@@ -60,6 +60,10 @@ public class GButton extends GObject {
         text_arr = toUtf8(text);
     }
 
+    public String getText() {
+        return this.text;
+    }
+
     public void setIcon(char icon) {
         preicon = icon;
         preicon_arr = toUtf8("" + preicon);
@@ -73,9 +77,7 @@ public class GButton extends GObject {
                 parent.setFocus(this);
             } else {
                 bt_pressed = false;
-                if (actionListener != null) {
-                    actionListener.action(this);
-                }
+                doAction();
             }
         }
     }
@@ -89,15 +91,13 @@ public class GButton extends GObject {
 
     @Override
     public void touchEvent(int phase, int x, int y) {
-        if (isInBoundle(boundle, x - parent.getX(), y - parent.getY())) {
+        if (isInArea(x, y)) {
             if (phase == Glfm.GLFMTouchPhaseBegan) {
                 bt_pressed = true;
             } else if (phase == Glfm.GLFMTouchPhaseEnded) {
-                if (actionListener != null && bt_pressed) {
-                    actionListener.action(this);
-                }
+                doAction();
                 bt_pressed = false;
-            } else if (!isInBoundle(boundle, x - parent.getX(), y - parent.getY())) {
+            } else if (!isInArea(x, y)) {
                 bt_pressed = false;
             }
         }
