@@ -47,7 +47,6 @@ import static org.mini.glfw.Glfw.glfwSwapBuffers;
 import static org.mini.glfw.Glfw.glfwTerminate;
 import static org.mini.glfw.Glfw.glfwWindowHint;
 import static org.mini.glfw.Glfw.glfwWindowShouldClose;
-import org.mini.glfw.GlfwCallbackAdapter;
 import org.mini.nanovg.Gutil;
 import static org.mini.glfw.Glfw.glfwGetFramebufferWidth;
 import static org.mini.glfw.Glfw.glfwGetFramebufferHeight;

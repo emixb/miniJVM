@@ -21,7 +21,6 @@ import static org.mini.gl.GL.GL_QUADS;
 import static org.mini.gl.GL.GL_QUAD_STRIP;
 import static org.mini.gl.GL.GL_SMOOTH;
 import org.mini.glfw.Glfw;
-import org.mini.glfw.GlfwCallbackAdapter;
 
 /*
  * To change this license header, choose License Headers in Project Properties.

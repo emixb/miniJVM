@@ -28,7 +28,6 @@ import static org.mini.gl.GL.glMaterialf;
 import static org.mini.gl.GL.glMaterialfv;
 import static org.mini.gl.GL.glTranslatef;
 import org.mini.glfw.Glfw;
-import org.mini.glfw.GlfwCallbackAdapter;
 import org.mini.nanovg.Gutil;
 
 /*

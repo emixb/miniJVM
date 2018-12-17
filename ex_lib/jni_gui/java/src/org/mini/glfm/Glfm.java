@@ -6,7 +6,7 @@
 package org.mini.glfm;
 
 import java.io.File;
-import org.mini.gui.GCallback;
+import org.mini.guijni.GuiCallBack;
 
 /**
  *
@@ -124,15 +124,15 @@ public class Glfm {
 
     }
 
-    public static void glfmSetCallBack(long display, GCallback app) {
+    public static void glfmSetCallBack(long display, GuiCallBack app) {
 
     }
 
     public static String glfmGetSaveRoot() {
-        return new File("./").getAbsolutePath();
+        return null;
     }
 
     public static String glfmGetResRoot() {
-        return new File("./").getAbsolutePath();
+        return null;
     }
 }

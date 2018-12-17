@@ -4,7 +4,6 @@ import static java.lang.Math.atan2;
 import java.util.Random;
 import org.mini.gl.GL;
 import org.mini.glfw.Glfw;
-import org.mini.glfw.GlfwCallbackAdapter;
 import org.mini.nanovg.Gutil;
 
 /*

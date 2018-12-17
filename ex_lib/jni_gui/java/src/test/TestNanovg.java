@@ -32,7 +32,6 @@ import static org.mini.glfw.Glfw.glfwSwapBuffers;
 import static org.mini.glfw.Glfw.glfwTerminate;
 import static org.mini.glfw.Glfw.glfwWindowHint;
 import static org.mini.glfw.Glfw.glfwWindowShouldClose;
-import org.mini.glfw.GlfwCallbackAdapter;
 import static org.mini.nanovg.Gutil.toUtf8;
 import org.mini.gui.GToolkit;
 import static org.mini.glfw.Glfw.glfwGetFramebufferWidth;

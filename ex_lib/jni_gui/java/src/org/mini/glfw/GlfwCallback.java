@@ -1,6 +1,5 @@
 package org.mini.glfw;
 
-import org.mini.gui.GCallback;
 
 /**
  * Registered with Glfw3#glfwSetCallback(), reacts to all callback events of
@@ -9,7 +8,7 @@ import org.mini.gui.GCallback;
  * @author mzechner
  *
  */
-public interface GlfwCallback extends GCallback{
+public interface GlfwCallback {
 
     /**
      * Called in case of an error, on the thread the error was generated on.

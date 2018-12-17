@@ -30,7 +30,6 @@ import static org.mini.gl.GL.glMaterialfv;
 import static org.mini.gl.GL.glMatrixMode;
 import static org.mini.gl.GL.glTranslatef;
 import org.mini.glfw.Glfw;
-import org.mini.glfw.GlfwCallbackAdapter;
 import org.mini.nanovg.Gutil;
 import static org.mini.nanovg.Gutil.vec_mul_cross;
 import static org.mini.nanovg.Gutil.vec_sub;
