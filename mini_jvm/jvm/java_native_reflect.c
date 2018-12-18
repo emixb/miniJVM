@@ -940,7 +940,7 @@ s32 org_mini_reflect_DirectMemObj_setVal(Runtime *runtime, JClass *clazz) {
                 break;
             }
             case 'R': {
-                setFieldRefer((c8 *) ((__refer) memAddr + index), (__refer) (intptr_t) val);
+                setFieldRefer((c8 *) ((__refer *) memAddr + index), (__refer) (intptr_t) val);
                 break;
             }
         }
@@ -986,7 +986,7 @@ s32 org_mini_reflect_DirectMemObj_getVal(Runtime *runtime, JClass *clazz) {
                 break;
             }
             case 'R': {
-                val = (s64) (intptr_t) getFieldRefer((c8 *) ((__refer) memAddr + index));
+                val = (s64) (intptr_t) getFieldRefer((c8 *) ((__refer *) memAddr + index));
                 break;
             }
         }
