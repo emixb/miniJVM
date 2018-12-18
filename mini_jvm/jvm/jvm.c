@@ -177,8 +177,8 @@ void classloader_add_jar_path(ClassLoader *class_loader, Utf8String *jarPath) {
             return;
         }
     }
-    Utf8String *jarPath1=utf8_create_copy(jarPath);
-    arraylist_push_back(class_loader->classpath,jarPath1);
+    Utf8String *jarPath1 = utf8_create_copy(jarPath);
+    arraylist_push_back(class_loader->classpath, jarPath1);
 }
 
 void set_jvm_state(int state) {
@@ -252,7 +252,7 @@ void jvm_init(c8 *p_classpath, StaticLibRegFunc regFunc) {
 }
 
 void jvm_destroy(StaticLibRegFunc unRegFunc) {
-    while (threadlist_count_none_daemon() > 0) {//wait for other thread over ,
+    while (threadlist_count_none_daemon() > 0 && !collector->exit) {//wait for other thread over ,
         threadSleep(20);
     }
     set_jvm_state(JVM_STATUS_STOPED);
@@ -386,7 +386,7 @@ s32 call_method_main(c8 *p_mainclass, c8 *p_methodname, c8 *p_methodtype, ArrayL
     utf8_destory(str_mainClsName);
     //
 
-    return ret;
+    return collector->exitCode;
 }
 
 /**

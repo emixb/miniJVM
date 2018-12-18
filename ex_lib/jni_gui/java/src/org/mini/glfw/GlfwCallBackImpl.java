@@ -5,10 +5,8 @@ package org.mini.glfw;
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
-
 import java.io.File;
-import org.mini.apploader.GlfmMain;
+import org.mini.apploader.AppLoader;
 import static org.mini.gl.GL.GL_TRUE;
 import static org.mini.glfw.Glfw.GLFW_CONTEXT_VERSION_MAJOR;
 import static org.mini.glfw.Glfw.GLFW_CONTEXT_VERSION_MINOR;
@@ -45,7 +43,7 @@ import static org.mini.nanovg.Nanovg.nvgDeleteGL3;
  *
  * @author Gust
  */
-public class GuiCallBackImpl extends GuiCallBack {
+public class GlfwCallBackImpl extends GuiCallBack {
 
     GForm gform;
     long display;
@@ -67,13 +65,7 @@ public class GuiCallBackImpl extends GuiCallBack {
     int fps;
     int fpsExpect = 60;
 
-    static GuiCallBackImpl instance = new GuiCallBackImpl();
-
-    public static GuiCallBackImpl getInstance() {
-        return instance;
-    }
-
-    private GuiCallBackImpl() {
+    public GlfwCallBackImpl() {
     }
 
     public void setDisplay(long display) {
@@ -166,7 +158,7 @@ public class GuiCallBackImpl extends GuiCallBack {
             System.out.println("callback.getNvContext() is null.");
         }
         GToolkit.FontHolder.loadFont(vg);
-        GlfmMain.onSurfaceCreated();
+        AppLoader.onSurfaceCreated();
     }
 
     @Override
@@ -216,6 +208,7 @@ public class GuiCallBackImpl extends GuiCallBack {
         glfwTerminate();
         GToolkit.removeForm(vg);
         vg = 0;
+        System.exit(0);//some thread not exit ,that will continue running
     }
 
     @Override
@@ -375,12 +368,8 @@ public class GuiCallBackImpl extends GuiCallBack {
     @Override
     public void cursorEnter(long window, boolean entered) {
     }
-    
-    
-    
-    
-    //============================== glfm
 
+    //============================== glfm
     @Override
     public void mainLoop(long display, double frameTime) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -445,16 +434,14 @@ public class GuiCallBackImpl extends GuiCallBack {
     public void onNotify(long display, String key, String val) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
-    //==============================
-    
-    
-     public String getAppSaveRoot(){
-         return new File("./").getAbsolutePath();
-     }
 
-     public String getAppResRoot(){
-         return new File("./").getAbsolutePath();
-     }
-    
+    //==============================
+    public String getAppSaveRoot() {
+        return new File("./").getAbsolutePath();
+    }
+
+    public String getAppResRoot() {
+        return new File("./").getAbsolutePath();
+    }
+
 }

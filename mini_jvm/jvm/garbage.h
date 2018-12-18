@@ -44,6 +44,8 @@ struct _GcCollectorType {
     u8 _garbage_thread_status;
     u8 flag_refer;
     u8 isgc;
+    s16 exit;
+    s16 exitCode;
 };
 
 enum {

@@ -616,7 +616,9 @@ s32 java_lang_Object_wait(Runtime *runtime, JClass *clazz) {
 s32 java_lang_Runtime_exitInternal(Runtime *runtime, JClass *clazz) {
     RuntimeStack *stack = runtime->stack;
     s32 status = localvar_getInt(runtime->localvar, 1);
-    exit(status);
+    //exit(status);
+    collector->exit = 1;
+    collector->exitCode = status;
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
     invoke_deepth(runtime);
     jvm_printf("java_lang_Runtime_exitInternal %d\n", status);
