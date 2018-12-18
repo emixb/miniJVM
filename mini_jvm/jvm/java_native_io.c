@@ -151,7 +151,7 @@ s32 sock_get_option(s32 sockfd, s32 opType) {
         case SOCK_OP_TYPE_NON_BLOCK: {//阻塞设置
 #if __JVM_OS_MINGW__ || __JVM_OS_CYGWIN__ || __JVM_OS_VS__
             u_long flags = 1;
-            ret = NO_ERROR == ioctlsocket(socket, FIONBIO, &flags);
+            ret = NO_ERROR == ioctlsocket(sockfd, FIONBIO, &flags);
 #else
             int flags;
             if ((flags = fcntl(sockfd, F_GETFL, NULL)) < 0) {
@@ -679,7 +679,12 @@ s32 org_mini_net_SocketNative_getSockAddr(Runtime *runtime, JClass *clazz) {
 #endif
         char ipAddr[INET_ADDRSTRLEN];//保存点分十进制的地址
         Utf8String *ustr = utf8_create();
+#if __JVM_OS_MINGW__ || __JVM_OS_CYGWIN__
+        c8 *ipstr = inet_ntoa(sock.sin_addr);
+        strcpy(ipAddr, ipstr);
+#else
         inet_ntop(AF_INET, &sock.sin_addr, ipAddr, sizeof(ipAddr));
+#endif
         int port = ntohs(sock.sin_port);
         utf8_append_c(ustr, ipAddr);
         utf8_append_c(ustr, ":");
