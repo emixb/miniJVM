@@ -2,8 +2,8 @@
 <project version="4">
   <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true" buildAllGenerated="true">
     <generated>
-      <config projectName="jni_gui" targetName="test_gui" />
       <config projectName="jni_gui" targetName="gui" />
+      <config projectName="jni_gui" targetName="test_gui" />
     </generated>
   </component>
   <component name="CMakeSettings">
@@ -29,8 +29,8 @@
       <file leaf-file-name="jni_gl.c" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/jni_gl.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="304">
-              <caret line="16" column="4" lean-forward="false" selection-start-line="16" selection-start-column="4" selection-end-line="16" selection-end-column="4" />
+            <state relative-caret-position="240">
+              <caret line="16" column="4" selection-start-line="16" selection-start-column="4" selection-end-line="16" selection-end-column="4" />
               <folding>
                 <element signature="e#68#86#0" expanded="true" />
               </folding>
@@ -41,8 +41,8 @@
       <file leaf-file-name="jni_minial.c" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/jni_minial.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1121">
-              <caret line="59" column="33" lean-forward="false" selection-start-line="59" selection-start-column="33" selection-end-line="59" selection-end-column="33" />
+            <state relative-caret-position="885">
+              <caret line="59" column="33" selection-start-line="59" selection-start-column="33" selection-end-line="59" selection-end-column="33" />
               <folding>
                 <element signature="e#72#90#0" expanded="true" />
                 <element signature="e#375#402#0" expanded="true" />
@@ -54,9 +54,8 @@
       <file leaf-file-name="jni_minial.m" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/../../mobile/c/gui/jni_minial.m">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="3705">
-              <caret line="195" column="21" lean-forward="false" selection-start-line="195" selection-start-column="21" selection-end-line="195" selection-end-column="21" />
-              <folding />
+            <state relative-caret-position="2925">
+              <caret line="195" column="21" selection-start-line="195" selection-start-column="21" selection-end-line="195" selection-end-column="21" />
             </state>
           </provider>
         </entry>
@@ -64,9 +63,8 @@
       <file leaf-file-name="mini_al.h" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/../../mobile/c/gui/minial/mini_al.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="49039">
-              <caret line="2581" column="20" lean-forward="false" selection-start-line="2581" selection-start-column="20" selection-end-line="2581" selection-end-column="20" />
-              <folding />
+            <state relative-caret-position="38715">
+              <caret line="2581" column="20" selection-start-line="2581" selection-start-column="20" selection-end-line="2581" selection-end-column="20" />
             </state>
           </provider>
         </entry>
@@ -74,9 +72,8 @@
       <file leaf-file-name="jni_glfw.c" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/jni_glfw.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="20976">
-              <caret line="1104" column="50" lean-forward="false" selection-start-line="1104" selection-start-column="35" selection-end-line="1104" selection-end-column="50" />
-              <folding />
+            <state relative-caret-position="16560">
+              <caret line="1104" column="50" selection-start-line="1104" selection-start-column="35" selection-end-line="1104" selection-end-column="50" />
             </state>
           </provider>
         </entry>
@@ -84,8 +81,8 @@
       <file leaf-file-name="media.c" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/media.c">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="247">
-              <caret line="13" column="0" lean-forward="false" selection-start-line="13" selection-start-column="0" selection-end-line="13" selection-end-column="0" />
+            <state relative-caret-position="195">
+              <caret line="13" selection-start-line="13" selection-end-line="13" />
               <folding>
                 <element signature="e#40#61#0" expanded="true" />
               </folding>
@@ -97,8 +94,7 @@
         <entry file="file://$PROJECT_DIR$/deps/include/nanovg/nanovg.h">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="191">
-              <caret line="422" column="2" lean-forward="false" selection-start-line="422" selection-start-column="2" selection-end-line="422" selection-end-column="2" />
-              <folding />
+              <caret line="422" column="2" selection-start-line="422" selection-start-column="2" selection-end-line="422" selection-end-column="2" />
             </state>
           </provider>
         </entry>
@@ -106,8 +102,8 @@
       <file leaf-file-name="jvm.h" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/../../mini_jvm/jvm/jvm.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="25935">
-              <caret line="1365" column="32" lean-forward="false" selection-start-line="1365" selection-start-column="32" selection-end-line="1365" selection-end-column="32" />
+            <state relative-caret-position="20475">
+              <caret line="1365" column="32" selection-start-line="1365" selection-start-column="32" selection-end-line="1365" selection-end-column="32" />
               <folding>
                 <element signature="e#39#57#0" expanded="true" />
               </folding>
@@ -118,9 +114,8 @@
       <file leaf-file-name="media.h" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/media.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="779">
-              <caret line="41" column="28" lean-forward="false" selection-start-line="41" selection-start-column="28" selection-end-line="41" selection-end-column="28" />
-              <folding />
+            <state relative-caret-position="615">
+              <caret line="41" column="28" selection-start-line="41" selection-start-column="28" selection-end-line="41" selection-end-column="28" />
             </state>
           </provider>
         </entry>
@@ -204,26 +199,17 @@
     <packageJsonPaths />
   </component>
   <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
-  <component name="ProjectFrameBounds">
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="8" />
     <option name="y" value="23" />
-    <option name="width" value="1280" />
-    <option name="height" value="784" />
+    <option name="width" value="1255" />
+    <option name="height" value="733" />
   </component>
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="1" id="Add" />
   </component>
   <component name="ProjectView">
-    <navigator currentView="ProjectPane" proportions="" version="1">
-      <flattenPackages />
-      <showMembers />
-      <showModules />
-      <showLibraryContents />
-      <hideEmptyPackages />
-      <abbreviatePackageNames />
-      <autoscrollToSource />
-      <autoscrollFromSource />
-      <sortByType />
-      <manualOrder />
+    <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
@@ -249,6 +235,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -276,23 +263,14 @@
     </option>
   </component>
   <component name="RunManager" selected="Application.gui">
-    <configuration name="Build All" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" CONFIG_NAME="Debug" EXPLICIT_BUILD_TARGET_NAME="all">
-      <envs />
-    </configuration>
-    <configuration name="gui" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jni_gui" TARGET_NAME="gui" CONFIG_NAME="Debug">
-      <envs />
-    </configuration>
-    <configuration name="test_gui" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jni_gui" TARGET_NAME="test_gui" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="jni_gui" RUN_TARGET_NAME="test_gui">
-      <envs />
-    </configuration>
-    <list size="3">
-      <item index="0" class="java.lang.String" itemvalue="Application.Build All" />
-      <item index="1" class="java.lang.String" itemvalue="Application.gui" />
-      <item index="2" class="java.lang.String" itemvalue="Application.test_gui" />
+    <configuration name="Build All" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" CONFIG_NAME="Debug" EXPLICIT_BUILD_TARGET_NAME="all" />
+    <configuration name="gui" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jni_gui" TARGET_NAME="gui" CONFIG_NAME="Debug" />
+    <configuration name="test_gui" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="jni_gui" TARGET_NAME="test_gui" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="jni_gui" RUN_TARGET_NAME="test_gui" />
+    <list>
+      <item itemvalue="Application.Build All" />
+      <item itemvalue="Application.gui" />
+      <item itemvalue="Application.test_gui" />
     </list>
-  </component>
-  <component name="ShelveChangesManager" show_recycled="false">
-    <option name="remove_strategy" value="false" />
   </component>
   <component name="StructureViewFactory">
     <option name="ACTIVE_ACTIONS" value=",ALPHA_COMPARATOR" />
@@ -332,35 +310,36 @@
       <workItem from="1543940190890" duration="6000" />
       <workItem from="1544896126125" duration="554000" />
       <workItem from="1545118998502" duration="3093000" />
+      <workItem from="1545126852015" duration="390000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="115057000" />
+    <option name="totallyTimeSpent" value="115447000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="23" width="1280" height="784" extended-state="0" />
+    <frame x="0" y="23" width="1280" height="733" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.19672132" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.33971292" sideWeight="0.4967213" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="CMake" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32873276" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33971292" sideWeight="0.5032787" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24878837" sideWeight="0.5" order="4" side_tool="true" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="true" content_ui="tabs" />
-      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2798742" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.19951534" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="CMake" order="7" weight="0.32873276" />
+      <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.5032787" side_tool="true" weight="0.33971292" />
+      <window_info anchor="bottom" id="Run" order="2" />
+      <window_info anchor="bottom" id="Version Control" order="7" />
+      <window_info anchor="right" id="Structure" order="4" side_tool="true" weight="0.24878837" />
+      <window_info anchor="bottom" id="Terminal" order="7" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info id="Favorites" order="1" side_tool="true" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" id="Data View" order="3" />
+      <window_info active="true" anchor="bottom" id="Messages" order="7" sideWeight="0.4967213" visible="true" weight="0.33971292" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.2798742" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -373,22 +352,19 @@
     <breakpoint-manager>
       <option name="time" value="4" />
     </breakpoint-manager>
-    <watches-manager />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/media.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="779">
-          <caret line="41" column="28" lean-forward="false" selection-start-line="41" selection-start-column="28" selection-end-line="41" selection-end-column="28" />
-          <folding />
+          <caret line="41" column="28" selection-start-line="41" selection-start-column="28" selection-end-line="41" selection-end-column="28" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/deps/include/nanovg/nanovg.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="7961">
-          <caret line="419" column="19" lean-forward="false" selection-start-line="419" selection-start-column="9" selection-end-line="419" selection-end-column="19" />
-          <folding />
+          <caret line="419" column="19" selection-start-line="419" selection-start-column="9" selection-end-line="419" selection-end-column="19" />
         </state>
       </provider>
     </entry>
@@ -396,7 +372,7 @@
     <entry file="file://$PROJECT_DIR$/media.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="600">
-          <caret line="40" column="2" lean-forward="false" selection-start-line="40" selection-start-column="2" selection-end-line="40" selection-end-column="2" />
+          <caret line="40" column="2" selection-start-line="40" selection-start-column="2" selection-end-line="40" selection-end-column="2" />
         </state>
       </provider>
     </entry>
@@ -405,14 +381,14 @@
     <entry file="file://$PROJECT_DIR$/jni_gl.c">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="315">
-          <caret line="21" column="15" lean-forward="false" selection-start-line="21" selection-start-column="14" selection-end-line="21" selection-end-column="15" />
+          <caret line="21" column="15" selection-start-line="21" selection-start-column="14" selection-end-line="21" selection-end-column="15" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/jni_glfw.c">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="15660">
-          <caret line="1044" column="41" lean-forward="false" selection-start-line="1044" selection-start-column="41" selection-end-line="1044" selection-end-column="41" />
+          <caret line="1044" column="41" selection-start-line="1044" selection-start-column="41" selection-end-line="1044" selection-end-column="41" />
         </state>
       </provider>
     </entry>
@@ -420,7 +396,7 @@
     <entry file="file://$PROJECT_DIR$/media.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="760">
-          <caret line="40" column="2" lean-forward="false" selection-start-line="40" selection-start-column="2" selection-end-line="40" selection-end-column="2" />
+          <caret line="40" column="2" selection-start-line="40" selection-start-column="2" selection-end-line="40" selection-end-column="2" />
         </state>
       </provider>
     </entry>
@@ -429,7 +405,7 @@
     <entry file="file://$PROJECT_DIR$/jni_glfw.c">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="16511">
-          <caret line="869" column="13" lean-forward="false" selection-start-line="869" selection-start-column="13" selection-end-line="869" selection-end-column="13" />
+          <caret line="869" column="13" selection-start-line="869" selection-start-column="13" selection-end-line="869" selection-end-column="13" />
         </state>
       </provider>
     </entry>
@@ -437,7 +413,7 @@
     <entry file="file://$PROJECT_DIR$/jni_glfw.c">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="20235">
-          <caret line="1065" column="51" lean-forward="false" selection-start-line="1065" selection-start-column="51" selection-end-line="1065" selection-end-column="51" />
+          <caret line="1065" column="51" selection-start-line="1065" selection-start-column="51" selection-end-line="1065" selection-end-column="51" />
         </state>
       </provider>
     </entry>
@@ -445,7 +421,7 @@
     <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="760">
-          <caret line="40" column="20" lean-forward="false" selection-start-line="40" selection-start-column="20" selection-end-line="40" selection-end-column="20" />
+          <caret line="40" column="20" selection-start-line="40" selection-start-column="20" selection-end-line="40" selection-end-column="20" />
         </state>
       </provider>
     </entry>
@@ -457,21 +433,21 @@
     <entry file="file://$PROJECT_DIR$/deps/include/glad/glad_jni_assist.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="264">
-          <caret line="22" column="33" lean-forward="false" selection-start-line="22" selection-start-column="33" selection-end-line="22" selection-end-column="33" />
+          <caret line="22" column="33" selection-start-line="22" selection-start-column="33" selection-end-line="22" selection-end-column="33" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../../mini_jvm/jvm/global.c">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="390">
-          <caret line="26" column="33" lean-forward="false" selection-start-line="26" selection-start-column="33" selection-end-line="26" selection-end-column="52" />
+          <caret line="26" column="33" selection-start-line="26" selection-start-column="33" selection-end-line="26" selection-end-column="52" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/deps/include/nanovg/nanovg_jni_assist.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2580">
-          <caret line="172" column="55" lean-forward="false" selection-start-line="172" selection-start-column="55" selection-end-line="172" selection-end-column="55" />
+          <caret line="172" column="55" selection-start-line="172" selection-start-column="55" selection-end-line="172" selection-end-column="55" />
         </state>
       </provider>
     </entry>
@@ -479,14 +455,14 @@
     <entry file="file://$PROJECT_DIR$/deps/include/glad/glad.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="315">
-          <caret line="21" column="17" lean-forward="false" selection-start-line="21" selection-start-column="17" selection-end-line="21" selection-end-column="17" />
+          <caret line="21" column="17" selection-start-line="21" selection-start-column="17" selection-end-line="21" selection-end-column="17" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/deps/include/glad/glad.c">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="300">
-          <caret line="20" column="0" lean-forward="false" selection-start-line="20" selection-start-column="0" selection-end-line="20" selection-end-column="0" />
+          <caret line="20" selection-start-line="20" selection-end-line="20" />
         </state>
       </provider>
     </entry>
@@ -500,21 +476,21 @@
     <entry file="file://$PROJECT_DIR$/deps/include/stb_jni_assist.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="435">
-          <caret line="29" column="23" lean-forward="false" selection-start-line="29" selection-start-column="19" selection-end-line="29" selection-end-column="28" />
+          <caret line="29" column="23" selection-start-line="29" selection-start-column="19" selection-end-line="29" selection-end-column="28" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/deps/include/nanovg/nanovg.c">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="11940">
-          <caret line="796" column="45" lean-forward="false" selection-start-line="796" selection-start-column="45" selection-end-line="796" selection-end-column="45" />
+          <caret line="796" column="45" selection-start-line="796" selection-start-column="45" selection-end-line="796" selection-end-column="45" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/deps/include/stb_image.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="5430">
-          <caret line="362" column="120" lean-forward="false" selection-start-line="362" selection-start-column="104" selection-end-line="362" selection-end-column="120" />
+          <caret line="362" column="120" selection-start-line="362" selection-start-column="104" selection-end-line="362" selection-end-column="120" />
         </state>
       </provider>
     </entry>
@@ -522,63 +498,63 @@
     <entry file="file://$PROJECT_DIR$/deps/include/linmath.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="344">
-          <caret line="164" column="19" lean-forward="false" selection-start-line="164" selection-start-column="19" selection-end-line="164" selection-end-column="19" />
+          <caret line="164" column="19" selection-start-line="164" selection-start-column="19" selection-end-line="164" selection-end-column="19" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/jni_nanovg.c">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-292">
-          <caret line="292" column="33" lean-forward="false" selection-start-line="292" selection-start-column="33" selection-end-line="292" selection-end-column="33" />
+          <caret line="292" column="33" selection-start-line="292" selection-start-column="33" selection-end-line="292" selection-end-column="33" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="153">
-          <caret line="12" column="15" lean-forward="false" selection-start-line="12" selection-start-column="15" selection-end-line="12" selection-end-column="15" />
+          <caret line="12" column="15" selection-start-line="12" selection-start-column="15" selection-end-line="12" selection-end-column="15" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../../mini_jvm/jvm/runtime.c">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2160">
-          <caret line="144" column="0" lean-forward="false" selection-start-line="144" selection-start-column="0" selection-end-line="144" selection-end-column="0" />
+          <caret line="144" selection-start-line="144" selection-end-line="144" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../../mini_jvm/jvm/jvm_util.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="5850">
-          <caret line="390" column="0" lean-forward="false" selection-start-line="390" selection-start-column="0" selection-end-line="390" selection-end-column="0" />
+          <caret line="390" selection-start-line="390" selection-end-line="390" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../../mini_jvm/jvm/jvm.c">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="345">
-          <caret line="23" column="24" lean-forward="false" selection-start-line="23" selection-start-column="24" selection-end-line="23" selection-end-column="24" />
+          <caret line="23" column="24" selection-start-line="23" selection-start-column="24" selection-end-line="23" selection-end-column="24" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../../mini_jvm/utils/tinycthread.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="5250">
-          <caret line="350" column="28" lean-forward="false" selection-start-line="350" selection-start-column="28" selection-end-line="350" selection-end-column="28" />
+          <caret line="350" column="28" selection-start-line="350" selection-start-column="28" selection-end-line="350" selection-end-column="28" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../../mini_jvm/utils/pairlist.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1350">
-          <caret line="90" column="33" lean-forward="false" selection-start-line="90" selection-start-column="33" selection-end-line="90" selection-end-column="33" />
+          <caret line="90" column="33" selection-start-line="90" selection-start-column="33" selection-end-line="90" selection-end-column="33" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../../mini_jvm/jvm/jvm.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="25935">
-          <caret line="1365" column="32" lean-forward="false" selection-start-line="1365" selection-start-column="32" selection-end-line="1365" selection-end-column="32" />
+        <state relative-caret-position="20475">
+          <caret line="1365" column="32" selection-start-line="1365" selection-start-column="32" selection-end-line="1365" selection-end-column="32" />
           <folding>
             <element signature="e#39#57#0" expanded="true" />
           </folding>
@@ -587,16 +563,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/media.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="779">
-          <caret line="41" column="28" lean-forward="false" selection-start-line="41" selection-start-column="28" selection-end-line="41" selection-end-column="28" />
-          <folding />
+        <state relative-caret-position="615">
+          <caret line="41" column="28" selection-start-line="41" selection-start-column="28" selection-end-line="41" selection-end-column="28" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/media.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="247">
-          <caret line="13" column="0" lean-forward="false" selection-start-line="13" selection-start-column="0" selection-end-line="13" selection-end-column="0" />
+        <state relative-caret-position="195">
+          <caret line="13" selection-start-line="13" selection-end-line="13" />
           <folding>
             <element signature="e#40#61#0" expanded="true" />
           </folding>
@@ -606,24 +581,22 @@
     <entry file="file://$PROJECT_DIR$/deps/include/minial/mini_al.h" />
     <entry file="file://$PROJECT_DIR$/../../mobile/c/gui/jni_minial.m">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3705">
-          <caret line="195" column="21" lean-forward="false" selection-start-line="195" selection-start-column="21" selection-end-line="195" selection-end-column="21" />
-          <folding />
+        <state relative-caret-position="2925">
+          <caret line="195" column="21" selection-start-line="195" selection-start-column="21" selection-end-line="195" selection-end-column="21" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../../mobile/c/gui/minial/mini_al.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="49039">
-          <caret line="2581" column="20" lean-forward="false" selection-start-line="2581" selection-start-column="20" selection-end-line="2581" selection-end-column="20" />
-          <folding />
+        <state relative-caret-position="38715">
+          <caret line="2581" column="20" selection-start-line="2581" selection-start-column="20" selection-end-line="2581" selection-end-column="20" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/jni_minial.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1121">
-          <caret line="59" column="33" lean-forward="false" selection-start-line="59" selection-start-column="33" selection-end-line="59" selection-end-column="33" />
+        <state relative-caret-position="885">
+          <caret line="59" column="33" selection-start-line="59" selection-start-column="33" selection-end-line="59" selection-end-column="33" />
           <folding>
             <element signature="e#72#90#0" expanded="true" />
             <element signature="e#375#402#0" expanded="true" />
@@ -633,8 +606,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/jni_gl.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="304">
-          <caret line="16" column="4" lean-forward="false" selection-start-line="16" selection-start-column="4" selection-end-line="16" selection-end-column="4" />
+        <state relative-caret-position="240">
+          <caret line="16" column="4" selection-start-line="16" selection-start-column="4" selection-end-line="16" selection-end-column="4" />
           <folding>
             <element signature="e#68#86#0" expanded="true" />
           </folding>
@@ -643,17 +616,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/jni_glfw.c">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="20976">
-          <caret line="1104" column="50" lean-forward="false" selection-start-line="1104" selection-start-column="35" selection-end-line="1104" selection-end-column="50" />
-          <folding />
+        <state relative-caret-position="16560">
+          <caret line="1104" column="50" selection-start-line="1104" selection-start-column="35" selection-end-line="1104" selection-end-column="50" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/deps/include/nanovg/nanovg.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="191">
-          <caret line="422" column="2" lean-forward="false" selection-start-line="422" selection-start-column="2" selection-end-line="422" selection-end-column="2" />
-          <folding />
+          <caret line="422" column="2" selection-start-line="422" selection-start-column="2" selection-end-line="422" selection-end-column="2" />
         </state>
       </provider>
     </entry>
