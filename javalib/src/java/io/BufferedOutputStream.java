@@ -1,8 +1,11 @@
 /*
- * @(#)BufferedOutputStream.java	1.33 03/12/19
+ * @(#)BufferedOutputStream.java	1.27 00/02/02
  *
- * Copyright 2004 Sun Microsystems, Inc. All rights reserved.
- * SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
+ * Copyright 1994-2000 Sun Microsystems, Inc. All Rights Reserved.
+ * 
+ * This software is the proprietary information of Sun Microsystems, Inc.  
+ * Use is subject to license terms.
+ * 
  */
 
 package java.io;
@@ -11,10 +14,13 @@ package java.io;
  * The class implements a buffered output stream. By setting up such 
  * an output stream, an application can write bytes to the underlying 
  * output stream without necessarily causing a call to the underlying 
- * system for each byte written.
+ * system for each byte written. The data is written into an internal 
+ * buffer, and then written to the underlying stream if the buffer 
+ * reaches its capacity, the buffer output stream is closed, or the 
+ * buffer output stream is explicitly flushed. 
  *
  * @author  Arthur van Hoff
- * @version 1.33, 12/19/03
+ * @version 1.27, 02/02/00
  * @since   JDK1.0
  */
 public 
@@ -33,13 +39,14 @@ class BufferedOutputStream extends FilterOutputStream {
     protected int count;
     
     /**
-     * Creates a new buffered output stream to write data to the
-     * specified underlying output stream.
+     * Creates a new buffered output stream to write data to the 
+     * specified underlying output stream with a default 512-byte 
+     * buffer size.
      *
      * @param   out   the underlying output stream.
      */
     public BufferedOutputStream(OutputStream out) {
-	this(out, 8192);
+	this(out, 512);
     }
 
     /**
@@ -49,7 +56,7 @@ class BufferedOutputStream extends FilterOutputStream {
      *
      * @param   out    the underlying output stream.
      * @param   size   the buffer size.
-     * @exception IllegalArgumentException if size &lt;= 0.
+     * @exception IllegalArgumentException if size <= 0.
      */
     public BufferedOutputStream(OutputStream out, int size) {
 	super(out);

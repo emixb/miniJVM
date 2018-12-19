@@ -1,12 +1,14 @@
 /*
- * @(#)BufferedInputStream.java	1.50 04/05/03
+ * @(#)BufferedInputStream.java	1.41 00/02/02
  *
- * Copyright 2004 Sun Microsystems, Inc. All rights reserved.
- * SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
+ * Copyright 1994-2000 Sun Microsystems, Inc. All Rights Reserved.
+ * 
+ * This software is the proprietary information of Sun Microsystems, Inc.  
+ * Use is subject to license terms.
+ * 
  */
 
 package java.io;
-import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 /**
  * A <code>BufferedInputStream</code> adds
@@ -27,31 +29,20 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
  * the contained input stream.
  *
  * @author  Arthur van Hoff
- * @version 1.50, 05/03/04
+ * @version 1.41, 02/02/00
  * @since   JDK1.0
  */
 public
 class BufferedInputStream extends FilterInputStream {
 
-    private static int defaultBufferSize = 8192;
+    private static int defaultBufferSize = 2048;
 
     /**
      * The internal buffer array where the data is stored. When necessary,
      * it may be replaced by another array of
      * a different size.
      */
-    protected volatile byte buf[];
-
-    /**
-     * Atomic updater to provide compareAndSet for buf. This is
-     * necessary because closes can be asynchronous. We use nullness
-     * of buf[] as primary indicator that this stream is closed. (The
-     * "in" field is also nulled out on close.)
-     */
-    private static final 
-        AtomicReferenceFieldUpdater<BufferedInputStream, byte[]> bufUpdater = 
-        AtomicReferenceFieldUpdater.newUpdater
-        (BufferedInputStream.class,  byte[].class, "buf");
+    protected byte buf[];
 
     /**
      * The index one greater than the index of the last valid byte in 
@@ -125,25 +116,11 @@ class BufferedInputStream extends FilterInputStream {
     protected int marklimit;
 
     /**
-     * Check to make sure that underlying input stream has not been
-     * nulled out due to close; if not return it;
+     * Check to make sure that this stream has not been closed
      */
-    private InputStream getInIfOpen() throws IOException {
-        InputStream input = in;
-	if (input == null)
+    private void ensureOpen() throws IOException {
+	if (in == null)
 	    throw new IOException("Stream closed");
-        return input;
-    }
-
-    /**
-     * Check to make sure that buffer has not been nulled out due to
-     * close; if not return it;
-     */
-    private byte[] getBufIfOpen() throws IOException {
-        byte[] buffer = buf;
-	if (buffer == null)
-	    throw new IOException("Stream closed");
-        return buffer;
     }
 
     /**
@@ -186,16 +163,15 @@ class BufferedInputStream extends FilterInputStream {
      * hence pos > count.
      */
     private void fill() throws IOException {
-        byte[] buffer = getBufIfOpen();
 	if (markpos < 0)
 	    pos = 0;		/* no mark: throw away the buffer */
-	else if (pos >= buffer.length)	/* no room left in buffer */
+	else if (pos >= buf.length)	/* no room left in buffer */
 	    if (markpos > 0) {	/* can throw away early part of the buffer */
 		int sz = pos - markpos;
-		System.arraycopy(buffer, markpos, buffer, 0, sz);
+		System.arraycopy(buf, markpos, buf, 0, sz);
 		pos = sz;
 		markpos = 0;
-	    } else if (buffer.length >= marklimit) {
+	    } else if (buf.length >= marklimit) {
 		markpos = -1;	/* buffer got too big, invalidate mark */
 		pos = 0;	/* drop buffer contents */
 	    } else {		/* grow buffer */
@@ -203,19 +179,11 @@ class BufferedInputStream extends FilterInputStream {
 		if (nsz > marklimit)
 		    nsz = marklimit;
 		byte nbuf[] = new byte[nsz];
-		System.arraycopy(buffer, 0, nbuf, 0, pos);
-                if (!bufUpdater.compareAndSet(this, buffer, nbuf)) {
-                    // Can't replace buf if there was an async close.
-                    // Note: This would need to be changed if fill()
-                    // is ever made accessible to multiple threads.
-                    // But for now, the only way CAS can fail is via close.
-                    // assert buf == null;
-                    throw new IOException("Stream closed");
-                }
-                buffer = nbuf;
+		System.arraycopy(buf, 0, nbuf, 0, pos);
+		buf = nbuf;
 	    }
         count = pos;
-	int n = getInIfOpen().read(buffer, pos, buffer.length - pos);
+	int n = in.read(buf, pos, buf.length - pos);
         if (n > 0)
             count = n + pos;
     }
@@ -231,12 +199,13 @@ class BufferedInputStream extends FilterInputStream {
      * @see        java.io.FilterInputStream#in
      */
     public synchronized int read() throws IOException {
+        ensureOpen();
 	if (pos >= count) {
 	    fill();
 	    if (pos >= count)
 		return -1;
 	}
-	return getBufIfOpen()[pos++] & 0xff;
+	return buf[pos++] & 0xff;
     }
 
     /**
@@ -250,15 +219,15 @@ class BufferedInputStream extends FilterInputStream {
 	       if there is no mark/reset activity, do not bother to copy the
 	       bytes into the local buffer.  In this way buffered streams will
 	       cascade harmlessly. */
-	    if (len >= getBufIfOpen().length && markpos < 0) {
-		return getInIfOpen().read(b, off, len);
+	    if (len >= buf.length && markpos < 0) {
+		return in.read(b, off, len);
 	    }
 	    fill();
 	    avail = count - pos;
 	    if (avail <= 0) return -1;
 	}
 	int cnt = (avail < len) ? avail : len;
-	System.arraycopy(getBufIfOpen(), pos, b, off, cnt);
+	System.arraycopy(buf, pos, b, off, cnt);
 	pos += cnt;
 	return cnt;
     }
@@ -301,26 +270,21 @@ class BufferedInputStream extends FilterInputStream {
     public synchronized int read(byte b[], int off, int len)
 	throws IOException
     {
-        getBufIfOpen(); // Check for closed stream
+        ensureOpen();
         if ((off | len | (off + len) | (b.length - (off + len))) < 0) {
 	    throw new IndexOutOfBoundsException();
 	} else if (len == 0) {
-            return 0;
-        }
+	    return 0;
+	}
 
-	int n = 0;
-        for (;;) {
-            int nread = read1(b, off + n, len - n);
-            if (nread <= 0) 
-                return (n == 0) ? nread : n;
-            n += nread;
-            if (n >= len)
-                return n;
-            // if not closed but no bytes available, return
-            InputStream input = in;
-            if (input != null && input.available() <= 0)
-                return n;
-        }
+	int n = read1(b, off, len);
+	if (n <= 0) return n;
+	while ((n < len) && (in.available() > 0)) {
+	    int n1 = read1(b, off + n, len - n);
+	    if (n1 <= 0) break;
+	    n += n1;
+	}
+	return n;
     }
 
     /**
@@ -332,7 +296,7 @@ class BufferedInputStream extends FilterInputStream {
      * @exception  IOException  if an I/O error occurs.
      */
     public synchronized long skip(long n) throws IOException {
-        getBufIfOpen(); // Check for closed stream
+        ensureOpen();
 	if (n <= 0) {
 	    return 0;
 	}
@@ -341,7 +305,7 @@ class BufferedInputStream extends FilterInputStream {
         if (avail <= 0) {
             // If no mark position set then don't keep in buffer
             if (markpos <0) 
-                return getInIfOpen().skip(n);
+                return in.skip(n);
             
             // Fill in buffer to save bytes for reset
             fill();
@@ -360,7 +324,7 @@ class BufferedInputStream extends FilterInputStream {
      * stream without blocking. 
      * <p>
      * The <code>available</code> method of 
-     * <code>BufferedInputStream</code> returns the sum of the number
+     * <code>BufferedInputStream</code> returns the sum of the the number 
      * of bytes remaining to be read in the buffer 
      * (<code>count&nbsp;- pos</code>) 
      * and the result of calling the <code>available</code> method of the 
@@ -372,7 +336,8 @@ class BufferedInputStream extends FilterInputStream {
      * @see        java.io.FilterInputStream#in
      */
     public synchronized int available() throws IOException {
-	return getInIfOpen().available() + (count - pos);
+        ensureOpen();
+	return (count - pos) + in.available();
     }
 
     /** 
@@ -403,7 +368,7 @@ class BufferedInputStream extends FilterInputStream {
      * @see        java.io.BufferedInputStream#mark(int)
      */
     public synchronized void reset() throws IOException {
-        getBufIfOpen(); // Cause exception if closed
+        ensureOpen();
 	if (markpos < 0)
 	    throw new IOException("Resetting to invalid mark");
 	pos = markpos;
@@ -431,16 +396,10 @@ class BufferedInputStream extends FilterInputStream {
      * @exception  IOException  if an I/O error occurs.
      */
     public void close() throws IOException {
-        byte[] buffer;
-        while ( (buffer = buf) != null) {
-            if (bufUpdater.compareAndSet(this, buffer, null)) {
-                InputStream input = in;
-                in = null;
-                if (input != null)
-                    input.close();
-                return;
-            }
-            // Else retry in case a new buf was CASed in fill()
-        }
+        if (in == null)
+            return;
+        in.close();
+        in = null;
+        buf = null;
     }
 }
