@@ -46,12 +46,12 @@ s32 com_sun_cldc_io_ResourceInputStream_open(Runtime *runtime, JClass *clazz) {
         s32 _j_t_bytes = buf->wp;
         Instance *_arr = jarray_create_by_type_index(runtime, _j_t_bytes, DATATYPE_BYTE);
         bytebuf_read_batch(buf, _arr->arr_body, _j_t_bytes);
-        utf8_destory(path);
         bytebuf_destory(buf);
         push_ref(runtime->stack, _arr);
     } else {
         push_ref(runtime->stack, NULL);
     }
+    utf8_destory(path);
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
     invoke_deepth(runtime);
     jvm_printf("com_sun_cldc_io_ConsoleInputStream_read\n");

@@ -1111,7 +1111,13 @@ s32 instance_destory(Instance *ins) {
  * @return  instance
  */
 Instance *instance_copy(Runtime *runtime, Instance *src, s32 deep_copy) {
-    Instance *dst = jvm_malloc(sizeof(Instance) + src->mb.clazz->field_instance_len);
+    s32 bodySize = 0;
+    if (src->mb.type == MEM_TYPE_INS) {
+        bodySize = src->mb.clazz->field_instance_len;
+    } else if (src->mb.type == MEM_TYPE_ARR) {
+        bodySize = src->arr_length * data_type_bytes[src->mb.arr_type_index];
+    }
+    Instance *dst = jvm_malloc(sizeof(Instance) + bodySize);
 //    Instance *dst = jvm_malloc(sizeof(Instance));
     memcpy(dst, src, sizeof(Instance));
     dst->mb.thread_lock = NULL;
@@ -1146,7 +1152,7 @@ Instance *instance_copy(Runtime *runtime, Instance *src, s32 deep_copy) {
         }
     } else if (src->mb.type == MEM_TYPE_ARR) {
         s32 size = src->arr_length * data_type_bytes[src->mb.arr_type_index];
-        dst->arr_body = jvm_malloc(size);
+        dst->arr_body = (c8 *) dst + sizeof(Instance);//jvm_malloc(fileds_len);
         if (isDataReferByIndex(src->mb.arr_type_index) && deep_copy) {
             s32 i;
             s64 val;
