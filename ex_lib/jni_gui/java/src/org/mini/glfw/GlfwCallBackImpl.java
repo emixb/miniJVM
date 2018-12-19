@@ -27,6 +27,7 @@ import static org.mini.glfw.Glfw.glfwSwapInterval;
 import static org.mini.glfw.Glfw.glfwTerminate;
 import static org.mini.glfw.Glfw.glfwWindowHint;
 import static org.mini.glfw.Glfw.glfwWindowShouldClose;
+import org.mini.gui.GApplication;
 import org.mini.gui.GForm;
 import org.mini.gui.GObject;
 import org.mini.gui.GToolkit;
@@ -45,6 +46,7 @@ import static org.mini.nanovg.Nanovg.nvgDeleteGL3;
  */
 public class GlfwCallBackImpl extends GuiCallBack {
 
+    GApplication gapp;
     GForm gform;
     long display;
 
@@ -440,12 +442,36 @@ public class GlfwCallBackImpl extends GuiCallBack {
     }
 
     //==============================
+    @Override
     public String getAppSaveRoot() {
         return new File("./").getAbsolutePath();
     }
 
+    @Override
     public String getAppResRoot() {
         return new File("./").getAbsolutePath();
     }
 
+    @Override
+    public GApplication getApplication() {
+        return gapp;
+    }
+
+    @Override
+    public void setApplication(GApplication app) {
+        if (app != null) {
+            if (gapp != null) {
+                gapp.close();
+            }
+            gapp = app;
+            setForm(app.getForm(app));
+        }
+    }
+
+    @Override
+    public void notifyCurrentFormChanged(GApplication app) {
+        if (gapp == app) {
+            setForm(app.getForm(app));
+        }
+    }
 }

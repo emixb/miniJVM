@@ -63,14 +63,14 @@ int main(int argc, char **argv) {
         }
     } else {
         java_debug = 0;
-        classpath = "../../binary/lib/minijvm_rt.jar;../../binary/lib/glfw_gui.jar;./";
+//        classpath = "../../binary/lib/minijvm_rt.jar;../../binary/lib/glfw_gui.jar;./";
 //        main_name = "test/Gears";
 //        main_name = "test/TestGL";
 //        main_name = "test/GuiTest";
 //        main_name = "test/RenderTexure";
 //        main_name = "test/Alpha";
 //        main_name = "test/Light";
-        main_name = "test/Shader";
+//        main_name = "test/Shader";
 //        main_name = "test/Boing";
 //        main_name = "test/TestNanovg";
 
