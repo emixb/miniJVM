@@ -85,21 +85,21 @@ int main(int argc, char **argv) {
 //        main_name = "test/Hello";
 //        main_name = "test/Foo1";
 //        main_name = "test/Foo2";
-//        main_name = "test/Foo3";
+        main_name = "test/Foo3";
 //        main_name = "test/MultiThread";
 //        main_name = "test/ExecuteSpeed";
 //        main_name = "test/TestFile";
         //main_name = "test/HttpServer";
-        main_name = "test/BpDeepTest";
+//        main_name = "test/BpDeepTest";
 //        main_name = "test/ReflectTest";
 //        main_name = "test/LambdaTest";
 
 
 
 
-        classpath = "../../binary/lib/minijvm_rt.jar;../../binary/lib/janino.jar;../../binary/lib/commons-compiler.jar";
-        main_name = "org.codehaus.janino.Compiler";
-        arraylist_push_back(java_para,"../../binary/res/BpDeepTest.java");
+//        classpath = "../../binary/lib/minijvm_rt.jar;../../binary/lib/janino.jar;../../binary/lib/commons-compiler.jar";
+//        main_name = "org.codehaus.janino.Compiler";
+//        arraylist_push_back(java_para,"../../binary/res/BpDeepTest.java");
 
 
 //        classpath = "../../binary/lib/pup_vm_java.jar;./";
