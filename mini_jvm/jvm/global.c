@@ -31,7 +31,7 @@ c8 *STR_CLASS_JAVA_LANG_THREAD = "java/lang/Thread";
 c8 *STR_CLASS_JAVA_LANG_CLASS = "java/lang/Class";
 c8 *STR_CLASS_JAVA_LANG_INVOKE_METHODTYPE = "java/lang/invoke/MethodType";
 c8 *STR_CLASS_JAVA_LANG_INVOKE_METHODHANDLE = "java/lang/invoke/MethodHandle";
-c8 *STR_CLASS_JAVA_LANG_INVOKE_METHODHANDLES_LOOKUP= "java/lang/invoke/MethodHandles$Lookup";
+c8 *STR_CLASS_JAVA_LANG_INVOKE_METHODHANDLES_LOOKUP = "java/lang/invoke/MethodHandles$Lookup";
 c8 *STR_CLASS_JAVA_LANG_STACKTRACE = "java/lang/StackTraceElement";
 c8 *STR_CLASS_JAVA_LANG_THROWABLE = "java/lang/Throwable";
 c8 *STR_CLASS_ORG_MINI_REFLECT_DIRECTMEMOBJ = "org/mini/reflect/DirectMemObj";
@@ -93,7 +93,9 @@ u8 java_debug = 0;
 s32 jvm_state = JVM_STATUS_UNKNOW;
 
 #if _JVM_DEBUG_PROFILE
-Hashtable *profile_instructs;
+
+spinlock_t pro_lock;
+ProfileDetail profile_instructs[INST_COUNT] = {0};
 
 c8 *inst_name[] = {
 /* 0x00 */ "op_nop",

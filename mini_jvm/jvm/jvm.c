@@ -61,42 +61,29 @@ void print_exception(Runtime *runtime) {
 
 #if _JVM_DEBUG_PROFILE
 
-void profile_item_destory(HashtableValue value) {
-    jvm_free(value);
-}
-
 void profile_init() {
-    profile_instructs = hashtable_create(DEFAULT_HASH_FUNC, DEFAULT_HASH_EQUALS_FUNC);
-    hashtable_register_free_functions(profile_instructs, NULL, profile_item_destory);
+    memset(&profile_instructs, 0, sizeof(ProfileDetail) * INST_COUNT);
 }
 
 void profile_put(u8 instruct_code, s64 cost_add, s64 count_add) {
-    ProfileDetail *h_s_v = hashtable_get(profile_instructs, (HashtableKey) (intptr_t) instruct_code);
-    if (h_s_v == NULL) {
-        ProfileDetail *pd = jvm_calloc(sizeof(ProfileDetail));
-        pd->cost = cost_add;
-        pd->count = 1;
-        hashtable_put(profile_instructs, (HashtableKey) (intptr_t) instruct_code, (HashtableKey) pd);
-    } else {
-        spin_lock(&profile_instructs->spinlock);
-        h_s_v->cost += cost_add;
-        h_s_v->count += count_add;
-        spin_unlock(&profile_instructs->spinlock);
-    }
+    ProfileDetail *h_s_v = &profile_instructs[instruct_code];
+
+    spin_lock(&pro_lock);
+    h_s_v->cost += cost_add;
+    h_s_v->count += count_add;
+    spin_unlock(&pro_lock);
+
 };
 
 void profile_print() {
-    HashtableIterator hti;
-    hashtable_iterate(profile_instructs, &hti);
-    for (; hashtable_iter_has_more(&hti);) {
-        u8 instruct_code = (u8) (intptr_t) hashtable_iter_next_key(&hti);
-        ProfileDetail *pd = hashtable_get(profile_instructs,
-                                          (HashtableKey) (intptr_t) instruct_code);
-        jvm_printf("%s \t %2x \t total \t %lld \t count \t %d \t avg \t %lld\n", inst_name[instruct_code],
-                   instruct_code, pd->cost, pd->count,
-                   (s64) (pd->cost / pd->count));
+    s32 i;
+    jvm_printf("id           total    count      avg inst  \n");
+    for (i = 0; i < INST_COUNT; i++) {
+        ProfileDetail *pd = &profile_instructs[i];
+        if (pd->count)
+            jvm_printf("%2x %15lld %8d %8lld %s\n",
+                       i, pd->cost, pd->count, pd->count ? (pd->cost / pd->count) : 0, inst_name[i]);
     }
-    hashtable_destory(profile_instructs);
 }
 
 #endif

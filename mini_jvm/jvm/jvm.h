@@ -340,12 +340,16 @@ void set_jvm_state(int state);
 
 //==============profile============
 #if _JVM_DEBUG_PROFILE
-extern Hashtable *profile_instructs;
-extern c8 *inst_name[];
+
+#define INST_COUNT 0xff
 typedef struct _ProfileDetail {
     s64 cost;
     s32 count;
 } ProfileDetail;
+
+extern ProfileDetail profile_instructs[];
+extern c8 *inst_name[];
+extern spinlock_t pro_lock;
 
 void profile_init();
 
