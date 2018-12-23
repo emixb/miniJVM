@@ -803,14 +803,14 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                 }
 
 #if _JVM_DEBUG_PROFILE
-                    u8 instruct_code = runtime->pc[0];
+                s64 spent = 0;
                 s64 start_at = nanoTime();
 #endif
 
 
-                    /* ==================================opcode start =============================*/
+                /* ==================================opcode start =============================*/
 #ifdef __JVM_DEBUG__
-                    s64 inst_pc = runtime->pc - ca->code;
+                s64 inst_pc = runtime->pc - ca->code;
 #endif
                 JUMP_TO_IP(cur_inst);
                 switch (cur_inst) {
@@ -3403,6 +3403,9 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                         jvm_printf("invokevirtual    %s.%s%s  {\n", utf8_cstr(m->_this_class->name), utf8_cstr(m->name), utf8_cstr(m->descriptor));
 #endif
 
+#if _JVM_DEBUG_PROFILE
+                            spent = nanoTime() - start_at;
+#endif
                             if (m) {
                                 ret = execute_method_impl(m, runtime, m->_this_class);
                             } else {
@@ -3442,6 +3445,9 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                     invoke_deepth(runtime);
                     jvm_printf("invokespecial    %s.%s%s {\n", utf8_cstr(m->_this_class->name), utf8_cstr(m->name), utf8_cstr(m->descriptor));
 #endif
+#if _JVM_DEBUG_PROFILE
+                        spent = nanoTime() - start_at;
+#endif
                         if (m) {
                             ret = execute_method_impl(m, runtime, m->_this_class);
                         } else {
@@ -3464,8 +3470,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                         Short2Char s2c;
                         s2c.c1 = opCode[1];
                         s2c.c0 = opCode[2];
-                        u16 object_ref = s2c.s;
-                        ConstantMethodRef *cmr = class_get_constant_method_ref(clazz, object_ref);
+                        ConstantMethodRef *cmr = class_get_constant_method_ref(clazz, s2c.s);
 
                         MethodInfo *m = cmr->methodInfo;
 #if _JVM_DEBUG_BYTECODE_DETAIL > 3
@@ -3475,6 +3480,9 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
 
                     invoke_deepth(runtime);
                     jvm_printf("invokestatic   | %s.%s%s {\n", utf8_cstr(m->_this_class->name), utf8_cstr(m->name), utf8_cstr(m->descriptor));
+#endif
+#if _JVM_DEBUG_PROFILE
+                        spent = nanoTime() - start_at;
 #endif
                         if (m) {
                             ret = execute_method_impl(m, runtime, m->_this_class);
@@ -3530,6 +3538,9 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                             invoke_deepth(runtime);
                         jvm_printf("invokeinterface   | %s.%s%s {\n", utf8_cstr(m->_this_class->name),
                             utf8_cstr(m->name), utf8_cstr(m->descriptor));
+#endif
+#if _JVM_DEBUG_PROFILE
+                            spent = nanoTime() - start_at;
 #endif
                             if (m) {
                                 ret = execute_method_impl(m, runtime, m->_this_class);
@@ -3655,7 +3666,9 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                     jvm_printf("invokedynamic   | %s.%s%s {\n", utf8_cstr(m->_this_class->name),
                         utf8_cstr(m->name), utf8_cstr(m->descriptor));
 #endif
-
+#if _JVM_DEBUG_PROFILE
+                        spent = nanoTime() - start_at;
+#endif
                         if (ret == RUNTIME_STATUS_NORMAL) {
                             if (m) {
                                 // run make to generate instance of Lambda Class
@@ -4022,8 +4035,8 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
 
 #if _JVM_DEBUG_PROFILE
                 //time
-                s64 spent = nanoTime() - start_at;
-                profile_put(instruct_code, spent, 1);
+                if (!spent) spent = nanoTime() - start_at;
+                profile_put(cur_inst, spent, 1);
 #endif
                 if (!ret) {
                     continue;
