@@ -656,7 +656,7 @@ void invoke_deepth(Runtime *runtime) {
 //===============================    java 线程  ==================================
 
 s32 jthread_init(Instance *jthread, Runtime *runtime) {
-    localvar_init(runtime, 1);
+
     jthread_set_stackframe_value(jthread, runtime);
     runtime->clazz = jthread->mb.clazz;
     runtime->threadInfo->jthread = jthread;
@@ -698,6 +698,7 @@ s32 jtherad_run(void *para) {
     if (java_debug)event_on_thread_start(runtime->threadInfo->jthread);
     runtime->threadInfo->thread_status = THREAD_STATUS_RUNNING;
     push_ref(runtime->stack, (__refer) jthread);
+    //localvar_init(runtime, method->para_slots, method->para_slots);
     ret = execute_method_impl(method, runtime, method->_this_class);
     if (ret != RUNTIME_STATUS_NORMAL && ret != RUNTIME_STATUS_INTERRUPT) {
         print_exception(runtime);

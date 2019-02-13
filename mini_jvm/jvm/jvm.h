@@ -647,6 +647,7 @@ struct _MethodInfo {
     Pairlist *breakpoint;
     s16 para_slots;
     s16 para_count_with_this;
+    s16 return_slots;
 };
 //============================================
 
@@ -923,6 +924,8 @@ struct _Runtime {
     Runtime *parent;//father method's runtime
     RuntimeStack *stack;
     LocalVarItem *localvar;
+    s16 localvar_slots;
+    s16 stack_exit_size;//save stack size when method exit
     //
     union {
         Runtime *runtime_pool_header;// cache runtimes for performance
@@ -930,8 +933,6 @@ struct _Runtime {
     };
 
     JniEnv *jnienv;
-    s16 localvar_count;
-    s16 localvar_max;
     u8 wideMode;
 };
 
@@ -1109,9 +1110,6 @@ s32 is_ref(StackEntry *entry);
 
 
 //======================= localvar =============================
-enum {
-    RUNTIME_LOCALVAR_SIZE = 10,
-};
 
 Runtime *runtime_create(Runtime *parent);
 
@@ -1127,20 +1125,16 @@ void getRuntimeStack(Runtime *runtime, Utf8String *ustr);
 
 s32 getRuntimeDepth(Runtime *top);
 
-static inline s32 localvar_init(Runtime *runtime, s32 count) {
-    if (count > runtime->localvar_max) {
-        jvm_free(runtime->localvar);
-        runtime->localvar = jvm_calloc(sizeof(LocalVarItem) * count);
-        runtime->localvar_max = count;
-    } else {
-        memset(runtime->localvar, 0, count * sizeof(LocalVarItem));
-    }
-    runtime->localvar_count = count;
+static inline s32 localvar_init(Runtime *runtime, s32 var_slots, s32 para_slots) {
+    runtime->stack_exit_size = runtime->stack->size - para_slots;
+    runtime->localvar = &runtime->stack->store[runtime->stack_exit_size];
+    runtime->localvar_slots = var_slots;
+    runtime->stack->size += var_slots - para_slots;
     return 0;
 }
 
 static inline s32 localvar_dispose(Runtime *runtime) {
-    runtime->localvar_count = 0;
+    runtime->stack->size = runtime->stack_exit_size;
     return 0;
 }
 

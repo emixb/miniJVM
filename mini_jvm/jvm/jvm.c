@@ -322,8 +322,7 @@ s32 call_method_main(c8 *p_mainclass, c8 *p_methodname, c8 *p_methodtype, ArrayL
             thread_boundle(runtime);
 
             //准备参数
-            localvar_dispose(runtime);
-            localvar_init(runtime, m->para_slots);
+
             s32 count = java_para->length;
             Utf8String *ustr = utf8_create_c(STR_CLASS_JAVA_LANG_STRING);
             Instance *arr = jarray_create_by_type_name(runtime, count, ustr);
@@ -337,6 +336,7 @@ s32 call_method_main(c8 *p_mainclass, c8 *p_methodname, c8 *p_methodtype, ArrayL
                 utf8_destory(utfs);
             }
             push_ref(runtime->stack, arr);
+            //localvar_init(runtime, m->para_slots, m->para_slots);
             gc_refer_release(arr);
 
 
@@ -414,8 +414,7 @@ s32 call_method_c(c8 *p_mainclass, c8 *p_methodname, c8 *p_methodtype, Runtime *
                                                 runtime);
         if (m) {
             //准备参数
-            localvar_dispose(runtime);
-            localvar_init(runtime, m->para_slots);
+            //localvar_init(runtime, m->para_slots, m->para_slots);
 
             s64 start = currentTimeMillis();
             //调用方法

@@ -122,7 +122,7 @@ s32 org_mini_reflect_vm_RefNative_setLocalVal(Runtime *runtime, JClass *clazz) {
     pos += 2;
 
     s32 bytes = localvar_getInt(runtime->localvar, pos++);
-    if (slot < r->localvar_count) {
+    if (slot < r->localvar_slots) {
         switch (bytes) {
             case 'R':
                 localvar_setRefer(r->localvar, slot, (__refer) (intptr_t) l2d.l);
@@ -155,7 +155,7 @@ s32 org_mini_reflect_vm_RefNative_getLocalVal(Runtime *runtime, JClass *clazz) {
     c8 *ptr = getFieldPtr_byName_c(valuetype, JDWP_CLASS_VALUETYPE, "bytes", "C", runtime);
     u16 bytes = (u16) getFieldShort(ptr);
     ptr = getFieldPtr_byName_c(valuetype, JDWP_CLASS_VALUETYPE, "value", "J", runtime);
-    if (slot < r->localvar_count) {
+    if (slot < r->localvar_slots) {
         switch (bytes) {
             case 'R':
                 l2d.l = (s64) (intptr_t) localvar_getRefer(r->localvar, slot);

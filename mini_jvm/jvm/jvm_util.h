@@ -345,8 +345,6 @@ static inline Runtime *runtime_create_inl(Runtime *parent) {
     }
     if (runtime == NULL) {
         runtime = jvm_calloc(sizeof(Runtime));
-        runtime->localvar = jvm_calloc(RUNTIME_LOCALVAR_SIZE * sizeof(LocalVarItem));
-        runtime->localvar_max = RUNTIME_LOCALVAR_SIZE;
         runtime->jnienv = &jnienv;
         if (parent) {
             runtime->stack = parent->stack;
@@ -379,11 +377,9 @@ static inline void runtime_destory_inl(Runtime *runtime) {
         while (next) {
             Runtime *r = next;
             next = r->next;
-            jvm_free(r->localvar);
             jvm_free(r);
         }
         runtime->runtime_pool_header = NULL;
-        jvm_free(runtime->localvar);
         jvm_free(runtime);
     }
 }

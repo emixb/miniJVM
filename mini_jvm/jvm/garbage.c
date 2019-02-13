@@ -279,7 +279,7 @@ void garbage_dump_runtime() {
             }
         }
         while (runtime) {
-            for (j = 0; j < runtime->localvar_count; j++) {
+            for (j = 0; j < runtime->localvar_slots; j++) {
                 LocalVarItem *item = &runtime->localvar[j];
                 if (item->type & STACK_ENTRY_REF) {
                     __refer ref = item->rvalue;
@@ -629,7 +629,7 @@ s32 _garbage_copy_refer_thread(Runtime *pruntime) {
         arraylist_push_back(collector->runtime_refer_copy, ref);
     }
     while (runtime) {
-        for (i = 0; i < runtime->localvar_count; i++) {
+        for (i = 0; i < runtime->localvar_slots; i++) {
             LocalVarItem *item = &runtime->localvar[i];
             if (item->type & STACK_ENTRY_REF) {
                 __refer ref = item->rvalue;

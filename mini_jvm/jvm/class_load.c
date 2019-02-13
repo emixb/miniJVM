@@ -934,6 +934,14 @@ void _class_optimize(JClass *clazz) {
             }
             s32 pos = utf8_indexof_c(ptr->descriptor, ")") + 1;
             ptr->returnType = utf8_create_part(ptr->descriptor, pos, ptr->descriptor->length - pos);
+            c8 ch = utf8_char_at(ptr->returnType, 0);
+            if (ch == 'J' || ch == 'D') {
+                ptr->return_slots = 2;
+            } else if (ch == 'V') {
+                ptr->return_slots = 0;
+            } else {
+                ptr->return_slots = 1;
+            }
         }
         s32 j;
 
