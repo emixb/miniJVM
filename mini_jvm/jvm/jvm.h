@@ -921,6 +921,7 @@ struct _Runtime {
     u8 *pc;
     CodeAttribute *ca;//method bytecode
     JavaThreadInfo *threadInfo;
+    MemoryBlock *lock;
     Runtime *son;//sub method's runtime
     Runtime *parent;//father method's runtime
     RuntimeStack *stack;

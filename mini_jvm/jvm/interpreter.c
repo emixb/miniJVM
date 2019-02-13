@@ -510,21 +510,19 @@ static inline void _synchronized_lock_method(MethodInfo *method, Runtime *runtim
     //synchronized process
     {
         if (method->access_flags & ACC_STATIC) {
-            jthread_lock((MemoryBlock *) runtime->clazz, runtime);
+            runtime->lock = (MemoryBlock *) runtime->clazz;
         } else {
-            jthread_lock(&((Instance *) localvar_getRefer(runtime->localvar, 0))->mb, runtime);
+            runtime->lock = (MemoryBlock *) localvar_getRefer(runtime->localvar, 0);
         }
+        jthread_lock(runtime->lock, runtime);
     }
 }
 
 static inline void _synchronized_unlock_method(MethodInfo *method, Runtime *runtime) {
     //synchronized process
     {
-        if (method->access_flags & ACC_STATIC) {
-            jthread_unlock((MemoryBlock *) runtime->clazz, runtime);
-        } else {
-            jthread_unlock(&((Instance *) localvar_getRefer(runtime->localvar, 0))->mb, runtime);
-        }
+        jthread_unlock(runtime->lock, runtime);
+        runtime->lock = NULL;
     }
 }
 
@@ -3104,25 +3102,38 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                         break;
                     }
 
-                    label_ireturn:
                     label_lreturn:
-                    label_freturn:
                     label_dreturn:
-                    label_areturn:
-                    case op_ireturn:
                     case op_lreturn:
-                    case op_freturn:
-                    case op_dreturn:
-                    case op_areturn: {
+                    case op_dreturn: {
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
 
                         StackEntry entry;
                         peek_entry(stack, &entry, stack->size - 1);
                         invoke_deepth(runtime);
-                        jvm_printf("ilfda_return=[%x]/%d/[%llx]\n", entry_2_int(&entry), entry_2_int(&entry), entry_2_long(&entry));
+                        jvm_printf("ld_return=[%x]/%d/[%llx]\n", entry_2_int(&entry), entry_2_int(&entry), entry_2_long(&entry));
 #endif
+                        s64 v = pop_long(stack);
+                        localvar_dispose(runtime);
+                        push_long(stack, v);
                         opCode += 1;
-                        //ret = RUNTIME_STATUS_RETURN;
+                        break;
+                    }
+                    label_ireturn:
+                    label_freturn:
+                    label_areturn:
+                    case op_ireturn:
+                    case op_freturn:
+                    case op_areturn: {
+                        StackEntry entry;
+                        peek_entry(stack, &entry, stack->size - 1);
+#if _JVM_DEBUG_BYTECODE_DETAIL > 5
+                        invoke_deepth(runtime);
+                        jvm_printf("ifa_return=[%x]/%d/[%llx]\n", entry_2_int(&entry), entry_2_int(&entry), entry_2_long(&entry));
+#endif
+                        localvar_dispose(runtime);
+                        push_entry(stack, &entry);
+                        opCode += 1;
                         exit_exec = 1;
                         break;
                     }
@@ -3133,8 +3144,8 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                         invoke_deepth(runtime);
                         jvm_printf("return: \n");
 #endif
+                        localvar_dispose(runtime);
                         opCode += 1;
-                        //ret = RUNTIME_STATUS_RETURN;
                         exit_exec = 1;
                         break;
                     }
@@ -4060,6 +4071,9 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
 #endif
                     ExceptionTable *et = _find_exception_handler(runtime, ins, ca, (s32) (opCode - ca->code), ins);
                     if (et == NULL) {
+                        Instance *ins = pop_ref(stack);
+                        localvar_dispose(runtime);
+                        push_ref(stack, ins);
                         exit_exec = 1;
                     } else {
 #if _JVM_DEBUG_BYTECODE_DETAIL > 3
@@ -4095,34 +4109,28 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
             if (method_sync)_synchronized_lock_method(method, runtime);
             ret = method->native_func(runtime, clazz);
             if (method_sync)_synchronized_unlock_method(method, runtime);
+            switch (method->return_slots) {
+                case 0: {
+                    localvar_dispose(runtime);
+                    break;
+                }
+                case 1: {
+                    StackEntry entry;
+                    peek_entry(stack, &entry, stack->size - method->return_slots);
+                    localvar_dispose(runtime);
+                    push_entry(stack, &entry);
+                    break;
+                }
+                case 2: {
+                    s64 v = pop_long(stack);
+                    localvar_dispose(runtime);
+                    push_long(stack, v);
+                    break;
+                }
+            }
         }
     }
 
-    if (ret == RUNTIME_STATUS_NORMAL) {
-        switch (method->return_slots) {
-            case 0: {
-                localvar_dispose(runtime);
-                break;
-            }
-            case 1: {
-                StackEntry entry;
-                peek_entry(stack, &entry, stack->size - method->return_slots);
-                localvar_dispose(runtime);
-                push_entry(stack, &entry);
-                break;
-            }
-            case 2: {
-                s64 v = pop_long(stack);
-                localvar_dispose(runtime);
-                push_long(stack, v);
-                break;
-            }
-        }
-    } else if (ret == RUNTIME_STATUS_EXCEPTION) {
-        Instance *ins = pop_ref(stack);
-        localvar_dispose(runtime);
-        push_ref(stack, ins);
-    }
 #if _JVM_DEBUG_BYTECODE_DETAIL > 3
     Utf8String *ustr = method->descriptor;
     invoke_deepth(runtime);
