@@ -71,7 +71,7 @@ JClass *classes_load_get_without_clinit(Utf8String *ustr, Runtime *runtime) {
         }
         cl = classes_get(ustr);
         garbage_thread_unlock();
-        //if (java_debug)event_on_class_prepar(runtime, cl);
+        //if (JDWP_DEBUG)event_on_class_prepar(runtime, cl);
     }
     return cl;
 }
@@ -669,7 +669,7 @@ s32 jthread_dispose(Instance *jthread) {
     Runtime *runtime = (Runtime *) jthread_get_stackframe_value(jthread);
     gc_move_refer_thread_2_gc(runtime);
     threadlist_remove(runtime);
-    if (java_debug)event_on_thread_death(runtime->threadInfo->jthread);
+    if (JDWP_DEBUG)event_on_thread_death(runtime->threadInfo->jthread);
     //destory
     jthread_set_stackframe_value(jthread, NULL);
 
@@ -695,7 +695,7 @@ s32 jtherad_run(void *para) {
                utf8_cstr(method->name), utf8_cstr(method->descriptor));
 #endif
     gc_refer_reg(runtime, jthread);
-    if (java_debug)event_on_thread_start(runtime->threadInfo->jthread);
+    if (JDWP_DEBUG)event_on_thread_start(runtime->threadInfo->jthread);
     runtime->threadInfo->thread_status = THREAD_STATUS_RUNNING;
     push_ref(runtime->stack, (__refer) jthread);
     //localvar_init(runtime, method->para_slots, method->para_slots);

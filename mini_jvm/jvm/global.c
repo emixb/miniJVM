@@ -88,7 +88,6 @@ s64 MAX_HEAP_SIZE = 30 * 1024 * 1024;
 //
 OptimizeCache jvm_runtime_cache;
 //
-u8 java_debug = 0;
 
 s32 jvm_state = JVM_STATUS_UNKNOW;
 

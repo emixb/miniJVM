@@ -32,6 +32,8 @@ extern "C" {
 #define _JVM_DEBUG_GARBAGE_DUMP 0
 #define _JVM_DEBUG_PROFILE 0
 
+#define JDWP_DEBUG 0
+
 #if __JVM_OS_VS__ || __JVM_OS_MINGW__ || __JVM_OS_CYGWIN__
 #define barrier() MemoryBarrier()
 #else
@@ -324,7 +326,7 @@ extern s32 jvm_state;
 
 extern ClassLoader *sys_classloader;
 
-extern u8 java_debug;
+
 extern JniEnv jnienv;
 
 extern ArrayList *thread_list;

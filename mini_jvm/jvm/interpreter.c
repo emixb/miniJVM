@@ -784,7 +784,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
             do {
                 runtime->pc = opCode;
                 u8 cur_inst = *opCode;
-                if (java_debug) {
+                if (JDWP_DEBUG) {
                     //breakpoint
                     if (method->breakpoint) {
                         jdwp_check_breakpoint(runtime);
@@ -806,14 +806,14 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                 }
 
 #if _JVM_DEBUG_PROFILE
-                s64 spent = 0;
-                s64 start_at = nanoTime();
+                    s64 spent = 0;
+                    s64 start_at = nanoTime();
 #endif
 
 
-                /* ==================================opcode start =============================*/
+                    /* ==================================opcode start =============================*/
 #ifdef __JVM_DEBUG__
-                s64 inst_pc = runtime->pc - ca->code;
+                    s64 inst_pc = runtime->pc - ca->code;
 #endif
                 JUMP_TO_IP(cur_inst);
                 switch (cur_inst) {
@@ -4075,17 +4075,24 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
             } while (!ret);
             if (method_sync)_synchronized_unlock_method(method, runtime);
             if (ret == RUNTIME_STATUS_RETURN) {
-                if (method->return_slots == 2) {
-                    s64 v = pop_long(stack);
-                    localvar_dispose(runtime);
-                    push_long(stack, v);
-                } else if (method->return_slots == 1) {
-                    StackEntry entry;
-                    peek_entry(stack, &entry, stack->size - method->return_slots);
-                    localvar_dispose(runtime);
-                    push_entry(stack, &entry);
-                } else {
-                    localvar_dispose(runtime);
+                switch (method->return_slots) {
+                    case 0: {
+                        localvar_dispose(runtime);
+                        break;
+                    }
+                    case 1: {
+                        StackEntry entry;
+                        peek_entry(stack, &entry, stack->size - method->return_slots);
+                        localvar_dispose(runtime);
+                        push_entry(stack, &entry);
+                        break;
+                    }
+                    case 2: {
+                        s64 v = pop_long(stack);
+                        localvar_dispose(runtime);
+                        push_long(stack, v);
+                        break;
+                    }
                 }
                 ret = RUNTIME_STATUS_NORMAL;
             }
@@ -4126,20 +4133,24 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
             ret = method->native_func(runtime, clazz);
             if (method_sync)_synchronized_unlock_method(method, runtime);
         }
-        //        if (utf8_equals_c(method->name, "nvgTextGlyphPositionsJni")) {
-        //            int debug = 1;
-        //        }
-        if (method->return_slots == 2) {
-            s64 v = pop_long(stack);
-            localvar_dispose(runtime);
-            push_long(stack, v);
-        } else if (method->return_slots == 1) {
-            StackEntry entry;
-            peek_entry(stack, &entry, stack->size - method->return_slots);
-            localvar_dispose(runtime);
-            push_entry(stack, &entry);
-        } else {
-            localvar_dispose(runtime);
+        switch (method->return_slots) {
+            case 0: {
+                localvar_dispose(runtime);
+                break;
+            }
+            case 1: {
+                StackEntry entry;
+                peek_entry(stack, &entry, stack->size - method->return_slots);
+                localvar_dispose(runtime);
+                push_entry(stack, &entry);
+                break;
+            }
+            case 2: {
+                s64 v = pop_long(stack);
+                localvar_dispose(runtime);
+                push_long(stack, v);
+                break;
+            }
         }
 
     }

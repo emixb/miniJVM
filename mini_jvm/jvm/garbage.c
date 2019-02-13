@@ -331,7 +331,7 @@ s32 _collect_thread_run(void *para) {
         if (currentTimeMillis() - lastgc < 1000) {// less than custom sec no gc
             continue;
         }
-//        if (java_debug && jdwpserver.clients->length) {// less than 3 sec no gc
+//        if (JDWP_DEBUG && jdwpserver.clients->length) {// less than 3 sec no gc
 //            continue;
 //        }
         if (currentTimeMillis() - lastgc > GARBAGE_PERIOD_MS || heap_size > MAX_HEAP_SIZE * .8f) {
@@ -503,7 +503,7 @@ s32 _garbage_pause_the_world(void) {
 
     }
     //调试线程
-    if (java_debug) {
+    if (JDWP_DEBUG) {
         Runtime *runtime = jdwpserver.runtime;
         if (runtime) {
             jthread_suspend(runtime);
@@ -533,7 +533,7 @@ s32 _garbage_resume_the_world() {
     }
 
     //调试线程
-    if (java_debug) {
+    if (JDWP_DEBUG) {
         Runtime *runtime = jdwpserver.runtime;
         if (runtime) {
             jthread_resume(runtime);
@@ -589,7 +589,7 @@ void _garbage_copy_refer() {
     }
 //    arraylist_iter_safe(thread_list, _list_iter_iter_copy, NULL);
     //调试线程
-    if (java_debug) {
+    if (JDWP_DEBUG) {
         Runtime *runtime = jdwpserver.runtime;
         if (runtime) {
             _garbage_copy_refer_thread(runtime);
@@ -763,7 +763,7 @@ MemoryBlock *gc_is_alive(__refer ref) {
         }
     }
     if (!result) {
-        if (java_debug) {
+        if (JDWP_DEBUG) {
             Runtime *runtime = jdwpserver.runtime;
             if (runtime) {
                 MemoryBlock *mb = runtime->threadInfo->objs_header;

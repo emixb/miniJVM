@@ -343,7 +343,7 @@ s32 call_method_main(c8 *p_mainclass, c8 *p_methodname, c8 *p_methodtype, ArrayL
             s64 start = currentTimeMillis();
             jvm_printf("\n================================= main start ================================\n");
             //调用主方法
-            if (java_debug) {
+            if (JDWP_DEBUG) {
                 jthread_suspend(runtime);
                 jvm_printf("waiting for jdwp(port:%d) debug client connected...\n", JDWP_TCP_PORT);
             }//jdwp 会启动调试器
