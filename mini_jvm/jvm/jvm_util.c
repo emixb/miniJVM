@@ -698,14 +698,12 @@ s32 jtherad_run(void *para) {
     if (JDWP_DEBUG)event_on_thread_start(runtime->threadInfo->jthread);
     runtime->threadInfo->thread_status = THREAD_STATUS_RUNNING;
     push_ref(runtime->stack, (__refer) jthread);
-    //localvar_init(runtime, method->para_slots, method->para_slots);
     ret = execute_method_impl(method, runtime, method->_this_class);
     if (ret != RUNTIME_STATUS_NORMAL && ret != RUNTIME_STATUS_INTERRUPT) {
         print_exception(runtime);
     }
     runtime->threadInfo->thread_status = THREAD_STATUS_ZOMBIE;
     jthread_dispose(jthread);
-    localvar_dispose(runtime);
     runtime_destory(runtime);
     jvm_printf("thread over %llx\n", (s64) (intptr_t) jthread);
     return ret;

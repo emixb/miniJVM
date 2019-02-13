@@ -781,7 +781,8 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
             runtime->ca = ca;
             JavaThreadInfo *threadInfo = runtime->threadInfo;
 
-            do {
+            s32 exit_exec = 0;
+            while (!exit_exec) {
                 runtime->pc = opCode;
                 u8 cur_inst = *opCode;
                 if (JDWP_DEBUG) {
@@ -3121,7 +3122,8 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                         jvm_printf("ilfda_return=[%x]/%d/[%llx]\n", entry_2_int(&entry), entry_2_int(&entry), entry_2_long(&entry));
 #endif
                         opCode += 1;
-                        ret = RUNTIME_STATUS_RETURN;
+                        //ret = RUNTIME_STATUS_RETURN;
+                        exit_exec = 1;
                         break;
                     }
 
@@ -3132,7 +3134,8 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                         jvm_printf("return: \n");
 #endif
                         opCode += 1;
-                        ret = RUNTIME_STATUS_RETURN;
+                        //ret = RUNTIME_STATUS_RETURN;
+                        exit_exec = 1;
                         break;
                     }
 
@@ -4043,27 +4046,21 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
 #endif
 
                 if (ret == RUNTIME_STATUS_EXCEPTION) {
-                    Instance *ins = pop_ref(stack);
-                    //jvm_printf("stack size:%d , enter size:%d\n", stack->size, stackSize);
-                    //restore stack enter method size, must pop for garbage
-                    localvar_dispose(runtime);
-                    push_ref(stack, ins);
-
-                    //                    if (utf8_equals_c(ins->mb.clazz->name, "espresso/util/NotConstant")) {
-                    //                        int debug = 1;
-                    //                    }
+                    StackEntry entry;
+                    peek_entry(stack, &entry, stack->size - 1);
+                    Instance *ins = entry_2_refer(&entry);
 
 #if _JVM_DEBUG_BYTECODE_DETAIL > 3
                     s32 lineNum = getLineNumByIndex(ca, runtime->pc - ca->code);
-                printf("   at %s.%s(%s.java:%d)\n",
-                       utf8_cstr(clazz->name), utf8_cstr(method->name),
-                       utf8_cstr(clazz->name),
-                       lineNum
-                );
+                    printf("   at %s.%s(%s.java:%d)\n",
+                           utf8_cstr(clazz->name), utf8_cstr(method->name),
+                           utf8_cstr(clazz->name),
+                           lineNum
+                    );
 #endif
                     ExceptionTable *et = _find_exception_handler(runtime, ins, ca, (s32) (opCode - ca->code), ins);
                     if (et == NULL) {
-                        break;
+                        exit_exec = 1;
                     } else {
 #if _JVM_DEBUG_BYTECODE_DETAIL > 3
                         jvm_printf("Exception : %s\n", utf8_cstr(ins->mb.clazz->name));
@@ -4072,43 +4069,9 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                         ret = RUNTIME_STATUS_NORMAL;
                     }
                 }
-            } while (!ret);
+            }//end while
             if (method_sync)_synchronized_unlock_method(method, runtime);
-            if (ret == RUNTIME_STATUS_RETURN) {
-                switch (method->return_slots) {
-                    case 0: {
-                        localvar_dispose(runtime);
-                        break;
-                    }
-                    case 1: {
-                        StackEntry entry;
-                        peek_entry(stack, &entry, stack->size - method->return_slots);
-                        localvar_dispose(runtime);
-                        push_entry(stack, &entry);
-                        break;
-                    }
-                    case 2: {
-                        s64 v = pop_long(stack);
-                        localvar_dispose(runtime);
-                        push_long(stack, v);
-                        break;
-                    }
-                }
-                ret = RUNTIME_STATUS_NORMAL;
-            }
-#if _JVM_DEBUG_BYTECODE_DETAIL > 3
 
-            Utf8String *ustr = method->descriptor;
-            invoke_deepth(runtime);
-            jvm_printf("stack size  %s.%s%s in:%d out:%d  \n", utf8_cstr(clazz->name), utf8_cstr(method->name), utf8_cstr(method->descriptor), runtime->stack_exit_size, stack->size);
-            if (ret != RUNTIME_STATUS_EXCEPTION) {
-                if (method->return_count) {//无反回值
-                    if (stack->size != runtime->stack_exit_size + method->return_count) {
-                        exit(1);
-                    }
-                }
-            }
-#endif
         } else {
             jvm_printf("method code attribute is null.");
         }
@@ -4133,6 +4096,9 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
             ret = method->native_func(runtime, clazz);
             if (method_sync)_synchronized_unlock_method(method, runtime);
         }
+    }
+
+    if (ret == RUNTIME_STATUS_NORMAL) {
         switch (method->return_slots) {
             case 0: {
                 localvar_dispose(runtime);
@@ -4152,8 +4118,23 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                 break;
             }
         }
-
+    } else if (ret == RUNTIME_STATUS_EXCEPTION) {
+        Instance *ins = pop_ref(stack);
+        localvar_dispose(runtime);
+        push_ref(stack, ins);
     }
+#if _JVM_DEBUG_BYTECODE_DETAIL > 3
+    Utf8String *ustr = method->descriptor;
+    invoke_deepth(runtime);
+    jvm_printf("stack size  %s.%s%s in:%d out:%d  \n", utf8_cstr(clazz->name), utf8_cstr(method->name), utf8_cstr(method->descriptor), runtime->stack_exit_size, stack->size);
+    if (ret != RUNTIME_STATUS_EXCEPTION) {
+        if (method->return_slots) {//无反回值
+            if (stack->size != runtime->stack_exit_size + method->return_slots) {
+                exit(1);
+            }
+        }
+    }
+#endif
     runtime_destory_inl(runtime);
     pruntime->son = NULL;  //need for getLastSon()
     return ret;
