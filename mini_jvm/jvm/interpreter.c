@@ -3116,7 +3116,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                         s64 v = pop_long(stack);
                         localvar_dispose(runtime);
                         push_long(stack, v);
-                        opCode += 1;
+                        exit_exec = 1;
                         break;
                     }
                     label_ireturn:
@@ -3133,7 +3133,6 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
 #endif
                         localvar_dispose(runtime);
                         push_entry(stack, &entry);
-                        opCode += 1;
                         exit_exec = 1;
                         break;
                     }
@@ -3145,7 +3144,6 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                         jvm_printf("return: \n");
 #endif
                         localvar_dispose(runtime);
-                        opCode += 1;
                         exit_exec = 1;
                         break;
                     }
