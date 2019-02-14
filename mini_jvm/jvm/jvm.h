@@ -1128,10 +1128,16 @@ void getRuntimeStack(Runtime *runtime, Utf8String *ustr);
 s32 getRuntimeDepth(Runtime *top);
 
 static inline s32 localvar_init(Runtime *runtime, s32 var_slots, s32 para_slots) {
-    runtime->stack_exit_size = runtime->stack->size - para_slots;
-    runtime->localvar = &runtime->stack->store[runtime->stack_exit_size];
-    runtime->localvar_slots = var_slots;
-    runtime->stack->size += var_slots - para_slots;
+    s32 max_slots = var_slots > para_slots ? var_slots : para_slots;
+    RuntimeStack *stack = runtime->stack;
+    runtime->stack_exit_size = stack->size - para_slots;
+    runtime->localvar = &stack->store[runtime->stack_exit_size];
+    runtime->localvar_slots = max_slots;
+    s32 reserve_slots = max_slots - para_slots;
+    if (reserve_slots) {
+        memset(&stack->store[stack->size], 0, reserve_slots * sizeof(StackEntry));
+    }
+    stack->size += reserve_slots;
     return 0;
 }
 

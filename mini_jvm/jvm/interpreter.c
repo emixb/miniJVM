@@ -759,8 +759,9 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
     }
     s32 method_sync = method->access_flags & ACC_SYNCHRONIZED;
 
-//    if (utf8_equals_c(method->name, "charAt") && utf8_equals_c(clazz->name, "java/lang/String")) {
-//
+//    if (utf8_equals_c(method->name, "lambda$t1$1")
+////        && utf8_equals_c(clazz->name, "java/lang/String")
+//            ) {
 //        s32 debug = 1;
 //    }
 
@@ -3126,7 +3127,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                     case op_freturn:
                     case op_areturn: {
                         StackEntry entry;
-                        peek_entry(stack, &entry, stack->size - 1);
+                        pop_entry(stack, &entry);
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
                         invoke_deepth(runtime);
                         jvm_printf("ifa_return=[%x]/%d/[%llx]\n", entry_2_int(&entry), entry_2_int(&entry), entry_2_long(&entry));
