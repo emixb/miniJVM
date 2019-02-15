@@ -1136,8 +1136,8 @@ static inline s32 localvar_init(Runtime *runtime, s32 var_slots, s32 para_slots)
     s32 reserve_slots = max_slots - para_slots;
     if (reserve_slots) {
         memset(&stack->store[stack->size], 0, reserve_slots * sizeof(StackEntry));
+        stack->size += reserve_slots;
     }
-    stack->size += reserve_slots;
     return 0;
 }
 
