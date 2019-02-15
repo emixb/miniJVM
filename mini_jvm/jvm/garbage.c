@@ -608,7 +608,7 @@ void _garbage_copy_refer() {
 
 
 s32 _garbage_copy_refer_thread(Runtime *pruntime) {
-    arraylist_push_back(collector->runtime_refer_copy, pruntime->threadInfo->jthread);
+    arraylist_push_back_unsafe(collector->runtime_refer_copy, pruntime->threadInfo->jthread);
 
     s32 i, imax;
     StackEntry entry;
@@ -619,25 +619,16 @@ s32 _garbage_copy_refer_thread(Runtime *pruntime) {
         if (is_ref(&entry)) {
             __refer ref = entry_2_refer(&entry);
             if (ref) {
-                arraylist_push_back(collector->runtime_refer_copy, ref);
+                arraylist_push_back_unsafe(collector->runtime_refer_copy, ref);
             }
         }
     }
     ArrayList *holder = runtime->threadInfo->instance_holder;
     for (i = 0, imax = holder->length; i < imax; i++) {
         __refer ref = arraylist_get_value(holder, i);
-        arraylist_push_back(collector->runtime_refer_copy, ref);
+        arraylist_push_back_unsafe(collector->runtime_refer_copy, ref);
     }
-    while (runtime) {
-        for (i = 0; i < runtime->localvar_slots; i++) {
-            LocalVarItem *item = &runtime->localvar[i];
-            if (item->type & STACK_ENTRY_REF) {
-                __refer ref = item->rvalue;
-                arraylist_push_back(collector->runtime_refer_copy, ref);
-            }
-        }
-        runtime = runtime->son;
-    }
+
     //jvm_printf("[%llx] notified\n", (s64) (intptr_t) pruntime->threadInfo->jthread);
     return 0;
 }
