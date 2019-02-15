@@ -449,6 +449,38 @@ _find_exception_handler(Runtime *runtime, Instance *exception, CodeAttribute *ca
     return NULL;
 }
 
+
+static inline s32 exception_handle(RuntimeStack *stack, Runtime *runtime, u8 **opCode) {
+
+    StackEntry entry;
+    peek_entry(stack, &entry, stack->size - 1);
+    Instance *ins = entry_2_refer(&entry);
+
+#if _JVM_DEBUG_BYTECODE_DETAIL > 3
+    JClass *clazz = runtime->clazz;
+    s32 lineNum = getLineNumByIndex(runtime->ca, runtime->pc - runtime->ca->code);
+    printf("   at %s.%s(%s.java:%d)\n",
+           utf8_cstr(clazz->name), utf8_cstr(runtime->method->name),
+           utf8_cstr(clazz->name),
+           lineNum
+    );
+#endif
+    ExceptionTable *et = _find_exception_handler(runtime, ins, runtime->ca, (s32) (*opCode - runtime->ca->code), ins);
+    if (et == NULL) {
+        Instance *ins = pop_ref(stack);
+        localvar_dispose(runtime);
+        push_ref(stack, ins);
+        return 1;
+    } else {
+#if _JVM_DEBUG_BYTECODE_DETAIL > 3
+        jvm_printf("Exception : %s\n", utf8_cstr(ins->mb.clazz->name));
+#endif
+        *opCode = (runtime->ca->code + et->handler_pc);
+        return 0;
+    }
+
+}
+
 static s32 filterClassName(Utf8String *clsName) {
     if (utf8_indexof_c(clsName, "com/sun") < 0
         && utf8_indexof_c(clsName, "java/") < 0
@@ -759,11 +791,11 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
     }
     s32 method_sync = method->access_flags & ACC_SYNCHRONIZED;
 
-//    if (utf8_equals_c(method->name, "lambda$t1$1")
-////        && utf8_equals_c(clazz->name, "java/lang/String")
-//            ) {
-//        s32 debug = 1;
-//    }
+    //    if (utf8_equals_c(method->name, "lambda$t1$1")
+    ////        && utf8_equals_c(clazz->name, "java/lang/String")
+    //            ) {
+    //        s32 debug = 1;
+    //    }
 
     RuntimeStack *stack = runtime->stack;
 
@@ -807,7 +839,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
 
 #if _JVM_DEBUG_PROFILE
                     s64 spent = 0;
-                    s64 start_at = nanoTime();
+                s64 start_at = nanoTime();
 #endif
 
 
@@ -1211,8 +1243,15 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                             jvm_printf("if_aload push arr[%llx].(%d)=%x:%d:%lf into stack\n", (u64) (intptr_t) arr, index,
                                        s, s, *(f32 *) &s);
 #endif
+                            opCode += 1;
+                        } else {
+                            if (exception_handle(stack, runtime, &opCode)) {
+                                exit_exec = 1;
+                            } else {
+                                ret = RUNTIME_STATUS_NORMAL;
+                            }
                         }
-                        opCode += 1;
+
                         break;
                     }
 
@@ -1232,8 +1271,15 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                             jvm_printf("ld_aload push arr[%llx].(%d)=%llx:%lld:%lf into stack\n", (u64) (intptr_t) arr, index,
                                        s, s, *(f64 *) &s);
 #endif
+
+                            opCode += 1;
+                        } else {
+                            if (exception_handle(stack, runtime, &opCode)) {
+                                exit_exec = 1;
+                            } else {
+                                ret = RUNTIME_STATUS_NORMAL;
+                            }
                         }
-                        opCode += 1;
                         break;
                     }
 
@@ -1251,8 +1297,15 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                             jvm_printf("aaload push arr[%llx].(%d)=%llx:%lld into stack\n", (u64) (intptr_t) arr, index,
                                        (s64) (intptr_t) s, (s64) (intptr_t) s);
 #endif
+
+                            opCode += 1;
+                        } else {
+                            if (exception_handle(stack, runtime, &opCode)) {
+                                exit_exec = 1;
+                            } else {
+                                ret = RUNTIME_STATUS_NORMAL;
+                            }
                         }
-                        opCode += 1;
                         break;
                     }
 
@@ -1270,8 +1323,15 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                             jvm_printf("iaload push arr[%llx].(%d)=%x:%d:%lf into stack\n", (u64) (intptr_t) arr, index,
                                        s, s, *(f32 *) &s);
 #endif
+
+                            opCode += 1;
+                        } else {
+                            if (exception_handle(stack, runtime, &opCode)) {
+                                exit_exec = 1;
+                            } else {
+                                ret = RUNTIME_STATUS_NORMAL;
+                            }
                         }
-                        opCode += 1;
                         break;
                     }
 
@@ -1289,8 +1349,15 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                             jvm_printf("iaload push arr[%llx].(%d)=%x:%d:%lf into stack\n", (u64) (intptr_t) arr, index,
                                        s, s, *(f32 *) &s);
 #endif
+
+                            opCode += 1;
+                        } else {
+                            if (exception_handle(stack, runtime, &opCode)) {
+                                exit_exec = 1;
+                            } else {
+                                ret = RUNTIME_STATUS_NORMAL;
+                            }
                         }
-                        opCode += 1;
                         break;
                     }
 
@@ -1308,8 +1375,15 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                             jvm_printf("iaload push arr[%llx].(%d)=%x:%d:%lf into stack\n", (u64) (intptr_t) arr, index,
                                        s, s, *(f32 *) &s);
 #endif
+
+                            opCode += 1;
+                        } else {
+                            if (exception_handle(stack, runtime, &opCode)) {
+                                exit_exec = 1;
+                            } else {
+                                ret = RUNTIME_STATUS_NORMAL;
+                            }
                         }
-                        opCode += 1;
                         break;
                     }
 
@@ -1501,8 +1575,15 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                             jvm_printf("iastore: save array[%llx].(%d)=%d)\n",
                                        (s64) (intptr_t) jarr, index, i);
 #endif
+
+                            opCode += 1;
+                        } else {
+                            if (exception_handle(stack, runtime, &opCode)) {
+                                exit_exec = 1;
+                            } else {
+                                ret = RUNTIME_STATUS_NORMAL;
+                            }
                         }
-                        opCode += 1;
                         break;
                     }
 
@@ -1522,8 +1603,15 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                             jvm_printf("iastore: save array[%llx].(%d)=%lld)\n",
                                        (s64) (intptr_t) jarr, index, j);
 #endif
+
+                            opCode += 1;
+                        } else {
+                            if (exception_handle(stack, runtime, &opCode)) {
+                                exit_exec = 1;
+                            } else {
+                                ret = RUNTIME_STATUS_NORMAL;
+                            }
                         }
-                        opCode += 1;
                         break;
                     }
 
@@ -1542,8 +1630,15 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                             jvm_printf("iastore: save array[%llx].(%d)=%llx)\n",
                                        (s64) (intptr_t) jarr, index, (s64) (intptr_t) r);
 #endif
+
+                            opCode += 1;
+                        } else {
+                            if (exception_handle(stack, runtime, &opCode)) {
+                                exit_exec = 1;
+                            } else {
+                                ret = RUNTIME_STATUS_NORMAL;
+                            }
                         }
-                        opCode += 1;
                         break;
                     }
 
@@ -1561,8 +1656,15 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                             jvm_printf("iastore: save array[%llx].(%d)=%d)\n",
                                        (s64) (intptr_t) jarr, index, i);
 #endif
+
+                            opCode += 1;
+                        } else {
+                            if (exception_handle(stack, runtime, &opCode)) {
+                                exit_exec = 1;
+                            } else {
+                                ret = RUNTIME_STATUS_NORMAL;
+                            }
                         }
-                        opCode += 1;
                         break;
                     }
 
@@ -1581,8 +1683,15 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                             jvm_printf("iastore: save array[%llx].(%d)=%d)\n",
                                        (s64) (intptr_t) jarr, index, i);
 #endif
+
+                            opCode += 1;
+                        } else {
+                            if (exception_handle(stack, runtime, &opCode)) {
+                                exit_exec = 1;
+                            } else {
+                                ret = RUNTIME_STATUS_NORMAL;
+                            }
                         }
-                        opCode += 1;
                         break;
                     }
 
@@ -1600,8 +1709,15 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                             jvm_printf("iastore: save array[%llx].(%d)=%d)\n",
                                        (s64) (intptr_t) jarr, index, i);
 #endif
+
+                            opCode += 1;
+                        } else {
+                            if (exception_handle(stack, runtime, &opCode)) {
+                                exit_exec = 1;
+                            } else {
+                                ret = RUNTIME_STATUS_NORMAL;
+                            }
                         }
-                        opCode += 1;
                         break;
                     }
 
@@ -1991,6 +2107,11 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                             Instance *exception = exception_create(JVM_EXCEPTION_ARRITHMETIC, runtime);
                             push_ref(stack, (__refer) exception);
                             ret = RUNTIME_STATUS_EXCEPTION;
+                            if (exception_handle(stack, runtime, &opCode)) {
+                                exit_exec = 1;
+                            } else {
+                                ret = RUNTIME_STATUS_NORMAL;
+                            }
                         } else {
                             s32 result = value2 / value1;
                             push_int(stack, result);
@@ -2012,6 +2133,11 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                             Instance *exception = exception_create(JVM_EXCEPTION_ARRITHMETIC, runtime);
                             push_ref(stack, (__refer) exception);
                             ret = RUNTIME_STATUS_EXCEPTION;
+                            if (exception_handle(stack, runtime, &opCode)) {
+                                exit_exec = 1;
+                            } else {
+                                ret = RUNTIME_STATUS_NORMAL;
+                            }
                         } else {
                             s64 result = value2 / value1;
                             push_long(stack, result);
@@ -3015,7 +3141,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                     label_tableswitch:
                     case op_tableswitch: {
                         s32 pos = 0;
-                        pos = 4 - ((((u64) (intptr_t) opCode) - (u64) (intptr_t) (runtime->ca->code)) % 4);//4 byte对齐
+                        pos = 4 - ((((u64) (intptr_t) opCode) - (u64) (intptr_t) (ca->code)) % 4);//4 byte对齐
 
                         Int2Float i2c;
                         i2c.c3 = opCode[pos++];
@@ -3060,7 +3186,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                     label_lookupswitch:
                     case op_lookupswitch: {
                         s32 pos = 0;
-                        pos = 4 - ((((u64) (intptr_t) opCode) - (u64) (intptr_t) (runtime->ca->code)) % 4);//4 byte对齐
+                        pos = 4 - ((((u64) (intptr_t) opCode) - (u64) (intptr_t) (ca->code)) % 4);//4 byte对齐
                         Int2Float i2c;
                         i2c.c3 = opCode[pos++];
                         i2c.c2 = opCode[pos++];
@@ -3266,6 +3392,11 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                             Instance *exception = exception_create(JVM_EXCEPTION_NULLPOINTER, runtime);
                             push_ref(stack, (__refer) exception);
                             ret = RUNTIME_STATUS_EXCEPTION;
+                            if (exception_handle(stack, runtime, &opCode)) {
+                                exit_exec = 1;
+                            } else {
+                                ret = RUNTIME_STATUS_NORMAL;
+                            }
                         } else {
                             FieldInfo *fi = class_get_constant_fieldref(clazz, s2c.s)->fieldInfo;
                             if (!fi) {
@@ -3310,8 +3441,9 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                             s64 v = entry_2_long(&entry);
                             jvm_printf("%s: push %s.%s[%llx]\n", "getfield", utf8_cstr(clazz->name), utf8_cstr(fi->name), (s64) (intptr_t) ptr, v);
 #endif
+
+                            opCode += 3;
                         }
-                        opCode += 3;
                         break;
                     }
 
@@ -3333,6 +3465,11 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                             Instance *exception = exception_create(JVM_EXCEPTION_NULLPOINTER, runtime);
                             push_ref(stack, (__refer) exception);
                             ret = RUNTIME_STATUS_EXCEPTION;
+                            if (exception_handle(stack, runtime, &opCode)) {
+                                exit_exec = 1;
+                            } else {
+                                ret = RUNTIME_STATUS_NORMAL;
+                            }
                         } else {
                             // check variable type to determain long/s32/f64/f32
                             FieldInfo *fi = class_get_constant_fieldref(clazz, s2c.s)->fieldInfo;
@@ -3375,8 +3512,9 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                                     }
                                 }
                             }
+
+                            opCode += 3;
                         }
-                        opCode += 3;
                         break;
                     }
 
@@ -3434,9 +3572,16 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                             invoke_deepth(runtime);
                             jvm_printf("}\n");
 #endif
-
                         }
-                        opCode += 3;
+                        if (ret) {
+                            if (exception_handle(stack, runtime, &opCode)) {
+                                exit_exec = 1;
+                            } else {
+                                ret = RUNTIME_STATUS_NORMAL;
+                            }
+                        } else {
+                            opCode += 3;
+                        }
                         break;
                     }
 
@@ -3476,7 +3621,15 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                         jvm_printf("}\n");
 #endif
 
-                        opCode += 3;
+                        if (ret) {
+                            if (exception_handle(stack, runtime, &opCode)) {
+                                exit_exec = 1;
+                            } else {
+                                ret = RUNTIME_STATUS_NORMAL;
+                            }
+                        } else {
+                            opCode += 3;
+                        }
                         break;
                     }
 
@@ -3512,7 +3665,15 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                         jvm_printf("}\n");
 #endif
 
-                        opCode += 3;
+                        if (ret) {
+                            if (exception_handle(stack, runtime, &opCode)) {
+                                exit_exec = 1;
+                            } else {
+                                ret = RUNTIME_STATUS_NORMAL;
+                            }
+                        } else {
+                            opCode += 3;
+                        }
                         break;
                     }
 
@@ -3571,7 +3732,15 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
 #endif
 
                         }
-                        opCode += 5;
+                        if (ret) {
+                            if (exception_handle(stack, runtime, &opCode)) {
+                                exit_exec = 1;
+                            } else {
+                                ret = RUNTIME_STATUS_NORMAL;
+                            }
+                        } else {
+                            opCode += 5;
+                        }
                         break;
                     }
 
@@ -3588,19 +3757,19 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
 
                         if (bootMethod->make == NULL) {
                             /**
-                            * run bootstrap method java.lang.invoke.LambdaMetafactory
-                            *
-                            * public static CallSite metafactory(MethodHandles.Lookup caller,
-                            *           String invokedName,
-                            *           MethodType invokedType,
-                            *           MethodType samMethodType,
-                            *           MethodHandle implMethod,
-                            *           MethodType instantiatedMethodType)
-                            *
-                            *
-                            *  to generate Lambda Class implementation specify interface
-                            *  and new a callsite
-                            */
+						* run bootstrap method java.lang.invoke.LambdaMetafactory
+						*
+						* public static CallSite metafactory(MethodHandles.Lookup caller,
+						*           String invokedName,
+						*           MethodType invokedType,
+						*           MethodType samMethodType,
+						*           MethodHandle implMethod,
+						*           MethodType instantiatedMethodType)
+						*
+						*
+						*  to generate Lambda Class implementation specify interface
+						*  and new a callsite
+						*/
 
                             //parper bootMethod parameter
                             Instance *lookup = method_handles_lookup_create(runtime, clazz);
@@ -3699,8 +3868,15 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                         invoke_deepth(runtime);
                         jvm_printf("}\n");
 #endif
-
-                        opCode += 5;
+                        if (ret) {
+                            if (exception_handle(stack, runtime, &opCode)) {
+                                exit_exec = 1;
+                            } else {
+                                ret = RUNTIME_STATUS_NORMAL;
+                            }
+                        } else {
+                            opCode += 5;
+                        }
                         break;
                     }
 
@@ -3740,7 +3916,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                         s32 typeIdx = opCode[1];
 
                         s32 count = pop_int(stack);
-                        opCode += 2;
+
                         Instance *arr = jarray_create_by_type_index(runtime, count, typeIdx);
 
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
@@ -3749,10 +3925,16 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
 #endif
                         if (arr) {
                             push_ref(stack, (__refer) arr);
+                            opCode += 2;
                         } else {
                             Instance *exception = exception_create(JVM_EXCEPTION_NULLPOINTER, runtime);
                             push_ref(stack, (__refer) exception);
                             ret = RUNTIME_STATUS_EXCEPTION;
+                            if (exception_handle(stack, runtime, &opCode)) {
+                                exit_exec = 1;
+                            } else {
+                                ret = RUNTIME_STATUS_NORMAL;
+                            }
                         }
 
                         break;
@@ -3765,7 +3947,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                         s2c.c0 = opCode[2];
 
                         s32 count = pop_int(stack);
-                        opCode += 3;
+
                         JClass *arr_class = pairlist_get(clazz->arr_class_type, (__refer) (intptr_t) s2c.s);
 
                         Instance *arr = NULL;
@@ -3782,10 +3964,16 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
 #endif
                         if (arr) {
                             push_ref(stack, (__refer) arr);
+                            opCode += 3;
                         } else {
                             Instance *exception = exception_create(JVM_EXCEPTION_NULLPOINTER, runtime);
                             push_ref(stack, (__refer) exception);
                             ret = RUNTIME_STATUS_EXCEPTION;
+                            if (exception_handle(stack, runtime, &opCode)) {
+                                exit_exec = 1;
+                            } else {
+                                ret = RUNTIME_STATUS_NORMAL;
+                            }
                         }
 
                         break;
@@ -3804,6 +3992,11 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                             Instance *exception = exception_create(JVM_EXCEPTION_NULLPOINTER, runtime);
                             push_ref(stack, (__refer) exception);
                             ret = RUNTIME_STATUS_EXCEPTION;
+                            if (exception_handle(stack, runtime, &opCode)) {
+                                exit_exec = 1;
+                            } else {
+                                ret = RUNTIME_STATUS_NORMAL;
+                            }
                         } else {
                             push_int(stack, arr_ref->arr_length);
                             opCode += 1;
@@ -3823,6 +4016,11 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
 #endif
                         //opCode +=  1;
                         ret = RUNTIME_STATUS_EXCEPTION;
+                        if (exception_handle(stack, runtime, &opCode)) {
+                            exit_exec = 1;
+                        } else {
+                            ret = RUNTIME_STATUS_NORMAL;
+                        }
                         break;
                     }
 
@@ -3863,9 +4061,15 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                             Instance *exception = exception_create(JVM_EXCEPTION_CLASSCAST, runtime);
                             push_ref(stack, (__refer) exception);
                             ret = RUNTIME_STATUS_EXCEPTION;
+                            if (exception_handle(stack, runtime, &opCode)) {
+                                exit_exec = 1;
+                            } else {
+                                ret = RUNTIME_STATUS_NORMAL;
+                            }
                         } else {
                             push_ref(stack, (__refer) ins);
                             ret = RUNTIME_STATUS_NORMAL;
+                            opCode += 3;
                         }
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
                         invoke_deepth(runtime);
@@ -3873,7 +4077,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                                    utf8_cstr(class_get_constant_classref(clazz, typeIdx)->name),
                                    checkok);
 #endif
-                        opCode += 3;
+
                         break;
                     }
 
@@ -3976,13 +4180,17 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
 #endif
                         if (arr) {
                             push_ref(stack, (__refer) arr);
-
+                            opCode += 4;
                         } else {
                             Instance *exception = exception_create(JVM_EXCEPTION_NULLPOINTER, runtime);
                             push_ref(stack, (__refer) exception);
                             ret = RUNTIME_STATUS_EXCEPTION;
+                            if (exception_handle(stack, runtime, &opCode)) {
+                                exit_exec = 1;
+                            } else {
+                                ret = RUNTIME_STATUS_NORMAL;
+                            }
                         }
-                        opCode += 4;
                         break;
                     }
 
@@ -4055,33 +4263,6 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                 profile_put(cur_inst, spent, 1);
 #endif
 
-                if (ret == RUNTIME_STATUS_EXCEPTION) {
-                    StackEntry entry;
-                    peek_entry(stack, &entry, stack->size - 1);
-                    Instance *ins = entry_2_refer(&entry);
-
-#if _JVM_DEBUG_BYTECODE_DETAIL > 3
-                    s32 lineNum = getLineNumByIndex(ca, runtime->pc - ca->code);
-                    printf("   at %s.%s(%s.java:%d)\n",
-                           utf8_cstr(clazz->name), utf8_cstr(method->name),
-                           utf8_cstr(clazz->name),
-                           lineNum
-                    );
-#endif
-                    ExceptionTable *et = _find_exception_handler(runtime, ins, ca, (s32) (opCode - ca->code), ins);
-                    if (et == NULL) {
-                        Instance *ins = pop_ref(stack);
-                        localvar_dispose(runtime);
-                        push_ref(stack, ins);
-                        exit_exec = 1;
-                    } else {
-#if _JVM_DEBUG_BYTECODE_DETAIL > 3
-                        jvm_printf("Exception : %s\n", utf8_cstr(ins->mb.clazz->name));
-#endif
-                        opCode = (ca->code + et->handler_pc);
-                        ret = RUNTIME_STATUS_NORMAL;
-                    }
-                }
             }//end while
             if (method_sync)_synchronized_unlock_method(method, runtime);
 
@@ -4146,3 +4327,4 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
     pruntime->son = NULL;  //need for getLastSon()
     return ret;
 }
+
