@@ -43,7 +43,7 @@ static void _callback_error(int error, const char *description) {
         env->push_ref(refers.runtime->stack, refers.glfw_callback);
         env->push_int(refers.runtime->stack, error);
         env->push_ref(refers.runtime->stack, jstr);
-        s32 ret = env->execute_method(refers._callback_error, refers.runtime, refers.glfw_callback->mb.clazz);
+        s32 ret = env->execute_method(refers._callback_error, refers.runtime);
         if (ret) {
             env->print_exception(refers.runtime);
         }
@@ -59,7 +59,7 @@ static void _callback_key(GLFWwindow *window, int key, int scancode, int action,
         env->push_int(refers.runtime->stack, scancode);
         env->push_int(refers.runtime->stack, action);
         env->push_int(refers.runtime->stack, mods);
-        s32 ret = env->execute_method(refers._callback_key, refers.runtime, refers.glfw_callback->mb.clazz);
+        s32 ret = env->execute_method(refers._callback_key, refers.runtime);
         if (ret) {
             env->print_exception(refers.runtime);
         }
@@ -72,7 +72,7 @@ static void _callback_character(GLFWwindow *window, u32 ch) {
         env->push_ref(refers.runtime->stack, refers.glfw_callback);
         env->push_long(refers.runtime->stack, (s64) (intptr_t) window);
         env->push_int(refers.runtime->stack, ch);
-        s32 ret = env->execute_method(refers._callback_character, refers.runtime, refers.glfw_callback->mb.clazz);
+        s32 ret = env->execute_method(refers._callback_character, refers.runtime);
         if (ret) {
             env->print_exception(refers.runtime);
         }
@@ -95,7 +95,7 @@ static void _callback_drop(GLFWwindow *window, s32 count, const c8 **cstrs) {
             env->jarray_set_field(jstrs, i, val);
         }
         env->push_ref(refers.runtime->stack, jstrs);
-        s32 ret = env->execute_method(refers._callback_drop, refers.runtime, refers.glfw_callback->mb.clazz);
+        s32 ret = env->execute_method(refers._callback_drop, refers.runtime);
         if (ret) {
             env->print_exception(refers.runtime);
         }
@@ -109,7 +109,7 @@ void _button_callback_mouse(GLFWwindow *window, int button, int action, int mods
         env->push_long(refers.runtime->stack, (s64) (intptr_t) window);
         env->push_int(refers.runtime->stack, button);
         env->push_int(refers.runtime->stack, action == GLFW_PRESS);
-        s32 ret = env->execute_method(refers._button_callback_mouse, refers.runtime, refers.glfw_callback->mb.clazz);
+        s32 ret = env->execute_method(refers._button_callback_mouse, refers.runtime);
         if (ret) {
             env->print_exception(refers.runtime);
         }
@@ -123,7 +123,7 @@ void _callback_scroll(GLFWwindow *window, double scrollX, double scrollY) {
         env->push_long(refers.runtime->stack, (s64) (intptr_t) window);
         env->push_double(refers.runtime->stack, scrollX);
         env->push_double(refers.runtime->stack, scrollY);
-        s32 ret = env->execute_method(refers._scroll_callback, refers.runtime, refers.glfw_callback->mb.clazz);
+        s32 ret = env->execute_method(refers._scroll_callback, refers.runtime);
         if (ret) {
             env->print_exception(refers.runtime);
         }
@@ -137,7 +137,7 @@ void _callback_cursor_pos(GLFWwindow *window, f64 x, f64 y) {
         env->push_long(refers.runtime->stack, (s64) (intptr_t) window);
         env->push_int(refers.runtime->stack, x);
         env->push_int(refers.runtime->stack, y);
-        s32 ret = env->execute_method(refers._callback_cursor_pos, refers.runtime, refers.glfw_callback->mb.clazz);
+        s32 ret = env->execute_method(refers._callback_cursor_pos, refers.runtime);
         if (ret) {
             env->print_exception(refers.runtime);
         }
@@ -150,7 +150,7 @@ void _callback_cursor_enter(GLFWwindow *window, s32 enter) {
         env->push_ref(refers.runtime->stack, refers.glfw_callback);
         env->push_long(refers.runtime->stack, (s64) (intptr_t) window);
         env->push_int(refers.runtime->stack, enter);
-        s32 ret = env->execute_method(refers._callback_cursor_enter, refers.runtime, refers.glfw_callback->mb.clazz);
+        s32 ret = env->execute_method(refers._callback_cursor_enter, refers.runtime);
         if (ret) {
             env->print_exception(refers.runtime);
         }
@@ -164,7 +164,7 @@ void _callback_window_size(GLFWwindow *window, s32 w, s32 h) {
         env->push_long(refers.runtime->stack, (s64) (intptr_t) window);
         env->push_int(refers.runtime->stack, w);
         env->push_int(refers.runtime->stack, h);
-        s32 ret = env->execute_method(refers._callback_window_size, refers.runtime, refers.glfw_callback->mb.clazz);
+        s32 ret = env->execute_method(refers._callback_window_size, refers.runtime);
         if (ret) {
             env->print_exception(refers.runtime);
         }
@@ -178,7 +178,7 @@ void _callback_window_pos(GLFWwindow *window, s32 w, s32 h) {
         env->push_long(refers.runtime->stack, (s64) (intptr_t) window);
         env->push_int(refers.runtime->stack, w);
         env->push_int(refers.runtime->stack, h);
-        s32 ret = env->execute_method(refers._callback_window_pos, refers.runtime, refers.glfw_callback->mb.clazz);
+        s32 ret = env->execute_method(refers._callback_window_pos, refers.runtime);
         if (ret) {
             env->print_exception(refers.runtime);
         }
@@ -190,7 +190,7 @@ void _callback_window_close(GLFWwindow *window) {
         JniEnv *env = refers.env;
         env->push_ref(refers.runtime->stack, refers.glfw_callback);
         env->push_long(refers.runtime->stack, (s64) (intptr_t) window);
-        s32 ret = env->execute_method(refers._callback_window_close, refers.runtime, refers.glfw_callback->mb.clazz);
+        s32 ret = env->execute_method(refers._callback_window_close, refers.runtime);
         if (ret) {
             env->print_exception(refers.runtime);
         } else {
@@ -205,7 +205,7 @@ void _callback_window_focus(GLFWwindow *window, s32 focus) {
         env->push_ref(refers.runtime->stack, refers.glfw_callback);
         env->push_long(refers.runtime->stack, (s64) (intptr_t) window);
         env->push_int(refers.runtime->stack, focus);
-        s32 ret = env->execute_method(refers._callback_window_focus, refers.runtime, refers.glfw_callback->mb.clazz);
+        s32 ret = env->execute_method(refers._callback_window_focus, refers.runtime);
         if (ret) {
             env->print_exception(refers.runtime);
         }
@@ -218,7 +218,7 @@ void _callback_window_iconify(GLFWwindow *window, s32 iconified) {
         env->push_ref(refers.runtime->stack, refers.glfw_callback);
         env->push_long(refers.runtime->stack, (s64) (intptr_t) window);
         env->push_int(refers.runtime->stack, iconified);
-        s32 ret = env->execute_method(refers._callback_window_iconify, refers.runtime, refers.glfw_callback->mb.clazz);
+        s32 ret = env->execute_method(refers._callback_window_iconify, refers.runtime);
         if (ret) {
             env->print_exception(refers.runtime);
         }
@@ -230,7 +230,7 @@ void _callback_window_refresh(GLFWwindow *window) {
         JniEnv *env = refers.env;
         env->push_ref(refers.runtime->stack, refers.glfw_callback);
         env->push_long(refers.runtime->stack, (s64) (intptr_t) window);
-        s32 ret = env->execute_method(refers._callback_window_refresh, refers.runtime, refers.glfw_callback->mb.clazz);
+        s32 ret = env->execute_method(refers._callback_window_refresh, refers.runtime);
         if (ret) {
             env->print_exception(refers.runtime);
         }
@@ -244,8 +244,7 @@ void _callback_framebuffer_size(GLFWwindow *window, s32 w, s32 h) {
         env->push_long(refers.runtime->stack, (s64) (intptr_t) window);
         env->push_int(refers.runtime->stack, w);
         env->push_int(refers.runtime->stack, h);
-        s32 ret = env->execute_method(refers._callback_framebuffer_size, refers.runtime,
-                                      refers.glfw_callback->mb.clazz);
+        s32 ret = env->execute_method(refers._callback_framebuffer_size, refers.runtime);
         if (ret) {
             env->print_exception(refers.runtime);
         }
