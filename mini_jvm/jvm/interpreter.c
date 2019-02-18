@@ -838,14 +838,14 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                 }
 
 #if _JVM_DEBUG_PROFILE
-                    s64 spent = 0;
-                s64 start_at = nanoTime();
+                s64 spent = 0;
+            s64 start_at = nanoTime();
 #endif
 
 
-                    /* ==================================opcode start =============================*/
+                /* ==================================opcode start =============================*/
 #ifdef __JVM_DEBUG__
-                    s64 inst_pc = runtime->pc - ca->code;
+                s64 inst_pc = runtime->pc - ca->code;
 #endif
                 JUMP_TO_IP(cur_inst);
                 switch (cur_inst) {
@@ -3533,16 +3533,10 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                             push_ref(stack, (__refer) exception);
                             ret = RUNTIME_STATUS_EXCEPTION;
                         } else {
-                            MethodInfo *m = NULL;
-
-                            if (ins->mb.type & (MEM_TYPE_CLASS)) {
-                                m = cmr->methodInfo;
-                            } else {
-                                m = (MethodInfo *) pairlist_get(cmr->virtual_methods, ins->mb.clazz);
-                                if (m == NULL) {
-                                    m = find_instance_methodInfo_by_name(ins, cmr->name, cmr->descriptor, runtime);
-                                    pairlist_put(cmr->virtual_methods, ins->mb.clazz, m);//放入缓存，以便下次直接调用
-                                }
+                            MethodInfo *m = (MethodInfo *) pairlist_get(cmr->virtual_methods, ins->mb.clazz);
+                            if (m == NULL) {
+                                m = find_instance_methodInfo_by_name(ins, cmr->name, cmr->descriptor, runtime);
+                                pairlist_put(cmr->virtual_methods, ins->mb.clazz, m);//放入缓存，以便下次直接调用
                             }
 
 
@@ -3700,16 +3694,12 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                             //                            if (utf8_equals_c(cmr->name, "hasNext") && utf8_equals_c(cmr->clsName, "java/util/Iterator")) {
                             //                                int debug = 1;
                             //                            }
-                            MethodInfo *m = NULL;
-                            if (ins->mb.type & MEM_TYPE_CLASS) {
-                                m = cmr->methodInfo;
-                            } else {
-                                m = (MethodInfo *) pairlist_get(cmr->virtual_methods, ins->mb.clazz);
-                                if (m == NULL) {
-                                    m = find_instance_methodInfo_by_name(ins, cmr->name, cmr->descriptor, runtime);
-                                    pairlist_put(cmr->virtual_methods, ins->mb.clazz, m);//放入缓存，以便下次直接调用
-                                }
+                            MethodInfo *m = (MethodInfo *) pairlist_get(cmr->virtual_methods, ins->mb.clazz);
+                            if (m == NULL) {
+                                m = find_instance_methodInfo_by_name(ins, cmr->name, cmr->descriptor, runtime);
+                                pairlist_put(cmr->virtual_methods, ins->mb.clazz, m);//放入缓存，以便下次直接调用
                             }
+//                            }
 
 #if _JVM_DEBUG_BYTECODE_DETAIL > 3
                             invoke_deepth(runtime);
@@ -4290,18 +4280,18 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
             ret = method->native_func(runtime, clazz);
             if (method_sync)_synchronized_unlock_method(method, runtime);
             switch (method->return_slots) {
-                case 0: {
+                case 0: {// V
                     localvar_dispose(runtime);
                     break;
                 }
-                case 1: {
+                case 1: { // F I R
                     StackEntry entry;
                     peek_entry(stack, &entry, stack->size - method->return_slots);
                     localvar_dispose(runtime);
                     push_entry(stack, &entry);
                     break;
                 }
-                case 2: {
+                case 2: {//J D return type , 2slots
                     s64 v = pop_long(stack);
                     localvar_dispose(runtime);
                     push_long(stack, v);
