@@ -571,7 +571,7 @@ static inline void _synchronized_unlock_method(MethodInfo *method, Runtime *runt
 #endif
 
 
-s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
+s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 
     static __refer opcode_addr[0xCB] = {
             GET_LABEL_ADDRESS(label_nop),
@@ -783,7 +783,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
     s32 ret = RUNTIME_STATUS_NORMAL;
 
     Runtime *runtime = runtime_create_inl(pruntime);
-
+    JClass *clazz = method->_this_class;
     runtime->method = method;
     runtime->clazz = clazz;
     while (clazz->status < CLASS_STATUS_CLINITING) {
@@ -3553,7 +3553,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                             spent = nanoTime() - start_at;
 #endif
                             if (m) {
-                                ret = execute_method_impl(m, runtime, m->_this_class);
+                                ret = execute_method_impl(m, runtime);
                             } else {
                                 Instance *exception = exception_create_str(JVM_EXCEPTION_NOSUCHMETHOD, runtime,
                                                                            utf8_cstr(cmr->name));
@@ -3601,7 +3601,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                         spent = nanoTime() - start_at;
 #endif
                         if (m) {
-                            ret = execute_method_impl(m, runtime, m->_this_class);
+                            ret = execute_method_impl(m, runtime);
                         } else {
                             Instance *exception = exception_create_str(JVM_EXCEPTION_NOSUCHMETHOD, runtime, utf8_cstr(cmr->name));
                             push_ref(stack, (__refer) exception);
@@ -3645,7 +3645,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                         spent = nanoTime() - start_at;
 #endif
                         if (m) {
-                            ret = execute_method_impl(m, runtime, m->_this_class);
+                            ret = execute_method_impl(m, runtime);
                         } else {
                             Instance *exception = exception_create_str(JVM_EXCEPTION_NOSUCHMETHOD, runtime, utf8_cstr(cmr->name));
                             push_ref(stack, (__refer) exception);
@@ -3706,7 +3706,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                             spent = nanoTime() - start_at;
 #endif
                             if (m) {
-                                ret = execute_method_impl(m, runtime, m->_this_class);
+                                ret = execute_method_impl(m, runtime);
                             } else {
                                 Instance *exception = exception_create_str(JVM_EXCEPTION_NOSUCHMETHOD, runtime, utf8_cstr(cmr->name));
                                 push_ref(stack, (__refer) exception);
@@ -3809,12 +3809,12 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
 
                             if (boot_m) {
 
-                                ret = execute_method_impl(boot_m, runtime, boot_m->_this_class);
+                                ret = execute_method_impl(boot_m, runtime);
                                 if (ret == RUNTIME_STATUS_NORMAL) {
                                     MethodInfo *finder = find_methodInfo_by_name_c("org/mini/reflect/vm/LambdaUtil", "getMethodInfoHandle", "(Ljava/lang/invoke/CallSite;)J", runtime);
                                     if (finder) {
                                         //run finder to convert calsite.target(MethodHandle) to MethodInfo * pointer
-                                        ret = execute_method_impl(finder, runtime, finder->_this_class);
+                                        ret = execute_method_impl(finder, runtime);
                                         if (ret == RUNTIME_STATUS_NORMAL) {
                                             MethodInfo *make = (MethodInfo *) (intptr_t) pop_long(stack);
                                             bootMethod->make = make;
@@ -3843,7 +3843,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime, JClass *clazz) {
                         if (ret == RUNTIME_STATUS_NORMAL) {
                             if (m) {
                                 // run make to generate instance of Lambda Class
-                                ret = execute_method_impl(m, runtime, m->_this_class);
+                                ret = execute_method_impl(m, runtime);
                             } else {
                                 Instance *exception = exception_create(JVM_EXCEPTION_NOSUCHMETHOD, runtime);
                                 push_ref(stack, (__refer) exception);

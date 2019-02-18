@@ -44,7 +44,7 @@ void print_exception(Runtime *runtime) {
     utf8_destory(getStackFrame_type);
     if (getStackFrame) {
         push_ref(runtime->stack, ins);
-        s32 ret = execute_method_impl(getStackFrame, runtime, getStackFrame->_this_class);
+        s32 ret = execute_method_impl(getStackFrame, runtime);
         if (ret != RUNTIME_STATUS_NORMAL) {
             ins = pop_ref(runtime->stack);
             return;
@@ -348,7 +348,7 @@ s32 call_method_main(c8 *p_mainclass, c8 *p_methodname, c8 *p_methodtype, ArrayL
             }//jdwp 会启动调试器
             runtime->method = NULL;
             runtime->clazz = clazz;
-            ret = execute_method(m, runtime, clazz);
+            ret = execute_method(m, runtime);
             if (ret != RUNTIME_STATUS_NORMAL) {
                 print_exception(runtime);
             }
@@ -419,7 +419,7 @@ s32 call_method_c(c8 *p_mainclass, c8 *p_methodname, c8 *p_methodtype, Runtime *
 
             runtime->method = NULL;
             runtime->clazz = clazz;
-            ret = execute_method(m, runtime, clazz);
+            ret = execute_method(m, runtime);
             if (ret != RUNTIME_STATUS_NORMAL) {
                 print_exception(runtime);
             }
@@ -446,9 +446,9 @@ s32 call_method_c(c8 *p_mainclass, c8 *p_methodname, c8 *p_methodtype, Runtime *
     return ret;
 }
 
-s32 execute_method(MethodInfo *method, Runtime *runtime, JClass *clazz) {
+s32 execute_method(MethodInfo *method, Runtime *runtime) {
     jthread_block_exit(runtime);
-    s32 ret = execute_method_impl(method, runtime, clazz);
+    s32 ret = execute_method_impl(method, runtime);
     jthread_block_enter(runtime);
     return ret;
 }

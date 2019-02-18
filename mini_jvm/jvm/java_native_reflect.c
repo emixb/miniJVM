@@ -764,7 +764,7 @@ s32 org_mini_reflect_ReflectMethod_invokeMethod(Runtime *runtime, JClass *clazz)
                 }
             }
         }
-        ret = execute_method_impl(methodInfo, runtime, methodInfo->_this_class);
+        ret = execute_method_impl(methodInfo, runtime);
         if (ret == RUNTIME_STATUS_NORMAL) {
             utf8_char ch = utf8_char_at(methodInfo->returnType, 0);
             c8 *clsName = "org/mini/reflect/DataWrap";

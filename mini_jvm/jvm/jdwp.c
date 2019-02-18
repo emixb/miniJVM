@@ -1835,7 +1835,7 @@ s32 jdwp_client_process(JdwpClient *client, Runtime *runtime) {
                             push_int(runtime->stack, (s32) vt.value);
                     }
                 }
-                s32 ret = execute_method_impl(methodInfo, runtime, methodInfo->_this_class);
+                s32 ret = execute_method_impl(methodInfo, runtime);
                 if (ret != RUNTIME_STATUS_NORMAL) {
                     print_exception(runtime);
                 }

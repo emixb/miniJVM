@@ -1216,9 +1216,9 @@ s32 call_method_main(c8 *p_mainclass, c8 *p_methodname, c8 *p_methodtype, ArrayL
 
 s32 call_method_c(c8 *p_mainclass, c8 *p_methodname, c8 *p_methodtype, Runtime *runtime);
 
-s32 execute_method_impl(MethodInfo *method, Runtime *runtime, JClass *clazz);
+s32 execute_method_impl(MethodInfo *method, Runtime *runtime);
 
-s32 execute_method(MethodInfo *method, Runtime *runtime, JClass *clazz);
+s32 execute_method(MethodInfo *method, Runtime *runtime);
 
 //======================= jni =============================
 typedef struct _java_native_method {
@@ -1360,7 +1360,7 @@ struct _JNIENV {
 
     void (*instance_hold_to_thread)(Instance *ref, Runtime *runtime);
 
-    s32 (*execute_method)(MethodInfo *method, Runtime *runtime, JClass *clazz);
+    s32 (*execute_method)(MethodInfo *method, Runtime *runtime);
 
     MethodInfo *(*find_methodInfo_by_name)(Utf8String *clsName, Utf8String *methodName, Utf8String *methodType, Runtime *runtime);
 
