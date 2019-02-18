@@ -75,7 +75,10 @@ enum {
 
 #if __JVM_LITTLE_ENDIAN__
 typedef union _Short2Char {
-    s16 s;
+    union {
+        s16 s;
+        u16 us;
+    };
     struct {
         c8 c0;
         c8 c1;
