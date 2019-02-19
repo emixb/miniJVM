@@ -3741,6 +3741,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                             if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
+                                opCode = runtime->pc;
                                 ret = RUNTIME_STATUS_NORMAL;
                             }
                         } else {
@@ -3877,6 +3878,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                             if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
+                                opCode = runtime->pc;
                                 ret = RUNTIME_STATUS_NORMAL;
                             }
                         } else {
@@ -3936,6 +3938,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                             if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
+                                opCode = runtime->pc;
                                 ret = RUNTIME_STATUS_NORMAL;
                             }
                         }
@@ -3975,6 +3978,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                             if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
+                                opCode = runtime->pc;
                                 ret = RUNTIME_STATUS_NORMAL;
                             }
                         }
@@ -3998,6 +4002,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                             if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
+                                opCode = runtime->pc;
                                 ret = RUNTIME_STATUS_NORMAL;
                             }
                         } else {
@@ -4022,6 +4027,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         if (exception_handle(stack, runtime)) {
                             exit_exec = 1;
                         } else {
+                            opCode = runtime->pc;
                             ret = RUNTIME_STATUS_NORMAL;
                         }
                         break;
@@ -4067,11 +4073,11 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                             if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
+                                opCode = runtime->pc;
                                 ret = RUNTIME_STATUS_NORMAL;
                             }
                         } else {
                             push_ref(stack, (__refer) ins);
-                            ret = RUNTIME_STATUS_NORMAL;
                             opCode += 3;
                         }
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
@@ -4191,6 +4197,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                             if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
+                                opCode = runtime->pc;
                                 ret = RUNTIME_STATUS_NORMAL;
                             }
                         }
