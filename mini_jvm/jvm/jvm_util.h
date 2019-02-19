@@ -328,6 +328,7 @@ static inline Runtime *_runtime_alloc() {
     runtime->jnienv = &jnienv;
     return runtime;
 }
+
 /**
  * runtime 的创建和销毁会极大影响性能，因此对其进行缓存
  * @param parent runtime of parent
@@ -342,21 +343,19 @@ static inline Runtime *runtime_create_inl(Runtime *parent) {
         runtime->stack = stack_create(STACK_LENGHT);
         runtime->threadInfo = threadinfo_create();
         runtime->threadInfo->top_runtime = runtime;
-    }
-    else {
+    } else {
         Runtime *top_runtime = parent->threadInfo->top_runtime;
         runtime = top_runtime->runtime_pool_header;
         if (runtime) {
             top_runtime->runtime_pool_header = runtime->next;
             //runtime->next = NULL;
-        }
-        else {
+        } else {
             runtime = _runtime_alloc();
             runtime->stack = parent->stack;
             runtime->threadInfo = parent->threadInfo;
-            runtime->parent = parent;
-            parent->son = runtime;
         }
+        runtime->parent = parent;
+        parent->son = runtime;
     }
     return runtime;
 }
