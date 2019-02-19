@@ -323,42 +323,40 @@ void thread_lock_dispose(ThreadLock *lock);
 void thread_lock_init(ThreadLock *lock);
 
 
+static inline Runtime *_runtime_alloc() {
+    Runtime *runtime = jvm_calloc(sizeof(Runtime));
+    runtime->jnienv = &jnienv;
+    return runtime;
+}
 /**
  * runtime 的创建和销毁会极大影响性能，因此对其进行缓存
  * @param parent runtime of parent
  * @return runtime
  */
 static inline Runtime *runtime_create_inl(Runtime *parent) {
-    Runtime *top_runtime = NULL;
 
-    Runtime *runtime = NULL;
-    if (parent) {
-        top_runtime = parent->threadInfo->top_runtime;
-    }
+    Runtime *runtime;
 
-    if (top_runtime) {
-        runtime = top_runtime->runtime_pool_header;
-        if (runtime) {
-            top_runtime->runtime_pool_header = runtime->next;
-            runtime->next = NULL;
-        }
-    }
-    if (runtime == NULL) {
-        runtime = jvm_calloc(sizeof(Runtime));
-        runtime->jnienv = &jnienv;
-        if (parent) {
-            runtime->stack = parent->stack;
-            runtime->threadInfo = parent->threadInfo;
-        }
-    }
-    //
-    if (parent != NULL) {
-        runtime->parent = parent;
-        parent->son = runtime;
-    } else {
+    if (!parent) {
+        runtime = _runtime_alloc();
         runtime->stack = stack_create(STACK_LENGHT);
         runtime->threadInfo = threadinfo_create();
         runtime->threadInfo->top_runtime = runtime;
+    }
+    else {
+        Runtime *top_runtime = parent->threadInfo->top_runtime;
+        runtime = top_runtime->runtime_pool_header;
+        if (runtime) {
+            top_runtime->runtime_pool_header = runtime->next;
+            //runtime->next = NULL;
+        }
+        else {
+            runtime = _runtime_alloc();
+            runtime->stack = parent->stack;
+            runtime->threadInfo = parent->threadInfo;
+            runtime->parent = parent;
+            parent->son = runtime;
+        }
     }
     return runtime;
 }
