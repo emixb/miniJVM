@@ -450,7 +450,7 @@ _find_exception_handler(Runtime *runtime, Instance *exception, CodeAttribute *ca
 }
 
 
-static inline s32 exception_handle(RuntimeStack *stack, Runtime *runtime, u8 **opCode) {
+static inline s32 exception_handle(RuntimeStack *stack, Runtime *runtime) {
 
     StackEntry entry;
     peek_entry(stack, &entry, stack->size - 1);
@@ -465,7 +465,7 @@ static inline s32 exception_handle(RuntimeStack *stack, Runtime *runtime, u8 **o
            lineNum
     );
 #endif
-    ExceptionTable *et = _find_exception_handler(runtime, ins, runtime->ca, (s32) (*opCode - runtime->ca->code), ins);
+    ExceptionTable *et = _find_exception_handler(runtime, ins, runtime->ca, (s32) (runtime->pc - runtime->ca->code), ins);
     if (et == NULL) {
         Instance *ins = pop_ref(stack);
         localvar_dispose(runtime);
@@ -475,7 +475,7 @@ static inline s32 exception_handle(RuntimeStack *stack, Runtime *runtime, u8 **o
 #if _JVM_DEBUG_BYTECODE_DETAIL > 3
         jvm_printf("Exception : %s\n", utf8_cstr(ins->mb.clazz->name));
 #endif
-        *opCode = (runtime->ca->code + et->handler_pc);
+        runtime->pc = (runtime->ca->code + et->handler_pc);
         return 0;
     }
 
@@ -808,7 +808,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
             //s32 stackSize = stack->size;
             if (method_sync)_synchronized_lock_method(method, runtime);
 
-            u8 *opCode = ca->code;
+            register u8 *opCode = ca->code;
             runtime->ca = ca;
             JavaThreadInfo *threadInfo = runtime->threadInfo;
 
@@ -1243,9 +1243,10 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 #endif
                             opCode += 1;
                         } else {
-                            if (exception_handle(stack, runtime, &opCode)) {
+                            if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
+                                opCode = runtime->pc;
                                 ret = RUNTIME_STATUS_NORMAL;
                             }
                         }
@@ -1272,9 +1273,10 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 
                             opCode += 1;
                         } else {
-                            if (exception_handle(stack, runtime, &opCode)) {
+                            if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
+                                opCode = runtime->pc;
                                 ret = RUNTIME_STATUS_NORMAL;
                             }
                         }
@@ -1298,9 +1300,10 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 
                             opCode += 1;
                         } else {
-                            if (exception_handle(stack, runtime, &opCode)) {
+                            if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
+                                opCode = runtime->pc;
                                 ret = RUNTIME_STATUS_NORMAL;
                             }
                         }
@@ -1324,9 +1327,10 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 
                             opCode += 1;
                         } else {
-                            if (exception_handle(stack, runtime, &opCode)) {
+                            if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
+                                opCode = runtime->pc;
                                 ret = RUNTIME_STATUS_NORMAL;
                             }
                         }
@@ -1350,9 +1354,10 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 
                             opCode += 1;
                         } else {
-                            if (exception_handle(stack, runtime, &opCode)) {
+                            if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
+                                opCode = runtime->pc;
                                 ret = RUNTIME_STATUS_NORMAL;
                             }
                         }
@@ -1376,9 +1381,10 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 
                             opCode += 1;
                         } else {
-                            if (exception_handle(stack, runtime, &opCode)) {
+                            if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
+                                opCode = runtime->pc;
                                 ret = RUNTIME_STATUS_NORMAL;
                             }
                         }
@@ -1576,9 +1582,10 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 
                             opCode += 1;
                         } else {
-                            if (exception_handle(stack, runtime, &opCode)) {
+                            if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
+                                opCode = runtime->pc;
                                 ret = RUNTIME_STATUS_NORMAL;
                             }
                         }
@@ -1604,9 +1611,10 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 
                             opCode += 1;
                         } else {
-                            if (exception_handle(stack, runtime, &opCode)) {
+                            if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
+                                opCode = runtime->pc;
                                 ret = RUNTIME_STATUS_NORMAL;
                             }
                         }
@@ -1631,9 +1639,10 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 
                             opCode += 1;
                         } else {
-                            if (exception_handle(stack, runtime, &opCode)) {
+                            if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
+                                opCode = runtime->pc;
                                 ret = RUNTIME_STATUS_NORMAL;
                             }
                         }
@@ -1657,9 +1666,10 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 
                             opCode += 1;
                         } else {
-                            if (exception_handle(stack, runtime, &opCode)) {
+                            if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
+                                opCode = runtime->pc;
                                 ret = RUNTIME_STATUS_NORMAL;
                             }
                         }
@@ -1684,9 +1694,10 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 
                             opCode += 1;
                         } else {
-                            if (exception_handle(stack, runtime, &opCode)) {
+                            if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
+                                opCode = runtime->pc;
                                 ret = RUNTIME_STATUS_NORMAL;
                             }
                         }
@@ -1710,9 +1721,10 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 
                             opCode += 1;
                         } else {
-                            if (exception_handle(stack, runtime, &opCode)) {
+                            if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
+                                opCode = runtime->pc;
                                 ret = RUNTIME_STATUS_NORMAL;
                             }
                         }
@@ -2105,9 +2117,10 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                             Instance *exception = exception_create(JVM_EXCEPTION_ARRITHMETIC, runtime);
                             push_ref(stack, (__refer) exception);
                             ret = RUNTIME_STATUS_EXCEPTION;
-                            if (exception_handle(stack, runtime, &opCode)) {
+                            if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
+                                opCode = runtime->pc;
                                 ret = RUNTIME_STATUS_NORMAL;
                             }
                         } else {
@@ -2131,9 +2144,10 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                             Instance *exception = exception_create(JVM_EXCEPTION_ARRITHMETIC, runtime);
                             push_ref(stack, (__refer) exception);
                             ret = RUNTIME_STATUS_EXCEPTION;
-                            if (exception_handle(stack, runtime, &opCode)) {
+                            if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
+                                opCode = runtime->pc;
                                 ret = RUNTIME_STATUS_NORMAL;
                             }
                         } else {
@@ -3390,9 +3404,10 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                             Instance *exception = exception_create(JVM_EXCEPTION_NULLPOINTER, runtime);
                             push_ref(stack, (__refer) exception);
                             ret = RUNTIME_STATUS_EXCEPTION;
-                            if (exception_handle(stack, runtime, &opCode)) {
+                            if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
+                                opCode = runtime->pc;
                                 ret = RUNTIME_STATUS_NORMAL;
                             }
                         } else {
@@ -3463,9 +3478,10 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                             Instance *exception = exception_create(JVM_EXCEPTION_NULLPOINTER, runtime);
                             push_ref(stack, (__refer) exception);
                             ret = RUNTIME_STATUS_EXCEPTION;
-                            if (exception_handle(stack, runtime, &opCode)) {
+                            if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
+                                opCode = runtime->pc;
                                 ret = RUNTIME_STATUS_NORMAL;
                             }
                         } else {
@@ -3566,9 +3582,10 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 #endif
                         }
                         if (ret) {
-                            if (exception_handle(stack, runtime, &opCode)) {
+                            if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
+                                opCode = runtime->pc;
                                 ret = RUNTIME_STATUS_NORMAL;
                             }
                         } else {
@@ -3613,9 +3630,10 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 #endif
 
                         if (ret) {
-                            if (exception_handle(stack, runtime, &opCode)) {
+                            if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
+                                opCode = runtime->pc;
                                 ret = RUNTIME_STATUS_NORMAL;
                             }
                         } else {
@@ -3657,9 +3675,10 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 #endif
 
                         if (ret) {
-                            if (exception_handle(stack, runtime, &opCode)) {
+                            if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
+                                opCode = runtime->pc;
                                 ret = RUNTIME_STATUS_NORMAL;
                             }
                         } else {
@@ -3719,7 +3738,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 
                         }
                         if (ret) {
-                            if (exception_handle(stack, runtime, &opCode)) {
+                            if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
                                 ret = RUNTIME_STATUS_NORMAL;
@@ -3855,7 +3874,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("}\n");
 #endif
                         if (ret) {
-                            if (exception_handle(stack, runtime, &opCode)) {
+                            if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
                                 ret = RUNTIME_STATUS_NORMAL;
@@ -3914,7 +3933,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                             Instance *exception = exception_create(JVM_EXCEPTION_NULLPOINTER, runtime);
                             push_ref(stack, (__refer) exception);
                             ret = RUNTIME_STATUS_EXCEPTION;
-                            if (exception_handle(stack, runtime, &opCode)) {
+                            if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
                                 ret = RUNTIME_STATUS_NORMAL;
@@ -3953,7 +3972,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                             Instance *exception = exception_create(JVM_EXCEPTION_NULLPOINTER, runtime);
                             push_ref(stack, (__refer) exception);
                             ret = RUNTIME_STATUS_EXCEPTION;
-                            if (exception_handle(stack, runtime, &opCode)) {
+                            if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
                                 ret = RUNTIME_STATUS_NORMAL;
@@ -3976,7 +3995,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                             Instance *exception = exception_create(JVM_EXCEPTION_NULLPOINTER, runtime);
                             push_ref(stack, (__refer) exception);
                             ret = RUNTIME_STATUS_EXCEPTION;
-                            if (exception_handle(stack, runtime, &opCode)) {
+                            if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
                                 ret = RUNTIME_STATUS_NORMAL;
@@ -4000,7 +4019,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 #endif
                         //opCode +=  1;
                         ret = RUNTIME_STATUS_EXCEPTION;
-                        if (exception_handle(stack, runtime, &opCode)) {
+                        if (exception_handle(stack, runtime)) {
                             exit_exec = 1;
                         } else {
                             ret = RUNTIME_STATUS_NORMAL;
@@ -4045,7 +4064,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                             Instance *exception = exception_create(JVM_EXCEPTION_CLASSCAST, runtime);
                             push_ref(stack, (__refer) exception);
                             ret = RUNTIME_STATUS_EXCEPTION;
-                            if (exception_handle(stack, runtime, &opCode)) {
+                            if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
                                 ret = RUNTIME_STATUS_NORMAL;
@@ -4169,7 +4188,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                             Instance *exception = exception_create(JVM_EXCEPTION_NULLPOINTER, runtime);
                             push_ref(stack, (__refer) exception);
                             ret = RUNTIME_STATUS_EXCEPTION;
-                            if (exception_handle(stack, runtime, &opCode)) {
+                            if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
                                 ret = RUNTIME_STATUS_NORMAL;
