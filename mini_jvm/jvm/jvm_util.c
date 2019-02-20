@@ -1048,7 +1048,7 @@ void instance_init_methodtype(Instance *ins, Runtime *runtime, c8 *methodtype, R
         push_ref(runtime->stack, (__refer) ins);
         if (para) {
             s32 i;
-            for (i = 0; i < para->size; i++) {
+            for (i = 0; i < stack_size(para); i++) {
                 StackEntry entry;
                 peek_entry(para, &entry, i);
                 push_entry(runtime->stack, &entry);

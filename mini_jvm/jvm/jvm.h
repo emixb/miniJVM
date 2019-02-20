@@ -912,7 +912,7 @@ typedef struct _StackEntry {
 
 struct _StackFrame {
     StackEntry *store;
-    s32 size;
+    StackEntry *sp;
     s32 max_size;
 };
 
@@ -930,7 +930,6 @@ struct _Runtime {
     RuntimeStack *stack;
     LocalVarItem *localvar;
     s16 localvar_slots;
-    s16 stack_exit_size;//save stack size when method exit
     //
     union {
         Runtime *runtime_pool_header;// cache runtimes for performance
@@ -980,99 +979,100 @@ s64 entry_2_long_jni(StackEntry *entry);
 
 __refer entry_2_refer_jni(StackEntry *entry);
 
+static inline s32 stack_size(RuntimeStack *stack) {
+    return (stack->sp - stack->store);
+}
 
 /* push Integer */
 static inline void push_int(RuntimeStack *stack, s32 value) {
-    StackEntry *ptr = &stack->store[stack->size++];
-    ptr->ivalue = value;//clear 64bit
-    ptr->type = STACK_ENTRY_INT;
+    stack->sp->ivalue = value;//clear 64bit
+    stack->sp->type = STACK_ENTRY_INT;
+    stack->sp++;
 }
 
 
 /* pop Integer */
 static inline s32 pop_int(RuntimeStack *stack) {
-    return stack->store[--stack->size].ivalue;
+    stack->sp--;
+    return stack->sp->ivalue;
 }
 
 /* push Double */
 static inline void push_double(RuntimeStack *stack, f64 value) {
-    StackEntry *store = stack->store;
-    StackEntry *ptr = &store[stack->size];
-    ptr->dvalue = value;
-    ptr->type = STACK_ENTRY_DOUBLE;
-    ptr = &store[stack->size + 1];
-    ptr->type = STACK_ENTRY_DOUBLE;
+    stack->sp->dvalue = value;
+    stack->sp->type = STACK_ENTRY_DOUBLE;
+    stack->sp++;
+    stack->sp->type = STACK_ENTRY_DOUBLE;
 //    ptr->dvalue = value;
-    stack->size += 2;
+    stack->sp++;
 }
 
 /* pop Double */
 static inline f64 pop_double(RuntimeStack *stack) {
-    stack->size -= 2;
-    return stack->store[stack->size].dvalue;
+    stack->sp -= 2;
+    return stack->sp->dvalue;
 }
 
 /* push Float */
 static inline void push_float(RuntimeStack *stack, f32 value) {
-    StackEntry *ptr = &stack->store[stack->size++];
     //ptr->lvalue = 0;//clear 64bit
-    ptr->fvalue = value;
-    ptr->type = STACK_ENTRY_FLOAT;
+    stack->sp->fvalue = value;
+    stack->sp->type = STACK_ENTRY_FLOAT;
+    stack->sp++;
 }
 
 /* pop Float */
 static inline f32 pop_float(RuntimeStack *stack) {
-    return stack->store[--stack->size].fvalue;
+    stack->sp--;
+    return stack->sp->fvalue;
 }
 
 
 /* push Long */
 static inline void push_long(RuntimeStack *stack, s64 value) {
-    StackEntry *store = stack->store;
-    StackEntry *ptr = &store[stack->size];
-    ptr->lvalue = value;
-    ptr->type = STACK_ENTRY_LONG;
-    ptr = &store[stack->size + 1];
-    ptr->type = STACK_ENTRY_LONG;
+    stack->sp->lvalue = value;
+    stack->sp->type = STACK_ENTRY_LONG;
+    stack->sp++;
+    stack->sp->type = STACK_ENTRY_LONG;
 //    ptr->lvalue = value;
-    stack->size += 2;
+    stack->sp++;
 }
 
 /* pop Long */
 static inline s64 pop_long(RuntimeStack *stack) {
-    stack->size -= 2;
-    return stack->store[stack->size].lvalue;
+    stack->sp -= 2;
+    return stack->sp->lvalue;
 }
 
 /* push Ref */
 static inline void push_ref(RuntimeStack *stack, __refer value) {
-    StackEntry *ptr = &stack->store[stack->size++];
-    //ptr->lvalue = 0;//clear 64bit
-    ptr->type = STACK_ENTRY_REF;
-    ptr->rvalue = value;
+    stack->sp->type = STACK_ENTRY_REF;
+    stack->sp->rvalue = value;
+    stack->sp++;
 }
 
 static inline __refer pop_ref(RuntimeStack *stack) {
-    return stack->store[--stack->size].rvalue;
+    stack->sp--;
+    return stack->sp->rvalue;
 }
 
 
 static inline void push_entry(RuntimeStack *stack, StackEntry *entry) {
-    StackEntry *ptr = &stack->store[stack->size++];
-    ptr->type = entry->type;
-    ptr->lvalue = entry->lvalue;
+    stack->sp->type = entry->type;
+    stack->sp->lvalue = entry->lvalue;
+    stack->sp++;
 }
 
 /* Pop Stack Entry */
 static inline void pop_entry(RuntimeStack *stack, StackEntry *entry) {
-    StackEntry *ptr = &stack->store[--stack->size];
-    entry->type = ptr->type;
-    entry->lvalue = ptr->lvalue;
+    stack->sp--;
+    entry->type = stack->sp->type;
+    entry->lvalue = stack->sp->lvalue;
 
 }
 
 static inline void pop_empty(RuntimeStack *stack) {
-    stack->size--;
+    stack->sp--;
 }
 
 
@@ -1133,19 +1133,18 @@ s32 getRuntimeDepth(Runtime *top);
 static inline s32 localvar_init(Runtime *runtime, s32 var_slots, s32 para_slots) {
     s32 max_slots = var_slots > para_slots ? var_slots : para_slots;
     RuntimeStack *stack = runtime->stack;
-    runtime->stack_exit_size = stack->size - para_slots;
-    runtime->localvar = &stack->store[runtime->stack_exit_size];
+    runtime->localvar = stack->sp - para_slots;
     runtime->localvar_slots = max_slots;
     s32 reserve_slots = max_slots - para_slots;
     if (reserve_slots) {
-        memset(&stack->store[stack->size], 0, reserve_slots * sizeof(StackEntry));
-        stack->size += reserve_slots;
+        memset(&stack->store[stack_size(stack)], 0, reserve_slots * sizeof(StackEntry));
+        stack->sp += reserve_slots;
     }
     return 0;
 }
 
 static inline s32 localvar_dispose(Runtime *runtime) {
-    runtime->stack->size = runtime->stack_exit_size;
+    runtime->stack->sp = runtime->localvar;
     return 0;
 }
 

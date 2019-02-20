@@ -453,7 +453,7 @@ _find_exception_handler(Runtime *runtime, Instance *exception, CodeAttribute *ca
 static inline s32 exception_handle(RuntimeStack *stack, Runtime *runtime) {
 
     StackEntry entry;
-    peek_entry(stack, &entry, stack->size - 1);
+    peek_entry(stack, &entry, stack_size(stack) - 1);
     Instance *ins = entry_2_refer(&entry);
 
 #if _JVM_DEBUG_BYTECODE_DETAIL > 3
@@ -509,11 +509,11 @@ static void _printCodeAttribute(CodeAttribute *ca, JClass *p) {
 static inline Instance *getInstanceInStack(JClass *clazz, ConstantMethodRef *cmr, RuntimeStack *stack) {
 
     //    StackEntry entry;
-    //    peek_entry(stack, &entry, stack->size - 1 - cmr->methodParaCount);
+    //    peek_entry(stack, &entry, stack_size(stack) - 1 - cmr->methodParaCount);
     //    Instance *ins = (Instance *) entry_2_refer(&entry);
     //    return ins;
 
-    return stack->store[stack->size - 1 - cmr->para_slots].rvalue;
+    return stack->store[stack_size(stack) - 1 - cmr->para_slots].rvalue;
 }
 
 /**
@@ -525,18 +525,6 @@ static inline Instance *getInstanceInStack(JClass *clazz, ConstantMethodRef *cmr
 */
 
 
-static inline void _stack2localvar(MethodInfo *method, LocalVarItem *localvar, RuntimeStack *stack) {
-
-    s32 i_local = method->para_slots;
-    //    memcpy(localvar, &stack->store[stack->size - i_local], i_local * sizeof(StackEntry));
-    StackEntry *store = stack->store;
-    s32 i;
-    for (i = 0; i < i_local; i++) {
-        localvar[i].lvalue = store[stack->size - (i_local - i)].lvalue;
-        localvar[i].type = store[stack->size - (i_local - i)].type;
-    }
-    stack->size -= i_local;
-}
 
 static inline void _synchronized_lock_method(MethodInfo *method, Runtime *runtime) {
     //synchronized process
@@ -804,8 +792,6 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
         if (ca) {
             localvar_init(runtime, ca->max_locals, method->para_slots);
             LocalVarItem *localvar = runtime->localvar;
-            //_stack2localvar(method, localvar, stack);
-            //s32 stackSize = stack->size;
             if (method_sync)_synchronized_lock_method(method, runtime);
 
             register u8 *opCode = ca->code;
@@ -839,7 +825,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 
 #if _JVM_DEBUG_PROFILE
                 s64 spent = 0;
-            s64 start_at = nanoTime();
+                s64 start_at = nanoTime();
 #endif
 
 
@@ -1763,7 +1749,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                     label_dup:
                     case op_dup: {
                         StackEntry entry;
-                        peek_entry(stack, &entry, stack->size - 1);
+                        peek_entry(stack, &entry, stack_size(stack) - 1);
 
                         push_entry(stack, &entry);
 
@@ -1822,9 +1808,9 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                     label_dup2:
                     case op_dup2: {
                         StackEntry entry1;
-                        peek_entry(stack, &entry1, stack->size - 1);
+                        peek_entry(stack, &entry1, stack_size(stack) - 1);
                         StackEntry entry2;
-                        peek_entry(stack, &entry2, stack->size - 2);
+                        peek_entry(stack, &entry2, stack_size(stack) - 2);
 
                         push_entry(stack, &entry2);
                         push_entry(stack, &entry1);
@@ -3248,7 +3234,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
 
                         StackEntry entry;
-                        peek_entry(stack, &entry, stack->size - 1);
+                        peek_entry(stack, &entry, stack_size(stack) - 1);
                         invoke_deepth(runtime);
                         jvm_printf("ld_return=[%x]/%d/[%llx]\n", entry_2_int(&entry), entry_2_int(&entry), entry_2_long(&entry));
 #endif
@@ -3332,7 +3318,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
                         invoke_deepth(runtime);
                         StackEntry entry;
-                        peek_entry(stack, &entry, stack->size - 1);
+                        peek_entry(stack, &entry, stack_size(stack) - 1);
                         s64 v = entry_2_long(&entry);
                         jvm_printf("%s: push %s.%s[%llx]\n", "getstatic", utf8_cstr(clazz->name), utf8_cstr(fi->name), (s64) (intptr_t) ptr, v);
 #endif
@@ -3357,7 +3343,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
                         StackEntry entry;
-                        peek_entry(stack, &entry, stack->size - 1);
+                        peek_entry(stack, &entry, stack_size(stack) - 1);
                         invoke_deepth(runtime);
                         jvm_printf("%s  save:%s.%s[%llx]=[%llx]  \n", "putstatic", utf8_cstr(clazz->name), utf8_cstr(fi->name), (s64) (intptr_t) ptr, entry_2_long(&entry));
 #endif
@@ -3450,7 +3436,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
                             invoke_deepth(runtime);
                             StackEntry entry;
-                            peek_entry(stack, &entry, stack->size - 1);
+                            peek_entry(stack, &entry, stack_size(stack) - 1);
                             s64 v = entry_2_long(&entry);
                             jvm_printf("%s: push %s.%s[%llx]\n", "getfield", utf8_cstr(clazz->name), utf8_cstr(fi->name), (s64) (intptr_t) ptr, v);
 #endif
@@ -4306,7 +4292,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                 }
                 case 1: { // F I R
                     StackEntry entry;
-                    peek_entry(stack, &entry, stack->size - method->return_slots);
+                    peek_entry(stack, &entry, stack_size(stack) - method->return_slots);
                     localvar_dispose(runtime);
                     push_entry(stack, &entry);
                     break;
@@ -4321,13 +4307,15 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
         }
     }
 
+
+
 #if _JVM_DEBUG_BYTECODE_DETAIL > 3
     Utf8String *ustr = method->descriptor;
     invoke_deepth(runtime);
-    jvm_printf("stack size  %s.%s%s in:%d out:%d  \n", utf8_cstr(clazz->name), utf8_cstr(method->name), utf8_cstr(method->descriptor), runtime->stack_exit_size, stack->size);
+    jvm_printf("stack size  %s.%s%s in:%d out:%d  \n", utf8_cstr(clazz->name), utf8_cstr(method->name), utf8_cstr(method->descriptor), (runtime->stack->sp - runtime->localvar), stack_size(stack));
     if (ret != RUNTIME_STATUS_EXCEPTION) {
         if (method->return_slots) {//无反回值
-            if (stack->size != runtime->stack_exit_size + method->return_slots) {
+            if (stack->sp != runtime->localvar + method->return_slots) {
                 exit(1);
             }
         }

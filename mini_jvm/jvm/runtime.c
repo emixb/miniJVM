@@ -13,7 +13,7 @@
 RuntimeStack *stack_create(s32 entry_size) {
     RuntimeStack *stack = jvm_calloc(sizeof(RuntimeStack));
     stack->store = (StackEntry *) jvm_calloc(sizeof(StackEntry) * entry_size);
-    stack->size = 0;
+    stack->sp = stack->store;
     stack->max_size = entry_size;
     return stack;
 }

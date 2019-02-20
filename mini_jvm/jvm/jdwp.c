@@ -1813,7 +1813,7 @@ s32 jdwp_client_process(JdwpClient *client, Runtime *runtime) {
                 MethodInfo *methodInfo = jdwppacket_read_refer(req);
                 s32 arguments = jdwppacket_read_int(req);
 
-                s32 stack_size = runtime->stack->size;
+                s32 stacksize = stack_size(runtime->stack);
                 if (!(methodInfo->access_flags & ACC_STATIC)) {
                     push_ref(runtime->stack, object);
                 }
@@ -1843,7 +1843,7 @@ s32 jdwp_client_process(JdwpClient *client, Runtime *runtime) {
 
                 ValueType vt;
                 memset(&vt, 0, sizeof(ValueType));
-                if (runtime->stack->size > stack_size) {
+                if (stack_size(runtime->stack) > stacksize) {
                     Utf8String *us = utf8_create_copy(methodInfo->descriptor);
                     utf8_substring(us, utf8_indexof_c(us, ")") + 1, us->length);
                     vt.type = getJdwpTag(us);
