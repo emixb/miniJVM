@@ -217,30 +217,49 @@ enum {
     /* 0xCA */ op_breakpoint,
 };
 
-static inline u8 *_op_aload_n(u8 *opCode, RuntimeStack *stack, LocalVarItem *localvar, Runtime *runtime, s32 i) {
-    __refer value = localvar_getRefer(localvar, i);
-    push_ref(stack, value);
+static inline void _op_load_1_slot(RuntimeStack *stack, LocalVarItem *localvar, Runtime *runtime, s32 i) {
+    push_entry(stack, localvar_getEntry(localvar, i));
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
+    StackEntry entry;
+    peek_entry(stack->sp - 1, &entry);
     invoke_deepth(runtime);
-    jvm_printf("aload_%d push localvar [%llx] into stack\n", i, (s64) (intptr_t) value);
+    jvm_printf("load_1slot : load localvar[%d] value %lld/[%llx] into stack\n", i, entry.lvalue, entry.rvalue);
 #endif
-    opCode++;
-    return opCode;
+}
+
+static inline void _op_load_2_slot(RuntimeStack *stack, LocalVarItem *localvar, Runtime *runtime, s32 i) {
+    s64 v = localvar_getLong(localvar, i);
+    push_long(stack, v);
+#if _JVM_DEBUG_BYTECODE_DETAIL > 5
+    StackEntry entry;
+    peek_entry(stack->sp - 1, &entry);
+    invoke_deepth(runtime);
+    jvm_printf("load_2slot : load localvar[%d] value %lld/[%llx] into stack\n", i, entry.lvalue, entry.rvalue);
+#endif
 }
 
 
-static inline u8 *_op_ifload_n(u8 *opCode, RuntimeStack *stack, LocalVarItem *localvar, Runtime *runtime, s32 i) {
-    Int2Float i2f;
-    i2f.i = localvar_getInt(localvar, i);
+static inline void _op_store_1_slot(RuntimeStack *stack, LocalVarItem *localvar, Runtime *runtime, s32 i) {
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
+    StackEntry entry;
+    peek_entry(stack->sp - 1, &entry);
     invoke_deepth(runtime);
-    jvm_printf("if_load_%d: push localvar(%d)= [%x]/%d/%f  \n", i, i, i2f.i, i2f.i, i2f.f);
+    jvm_printf("store_1slot : save %llx/%lld into localvar[%d]\n", entry.rvalue, entry.lvalue, i);
 #endif
-    push_int(stack, i2f.i);
-    opCode++;
-    return opCode;
+    localvar_setEntry(localvar, i, (--stack->sp));
 }
 
+
+static inline void _op_store_2_slot(RuntimeStack *stack, LocalVarItem *localvar, Runtime *runtime, s32 i) {
+    s64 v = pop_long(stack);
+    localvar_setLong(localvar, i, v);
+#if _JVM_DEBUG_BYTECODE_DETAIL > 5
+    StackEntry entry;
+    peek_entry(stack->sp - 2, &entry);
+    invoke_deepth(runtime);
+    jvm_printf("store_2slot : save %llx/%lld into localvar[%d]\n", entry.rvalue, entry.lvalue, i);
+#endif
+}
 
 static inline void _op_ldc_impl(RuntimeStack *stack, JClass *clazz, Runtime *runtime, s32 index) {
 
@@ -282,142 +301,41 @@ static inline void _op_ldc_impl(RuntimeStack *stack, JClass *clazz, Runtime *run
     }
 }
 
-static inline u8 *_op_iconst_n(u8 *opCode, RuntimeStack *stack, Runtime *runtime, s32 i) {
+static inline void _op_iconst_n(RuntimeStack *stack, Runtime *runtime, s32 i) {
     push_int(stack, i);
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
     invoke_deepth(runtime);
     jvm_printf("iconst_%d: push %d into stack\n", i, i);
 #endif
-    opCode++;
-    return opCode;
 }
 
-static inline u8 *_op_dconst_n(u8 *opCode, RuntimeStack *stack, Runtime *runtime, f64 d) {
+static inline void _op_dconst_n(RuntimeStack *stack, Runtime *runtime, f64 d) {
     push_double(stack, d);
 
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
     invoke_deepth(runtime);
     jvm_printf("dconst_%d: push %lf into stack\n", (s32) (d), d);
 #endif
-    opCode++;
-    return opCode;
 }
 
-static inline u8 *_op_fconst_n(u8 *opCode, RuntimeStack *stack, Runtime *runtime, f32 f) {
+static inline void _op_fconst_n(RuntimeStack *stack, Runtime *runtime, f32 f) {
     push_float(stack, f);
 
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
     invoke_deepth(runtime);
     jvm_printf("fconst_%f: push %f into stack\n", (s32) f, f);
 #endif
-    opCode++;
-    return opCode;
 }
 
-static inline u8 *_op_lconst_n(u8 *opCode, RuntimeStack *stack, Runtime *runtime, s64 i) {
+static inline void _op_lconst_n(RuntimeStack *stack, Runtime *runtime, s64 i) {
 
     push_long(stack, i);
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
     invoke_deepth(runtime);
     jvm_printf("lconst_%lld: push %lld into stack\n", i, i);
 #endif
-    opCode++;
-    return opCode;
 }
 
-static inline u8 *_op_ldoad_n(u8 *opCode, RuntimeStack *stack, LocalVarItem *localvar, Runtime *runtime, s32 index) {
-    s64 value = localvar_getLong(localvar, index);
-
-#if _JVM_DEBUG_BYTECODE_DETAIL > 5
-    invoke_deepth(runtime);
-    jvm_printf("ld_load_%d: push localvar(%d)= [%llx]/%lld/%lf  \n", index, index, value, value, value);
-#endif
-    push_long(stack, value);
-    opCode++;
-    return opCode;
-}
-
-static inline u8 *_op_istore_n(u8 *opCode, RuntimeStack *stack, LocalVarItem *localvar, Runtime *runtime, s32 i) {
-    s32 value = pop_int(stack);
-#if _JVM_DEBUG_BYTECODE_DETAIL > 5
-    invoke_deepth(runtime);
-    jvm_printf("istore_%d: save %x/%d into localvar(%d)\n", i, value, value, i);
-#endif
-    localvar_setInt(localvar, i, value);
-    opCode++;
-    return opCode;
-}
-
-static inline u8 *_op_astore_n(u8 *opCode, RuntimeStack *stack, LocalVarItem *localvar, Runtime *runtime, s32 i) {
-    __refer value = pop_ref(stack);
-#if _JVM_DEBUG_BYTECODE_DETAIL > 5
-    invoke_deepth(runtime);
-    jvm_printf("astore_%d:  [%llx]\n", i, (s64) (intptr_t) value);
-#endif
-    localvar_setRefer(localvar, i, value);
-    opCode++;
-    return opCode;
-}
-
-static inline u8 *_op_ldstore_n(u8 *opCode, RuntimeStack *stack, LocalVarItem *localvar, Runtime *runtime, s32 i) {
-    Long2Double l2d;
-    l2d.l = pop_long(stack);
-
-#if _JVM_DEBUG_BYTECODE_DETAIL > 5
-
-    invoke_deepth(runtime);
-    jvm_printf("l(d)store_%d: save localvar(%d) [%llx]/%lld/%lf  \n", i, i, l2d.l, l2d.l, l2d.d);
-#endif
-    localvar_setLong(localvar, i, l2d.l);
-    opCode++;
-    return opCode;
-}
-
-
-static inline u8 *_op_ifstore_impl(u8 *opCode, RuntimeStack *stack, LocalVarItem *localvar, Runtime *runtime) {
-    Short2Char s2c;
-    if (runtime->wideMode) {
-        s2c.c1 = opCode[1];
-        s2c.c0 = opCode[2];
-        opCode += 3;
-        runtime->wideMode = 0;
-    } else {
-        s2c.us = (u8) opCode[1];
-        opCode += 2;
-    }
-
-    s32 value = pop_int(stack);
-#if _JVM_DEBUG_BYTECODE_DETAIL > 5
-    invoke_deepth(runtime);
-    jvm_printf("i(f)store: save  localvar(%d) [%x]/%d \n", s2c.us, value, value);
-#endif
-    localvar_setInt(localvar, (u16) s2c.us, value);
-    return opCode;
-}
-
-static inline u8 *_op_ldstore_impl(u8 *opCode, RuntimeStack *stack, LocalVarItem *localvar, Runtime *runtime) {
-
-    Short2Char s2c;
-    if (runtime->wideMode) {
-        s2c.c1 = opCode[1];
-        s2c.c0 = opCode[2];
-        opCode += 3;
-        runtime->wideMode = 0;
-    } else {
-        s2c.us = (u8) opCode[1];
-        opCode += 2;
-    }
-
-    Long2Double l2d;
-    l2d.l = pop_long(stack);
-
-#if _JVM_DEBUG_BYTECODE_DETAIL > 5
-    invoke_deepth(runtime);
-    jvm_printf("l(d)store: save localvar(%d) %llx/%lld/%lf  \n", s2c.us, l2d.l, l2d.l, l2d.d);
-#endif
-    localvar_setLong(localvar, (u16) s2c.us, l2d.l);
-    return opCode;
-}
 
 void _op_notsupport(u8 *opCode, Runtime *runtime) {
     invoke_deepth(runtime);
@@ -852,88 +770,102 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                     }
                     label_iconst_m1:
                     case op_iconst_m1: {
-                        opCode = _op_iconst_n(opCode, stack, runtime, -1);
+                        _op_iconst_n(stack, runtime, -1);
+                        opCode++;
                         break;
                     }
 
 
                     label_iconst_0:
                     case op_iconst_0: {
-                        opCode = _op_iconst_n(opCode, stack, runtime, 0);
+                        _op_iconst_n(stack, runtime, 0);
+                        opCode++;
                         break;
                     }
 
                     label_iconst_1:
                     case op_iconst_1: {
-                        opCode = _op_iconst_n(opCode, stack, runtime, 1);
+                        _op_iconst_n(stack, runtime, 1);
+                        opCode++;
                         break;
                     }
 
                     label_iconst_2:
                     case op_iconst_2: {
-                        opCode = _op_iconst_n(opCode, stack, runtime, 2);
+                        _op_iconst_n(stack, runtime, 2);
+                        opCode++;
                         break;
                     }
 
                     label_iconst_3:
                     case op_iconst_3: {
-                        opCode = _op_iconst_n(opCode, stack, runtime, 3);
+                        _op_iconst_n(stack, runtime, 3);
+                        opCode++;
                         break;
                     }
 
                     label_iconst_4:
                     case op_iconst_4: {
-                        opCode = _op_iconst_n(opCode, stack, runtime, 4);
+                        _op_iconst_n(stack, runtime, 4);
+                        opCode++;
                         break;
                     }
 
                     label_iconst_5:
                     case op_iconst_5: {
-                        opCode = _op_iconst_n(opCode, stack, runtime, 5);
+                        _op_iconst_n(stack, runtime, 5);
+                        opCode++;
                         break;
                     }
 
                     label_lconst_0:
                     case op_lconst_0: {
-                        opCode = _op_lconst_n(opCode, stack, runtime, 0);
+                        _op_lconst_n(stack, runtime, 0);
+                        opCode++;
                         break;
                     }
 
                     label_lconst_1:
                     case op_lconst_1: {
-                        opCode = _op_lconst_n(opCode, stack, runtime, 1);
+                        _op_lconst_n(stack, runtime, 1);
+                        opCode++;
                         break;
                     }
 
 
                     label_fconst_0:
                     case op_fconst_0: {
-                        opCode = _op_fconst_n(opCode, stack, runtime, 0.0f);
+                        _op_fconst_n(stack, runtime, 0.0f);
+                        opCode++;
                         break;
                     }
 
                     label_fconst_1:
                     case op_fconst_1: {
-                        opCode = _op_fconst_n(opCode, stack, runtime, 1.0f);
+                        _op_fconst_n(stack, runtime, 1.0f);
+                        opCode++;
                         break;
                     }
 
                     label_fconst_2:
                     case op_fconst_2: {
-                        opCode = _op_fconst_n(opCode, stack, runtime, 2.0f);
+                        _op_fconst_n(stack, runtime, 2.0f);
+                        opCode++;
                         break;
                     }
 
 
                     label_dconst_0:
                     case op_dconst_0: {
-                        opCode = _op_dconst_n(opCode, stack, runtime, 0.0f);
+                        _op_dconst_n(stack, runtime, 0.0f);
+                        opCode++;
                         break;
                     }
 
                     label_dconst_1:
                     case op_dconst_1: {
-                        opCode = _op_dconst_n(opCode, stack, runtime, 1.0f);
+                        _op_dconst_n(stack, runtime, 1.0f);
+                        opCode++;
                         break;
                     }
 
@@ -960,7 +892,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         invoke_deepth(runtime);
                         jvm_printf("sipush value %d\n", s2c.s);
 #endif
-                        push_int(stack, s2c.s);
+                        push_int(stack, s2c.us);
                         opCode += 3;
 
                         break;
@@ -1007,7 +939,9 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                     label_iload:
                     label_fload:
                     case op_iload:
-                    case op_fload: {
+                    case op_fload:
+                    label_aload:
+                    case op_aload: {
                         Short2Char s2c;
                         if (runtime->wideMode) {
                             s2c.c1 = opCode[1];
@@ -1018,18 +952,9 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                             s2c.us = (u8) opCode[1];
                             opCode += 2;
                         }
-
-                        s32 value = localvar_getInt(localvar, (u16) s2c.us);
-#if _JVM_DEBUG_BYTECODE_DETAIL > 5
-                        invoke_deepth(runtime);
-                        jvm_printf("i(fa)load: push localvar(%d)= [%x]/%d  \n", s2c.s, value, value);
-#endif
-                        push_int(stack, value);
-
+                        _op_load_1_slot(stack, localvar, runtime, s2c.us);
                         break;
                     }
-
-
                     label_lload:
                     label_dload:
                     case op_lload:
@@ -1044,165 +969,148 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                             s2c.us = (u8) opCode[1];
                             opCode += 2;
                         }
-
-                        Long2Double l2d;
-                        l2d.l = localvar_getLong(localvar, (u16) s2c.us);
-#if _JVM_DEBUG_BYTECODE_DETAIL > 5
-                        invoke_deepth(runtime);
-                        jvm_printf("l(d)load: push localvar(%d) [%llx]/%lf into stack \n", s2c.us, l2d.l, l2d.d);
-#endif
-                        push_long(stack, l2d.l);
-
-                        break;
-                    }
-
-
-                    label_aload:
-                    case op_aload: {
-                        //                        if (utf8_equals_c(method->name, "reshape")) {
-                        //                            int debug = 1;
-                        //                        }
-
-                        Short2Char s2c;
-                        if (runtime->wideMode) {
-                            s2c.c1 = opCode[1];
-                            s2c.c0 = opCode[2];
-                            opCode += 3;
-                            runtime->wideMode = 0;
-                        } else {
-                            s2c.us = (u8) opCode[1];
-                            opCode += 2;
-                        }
-
-                        __refer value = localvar_getRefer(localvar, (u16) s2c.us);
-#if _JVM_DEBUG_BYTECODE_DETAIL > 5
-                        invoke_deepth(runtime);
-                        jvm_printf("i(fa)load: push localvar(%d)= [%llx]  \n", s2c.us, (s64) (intptr_t) value);
-#endif
-                        push_ref(stack, value);
-
+                        _op_load_2_slot(stack, localvar, runtime, s2c.us);
                         break;
                     }
 
                     label_iload_0:
                     case op_iload_0: {
-                        opCode = _op_ifload_n(opCode, stack, localvar, runtime, 0);
+                        _op_load_1_slot(stack, localvar, runtime, 0);
+                        opCode++;
                         break;
                     }
 
                     label_iload_1:
                     case op_iload_1: {
-                        opCode = _op_ifload_n(opCode, stack, localvar, runtime, 1);
+                        _op_load_1_slot(stack, localvar, runtime, 1);
+                        opCode++;
                         break;
                     }
 
                     label_iload_2:
                     case op_iload_2: {
-                        opCode = _op_ifload_n(opCode, stack, localvar, runtime, 2);
+                        _op_load_1_slot(stack, localvar, runtime, 2);
+                        opCode++;
                         break;
                     }
 
                     label_iload_3:
                     case op_iload_3: {
-                        opCode = _op_ifload_n(opCode, stack, localvar, runtime, 3);
+                        _op_load_1_slot(stack, localvar, runtime, 3);
+                        opCode++;
                         break;
                     }
 
                     label_lload_0:
                     case op_lload_0: {
-                        opCode = _op_ldoad_n(opCode, stack, localvar, runtime, 0);
+                        _op_load_2_slot(stack, localvar, runtime, 0);
+                        opCode++;
                         break;
                     }
 
                     label_lload_1:
                     case op_lload_1: {
-                        opCode = _op_ldoad_n(opCode, stack, localvar, runtime, 1);
+                        _op_load_2_slot(stack, localvar, runtime, 1);
+                        opCode++;
                         break;
                     }
 
                     label_lload_2:
                     case op_lload_2: {
-                        opCode = _op_ldoad_n(opCode, stack, localvar, runtime, 2);
+                        _op_load_2_slot(stack, localvar, runtime, 2);
+                        opCode++;
                         break;
                     }
 
                     label_lload_3:
                     case op_lload_3: {
-                        opCode = _op_ldoad_n(opCode, stack, localvar, runtime, 3);
+                        _op_load_2_slot(stack, localvar, runtime, 3);
+                        opCode++;
                         break;
                     }
 
                     label_fload_0:
                     case op_fload_0: {
-                        opCode = _op_ifload_n(opCode, stack, localvar, runtime, 0);
+                        _op_load_1_slot(stack, localvar, runtime, 0);
+                        opCode++;
                         break;
                     }
 
                     label_fload_1:
                     case op_fload_1: {
-                        opCode = _op_ifload_n(opCode, stack, localvar, runtime, 1);
+                        _op_load_1_slot(stack, localvar, runtime, 1);
+                        opCode++;
                         break;
                     }
 
                     label_fload_2:
                     case op_fload_2: {
-                        opCode = _op_ifload_n(opCode, stack, localvar, runtime, 2);
+                        _op_load_1_slot(stack, localvar, runtime, 2);
+                        opCode++;
                         break;
                     }
 
                     label_fload_3:
                     case op_fload_3: {
-                        opCode = _op_ifload_n(opCode, stack, localvar, runtime, 3);
+                        _op_load_1_slot(stack, localvar, runtime, 3);
+                        opCode++;
                         break;
                     }
 
 
                     label_dload_0:
                     case op_dload_0: {
-                        opCode = _op_ldoad_n(opCode, stack, localvar, runtime, 0);
+                        _op_load_2_slot(stack, localvar, runtime, 0);
+                        opCode++;
                         break;
                     }
 
                     label_dload_1:
                     case op_dload_1: {
-                        opCode = _op_ldoad_n(opCode, stack, localvar, runtime, 1);
+                        _op_load_2_slot(stack, localvar, runtime, 1);
+                        opCode++;
                         break;
                     }
 
                     label_dload_2:
                     case op_dload_2: {
-                        opCode = _op_ldoad_n(opCode, stack, localvar, runtime, 2);
+                        _op_load_2_slot(stack, localvar, runtime, 2);
+                        opCode++;
                         break;
                     }
 
                     label_dload_3:
                     case op_dload_3: {
-                        opCode = _op_ldoad_n(opCode, stack, localvar, runtime, 3);
+                        _op_load_2_slot(stack, localvar, runtime, 3);
+                        opCode++;
                         break;
                     }
 
                     label_aload_0:
                     case op_aload_0: {
-                        *(stack->sp++) = localvar[0];
+                        _op_load_1_slot(stack, localvar, runtime, 0);
                         opCode++;
                         break;
                     }
 
                     label_aload_1:
                     case op_aload_1: {
-                        opCode = _op_aload_n(opCode, stack, localvar, runtime, 1);
+                        _op_load_1_slot(stack, localvar, runtime, 1);
+                        opCode++;
                         break;
                     }
 
                     label_aload_2:
                     case op_aload_2: {
-                        opCode = _op_aload_n(opCode, stack, localvar, runtime, 2);
+                        _op_load_1_slot(stack, localvar, runtime, 2);
+                        opCode++;
                         break;
                     }
 
                     label_aload_3:
                     case op_aload_3: {
-                        opCode = _op_aload_n(opCode, stack, localvar, runtime, 3);
+                        _op_load_1_slot(stack, localvar, runtime, 3);
+                        opCode++;
                         break;
                     }
 
@@ -1373,30 +1281,9 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                     }
 
                     label_istore:
-                    case op_istore: {
-                        opCode = _op_ifstore_impl(opCode, stack, localvar, runtime);
-                        break;
-                    }
-
-                    label_lstore:
-                    case op_lstore: {
-                        opCode = _op_ldstore_impl(opCode, stack, localvar, runtime);
-                        break;
-                    }
-
+                    case op_istore:
                     label_fstore:
-                    case op_fstore: {
-                        opCode = _op_ifstore_impl(opCode, stack, localvar, runtime);
-                        break;
-                    }
-
-                    label_dstore:
-                    case op_dstore: {
-                        opCode = _op_ldstore_impl(opCode, stack, localvar, runtime);
-                        break;
-                    }
-
-
+                    case op_fstore:
                     label_astore:
                     case op_astore: {
                         Short2Char s2c;
@@ -1410,137 +1297,172 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                             opCode += 2;
                         }
 
-                        __refer value = pop_ref(stack);
-#if _JVM_DEBUG_BYTECODE_DETAIL > 5
-                        invoke_deepth(runtime);
-                        jvm_printf("i(fa)store: save  localvar(%d) [%llx] \n", s2c.us, (s64) (intptr_t) value);
-#endif
-                        localvar_setRefer(localvar, (u16) s2c.us, value);
+                        _op_store_1_slot(stack, localvar, runtime, s2c.us);
 
+                        break;
+                    }
+
+
+                    label_lstore:
+                    case op_lstore:
+                    label_dstore:
+                    case op_dstore: {
+                        Short2Char s2c;
+                        if (runtime->wideMode) {
+                            s2c.c1 = opCode[1];
+                            s2c.c0 = opCode[2];
+                            opCode += 3;
+                            runtime->wideMode = 0;
+                        } else {
+                            s2c.us = (u8) opCode[1];
+                            opCode += 2;
+                        }
+
+                        _op_store_2_slot(stack, localvar, runtime, s2c.us);
 
                         break;
                     }
 
                     label_istore_0:
                     case op_istore_0: {
-                        opCode = _op_istore_n(opCode, stack, localvar, runtime, 0);
+                        _op_store_1_slot(stack, localvar, runtime, 0);
+                        opCode++;
                         break;
                     }
 
                     label_istore_1:
                     case op_istore_1: {
-                        opCode = _op_istore_n(opCode, stack, localvar, runtime, 1);
+                        _op_store_1_slot(stack, localvar, runtime, 1);
+                        opCode++;
                         break;
                     }
 
                     label_istore_2:
                     case op_istore_2: {
-                        opCode = _op_istore_n(opCode, stack, localvar, runtime, 2);
+                        _op_store_1_slot(stack, localvar, runtime, 2);
+                        opCode++;
                         break;
                     }
 
                     label_istore_3:
                     case op_istore_3: {
-                        opCode = _op_istore_n(opCode, stack, localvar, runtime, 3);
+                        _op_store_1_slot(stack, localvar, runtime, 3);
+                        opCode++;
                         break;
                     }
 
                     label_lstore_0:
                     case op_lstore_0: {
-                        opCode = _op_ldstore_n(opCode, stack, localvar, runtime, 0);
+                        _op_store_2_slot(stack, localvar, runtime, 0);
+                        opCode++;
                         break;
                     }
 
                     label_lstore_1:
                     case op_lstore_1: {
-                        opCode = _op_ldstore_n(opCode, stack, localvar, runtime, 1);
+                        _op_store_2_slot(stack, localvar, runtime, 1);
+                        opCode++;
                         break;
                     }
 
                     label_lstore_2:
                     case op_lstore_2: {
-                        opCode = _op_ldstore_n(opCode, stack, localvar, runtime, 2);
+                        _op_store_2_slot(stack, localvar, runtime, 2);
+                        opCode++;
                         break;
                     }
 
                     label_lstore_3:
                     case op_lstore_3: {
-                        opCode = _op_ldstore_n(opCode, stack, localvar, runtime, 3);
+                        _op_store_2_slot(stack, localvar, runtime, 3);
+                        opCode++;
                         break;
                     }
 
 
                     label_fstore_0:
                     case op_fstore_0: {
-                        opCode = _op_istore_n(opCode, stack, localvar, runtime, 0);
+                        _op_store_1_slot(stack, localvar, runtime, 0);
+                        opCode++;
                         break;
                     }
 
                     label_fstore_1:
                     case op_fstore_1: {
-                        opCode = _op_istore_n(opCode, stack, localvar, runtime, 1);
+                        _op_store_1_slot(stack, localvar, runtime, 1);
+                        opCode++;
                         break;
                     }
 
                     label_fstore_2:
                     case op_fstore_2: {
-                        opCode = _op_istore_n(opCode, stack, localvar, runtime, 2);
+                        _op_store_1_slot(stack, localvar, runtime, 2);
+                        opCode++;
                         break;
                     }
 
                     label_fstore_3:
                     case op_fstore_3: {
-                        opCode = _op_istore_n(opCode, stack, localvar, runtime, 3);
+                        _op_store_1_slot(stack, localvar, runtime, 3);
+                        opCode++;
                         break;
                     }
 
 
                     label_dstore_0:
                     case op_dstore_0: {
-                        opCode = _op_ldstore_n(opCode, stack, localvar, runtime, 0);
+                        _op_store_2_slot(stack, localvar, runtime, 0);
+                        opCode++;
                         break;
                     }
 
                     label_dstore_1:
                     case op_dstore_1: {
-                        opCode = _op_ldstore_n(opCode, stack, localvar, runtime, 1);
+                        _op_store_2_slot(stack, localvar, runtime, 1);
+                        opCode++;
                         break;
                     }
 
                     case op_dstore_2: {
                         label_dstore_2:
-                        opCode = _op_ldstore_n(opCode, stack, localvar, runtime, 2);
+                        _op_store_2_slot(stack, localvar, runtime, 2);
+                        opCode++;
                         break;
                     }
 
                     label_dstore_3:
                     case op_dstore_3: {
-                        opCode = _op_ldstore_n(opCode, stack, localvar, runtime, 3);
+                        _op_store_2_slot(stack, localvar, runtime, 3);
+                        opCode++;
                         break;
                     }
 
 
                     label_astore_0:
                     case op_astore_0: {
-                        opCode = _op_astore_n(opCode, stack, localvar, runtime, 0);
+                        _op_store_1_slot(stack, localvar, runtime, 0);
+                        opCode++;
                         break;
                     }
 
                     label_astore_1:
                     case op_astore_1: {
-                        opCode = _op_astore_n(opCode, stack, localvar, runtime, 1);
+                        _op_store_1_slot(stack, localvar, runtime, 1);
+                        opCode++;
                         break;
                     }
 
                     label_astore_2:
                     case op_astore_2: {
-                        opCode = _op_astore_n(opCode, stack, localvar, runtime, 2);
+                        _op_store_1_slot(stack, localvar, runtime, 2);
+                        opCode++;
                         break;
                     }
 
                     label_astore_3:
                     case op_astore_3: {
-                        opCode = _op_astore_n(opCode, stack, localvar, runtime, 3);
+                        _op_store_1_slot(stack, localvar, runtime, 3);
+                        opCode++;
                         break;
                     }
 

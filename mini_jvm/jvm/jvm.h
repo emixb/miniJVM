@@ -1145,6 +1145,13 @@ static inline s32 localvar_dispose(Runtime *runtime) {
     return 0;
 }
 
+static inline StackEntry *localvar_getEntry(LocalVarItem *localvar, s32 index) {
+    return &localvar[index];
+}
+
+static inline void localvar_setEntry(LocalVarItem *localvar, s32 index, StackEntry *entry) {
+    localvar[index] = *entry;
+}
 
 static inline void localvar_setInt(LocalVarItem *localvar, s32 index, s32 val) {
     localvar[index].ivalue = val;
