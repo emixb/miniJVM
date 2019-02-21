@@ -336,7 +336,8 @@ extern ArrayList *thread_list;
 extern ArrayList *native_libs;
 extern Hashtable *sys_prop;
 
-extern s32 STACK_LENGHT;
+extern s32 STACK_LENGHT_MAX;
+extern s32 STACK_LENGHT_INIT;
 
 int get_jvm_state();
 
@@ -945,6 +946,8 @@ RuntimeStack *stack_create(s32 entry_size);
 
 void stack_destory(RuntimeStack *stack);
 
+s32 stack_expand(RuntimeStack *stack);
+
 void push_entry_jni(RuntimeStack *stack, StackEntry *entry);
 
 void push_int_jni(RuntimeStack *stack, s32 value);
@@ -1058,14 +1061,16 @@ static inline __refer pop_ref(RuntimeStack *stack) {
 
 
 static inline void push_entry(RuntimeStack *stack, StackEntry *entry) {
-    *stack->sp = *entry;
+    stack->sp->lvalue = entry->lvalue;
+    stack->sp->type = entry->type;
     stack->sp++;
 }
 
 /* Pop Stack Entry */
 static inline void pop_entry(RuntimeStack *stack, StackEntry *entry) {
     stack->sp--;
-    *entry = *stack->sp;
+    entry->lvalue = stack->sp->lvalue;
+    entry->type = stack->sp->type;
 
 }
 
@@ -1075,7 +1080,8 @@ static inline void pop_empty(RuntimeStack *stack) {
 
 
 static inline void peek_entry(StackEntry *src, StackEntry *dst) {
-    *dst = *src;
+    dst->lvalue = src->lvalue;
+    dst->type = src->type;
 }
 
 
@@ -1148,7 +1154,8 @@ static inline StackEntry *localvar_getEntry(LocalVarItem *localvar, s32 index) {
 }
 
 static inline void localvar_setEntry(LocalVarItem *localvar, s32 index, StackEntry *entry) {
-    localvar[index] = *entry;
+    localvar[index].lvalue = entry->lvalue;
+    localvar[index].type = entry->type;
 }
 
 static inline void localvar_setInt(LocalVarItem *localvar, s32 index, s32 val) {

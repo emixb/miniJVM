@@ -79,7 +79,9 @@ s32 data_type_bytes[DATATYPE_COUNT] = {0, 0, 0, 0,
                                        sizeof(__refer),
                                        sizeof(__refer),
 };
-s32 STACK_LENGHT = 10240;
+s32 STACK_LENGHT_MAX = 2048;
+s32 STACK_LENGHT_INIT = 512;
+
 s64 GARBAGE_PERIOD_MS = 1 * 1000;
 
 s64 MAX_HEAP_SIZE = 30 * 1024 * 1024;

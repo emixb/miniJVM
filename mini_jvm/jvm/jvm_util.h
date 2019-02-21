@@ -340,7 +340,7 @@ static inline Runtime *runtime_create_inl(Runtime *parent) {
 
     if (!parent) {
         runtime = _runtime_alloc();
-        runtime->stack = stack_create(STACK_LENGHT);
+        runtime->stack = stack_create(STACK_LENGHT_INIT);
         runtime->threadInfo = threadinfo_create();
         runtime->threadInfo->top_runtime = runtime;
     } else {

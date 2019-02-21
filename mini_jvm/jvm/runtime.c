@@ -26,6 +26,24 @@ void stack_destory(RuntimeStack *stack) {
     jvm_free(stack);
 }
 
+s32 stack_expand(RuntimeStack *stack) {
+    if (stack->max_size >= STACK_LENGHT_MAX) {
+        return 0;
+    }
+    StackEntry *old = stack->store;
+    s32 size = stack_size(stack);
+    StackEntry *news = jvm_calloc(stack->max_size * 2 * sizeof(StackEntry));
+    if (news) {
+        memcpy(news, old, sizeof(StackEntry) * size);
+        stack->max_size *= 2;
+        stack->store = news;
+        stack->sp = news + size;
+    } else {
+        return 0;
+    }
+    return 1;
+}
+
 
 /* push Integer */
 void push_int_jni(RuntimeStack *stack, s32 value) {

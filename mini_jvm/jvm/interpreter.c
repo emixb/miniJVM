@@ -702,6 +702,16 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
     if (!(method->access_flags & ACC_NATIVE)) {
         CodeAttribute *ca = method->converted_code;
         if (ca) {
+            if (stack->max_size < stack->sp - stack->store) {
+                if (!stack_expand(stack)) {
+                    Utf8String *ustr = utf8_create();
+                    getRuntimeStack(runtime, ustr);
+                    jvm_printf("Stack overflow :\n %s\n", utf8_cstr(ustr));
+                    exit(1);
+                } else {
+                    jvm_printf("expand stack to %d\n", stack->max_size);
+                }
+            }
             localvar_init(runtime, ca->max_locals, method->para_slots);
             LocalVarItem *localvar = runtime->localvar;
             if (method_sync)_synchronized_lock_method(method, runtime);
@@ -736,14 +746,14 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                 }
 
 #if _JVM_DEBUG_PROFILE
-                    s64 spent = 0;
-                    s64 start_at = nanoTime();
+                s64 spent = 0;
+                s64 start_at = nanoTime();
 #endif
 
 
-                    /* ==================================opcode start =============================*/
+                /* ==================================opcode start =============================*/
 #ifdef __JVM_DEBUG__
-                    s64 inst_pc = runtime->pc - ca->code;
+                s64 inst_pc = runtime->pc - ca->code;
 #endif
                 JUMP_TO_IP(cur_inst);
                 switch (cur_inst) {
