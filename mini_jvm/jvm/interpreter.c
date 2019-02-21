@@ -224,7 +224,7 @@ static inline u8 *_op_aload_n(u8 *opCode, RuntimeStack *stack, LocalVarItem *loc
     invoke_deepth(runtime);
     jvm_printf("aload_%d push localvar [%llx] into stack\n", i, (s64) (intptr_t) value);
 #endif
-    opCode += 1;
+    opCode++;
     return opCode;
 }
 
@@ -237,7 +237,7 @@ static inline u8 *_op_ifload_n(u8 *opCode, RuntimeStack *stack, LocalVarItem *lo
     jvm_printf("if_load_%d: push localvar(%d)= [%x]/%d/%f  \n", i, i, i2f.i, i2f.i, i2f.f);
 #endif
     push_int(stack, i2f.i);
-    opCode += 1;
+    opCode++;
     return opCode;
 }
 
@@ -288,7 +288,7 @@ static inline u8 *_op_iconst_n(u8 *opCode, RuntimeStack *stack, Runtime *runtime
     invoke_deepth(runtime);
     jvm_printf("iconst_%d: push %d into stack\n", i, i);
 #endif
-    opCode += 1;
+    opCode++;
     return opCode;
 }
 
@@ -299,7 +299,7 @@ static inline u8 *_op_dconst_n(u8 *opCode, RuntimeStack *stack, Runtime *runtime
     invoke_deepth(runtime);
     jvm_printf("dconst_%d: push %lf into stack\n", (s32) (d), d);
 #endif
-    opCode += 1;
+    opCode++;
     return opCode;
 }
 
@@ -310,7 +310,7 @@ static inline u8 *_op_fconst_n(u8 *opCode, RuntimeStack *stack, Runtime *runtime
     invoke_deepth(runtime);
     jvm_printf("fconst_%f: push %f into stack\n", (s32) f, f);
 #endif
-    opCode += 1;
+    opCode++;
     return opCode;
 }
 
@@ -321,7 +321,7 @@ static inline u8 *_op_lconst_n(u8 *opCode, RuntimeStack *stack, Runtime *runtime
     invoke_deepth(runtime);
     jvm_printf("lconst_%lld: push %lld into stack\n", i, i);
 #endif
-    opCode += 1;
+    opCode++;
     return opCode;
 }
 
@@ -333,7 +333,7 @@ static inline u8 *_op_ldoad_n(u8 *opCode, RuntimeStack *stack, LocalVarItem *loc
     jvm_printf("ld_load_%d: push localvar(%d)= [%llx]/%lld/%lf  \n", index, index, value, value, value);
 #endif
     push_long(stack, value);
-    opCode += 1;
+    opCode++;
     return opCode;
 }
 
@@ -344,7 +344,7 @@ static inline u8 *_op_istore_n(u8 *opCode, RuntimeStack *stack, LocalVarItem *lo
     jvm_printf("istore_%d: save %x/%d into localvar(%d)\n", i, value, value, i);
 #endif
     localvar_setInt(localvar, i, value);
-    opCode += 1;
+    opCode++;
     return opCode;
 }
 
@@ -355,7 +355,7 @@ static inline u8 *_op_astore_n(u8 *opCode, RuntimeStack *stack, LocalVarItem *lo
     jvm_printf("astore_%d:  [%llx]\n", i, (s64) (intptr_t) value);
 #endif
     localvar_setRefer(localvar, i, value);
-    opCode += 1;
+    opCode++;
     return opCode;
 }
 
@@ -369,7 +369,7 @@ static inline u8 *_op_ldstore_n(u8 *opCode, RuntimeStack *stack, LocalVarItem *l
     jvm_printf("l(d)store_%d: save localvar(%d) [%llx]/%lld/%lf  \n", i, i, l2d.l, l2d.l, l2d.d);
 #endif
     localvar_setLong(localvar, i, l2d.l);
-    opCode += 1;
+    opCode++;
     return opCode;
 }
 
@@ -453,7 +453,7 @@ _find_exception_handler(Runtime *runtime, Instance *exception, CodeAttribute *ca
 static inline s32 exception_handle(RuntimeStack *stack, Runtime *runtime) {
 
     StackEntry entry;
-    peek_entry(stack, &entry, stack_size(stack) - 1);
+    peek_entry(stack->sp - 1, &entry);
     Instance *ins = entry_2_refer(&entry);
 
 #if _JVM_DEBUG_BYTECODE_DETAIL > 3
@@ -506,14 +506,8 @@ static void _printCodeAttribute(CodeAttribute *ca, JClass *p) {
 * @param stack stack
 * @return ins
 */
-static inline Instance *getInstanceInStack(JClass *clazz, ConstantMethodRef *cmr, RuntimeStack *stack) {
-
-    //    StackEntry entry;
-    //    peek_entry(stack, &entry, stack_size(stack) - 1 - cmr->methodParaCount);
-    //    Instance *ins = (Instance *) entry_2_refer(&entry);
-    //    return ins;
-
-    return stack->store[stack_size(stack) - 1 - cmr->para_slots].rvalue;
+static inline Instance *getInstanceInStack(ConstantMethodRef *cmr, RuntimeStack *stack) {
+    return (stack->sp - 1 - cmr->para_slots)->rvalue;
 }
 
 /**
@@ -824,14 +818,14 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                 }
 
 #if _JVM_DEBUG_PROFILE
-                s64 spent = 0;
-                s64 start_at = nanoTime();
+                    s64 spent = 0;
+                    s64 start_at = nanoTime();
 #endif
 
 
-                /* ==================================opcode start =============================*/
+                    /* ==================================opcode start =============================*/
 #ifdef __JVM_DEBUG__
-                s64 inst_pc = runtime->pc - ca->code;
+                    s64 inst_pc = runtime->pc - ca->code;
 #endif
                 JUMP_TO_IP(cur_inst);
                 switch (cur_inst) {
@@ -841,7 +835,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         invoke_deepth(runtime);
                         jvm_printf("nop\n");
 #endif
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -852,7 +846,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         invoke_deepth(runtime);
                         jvm_printf("aconst_null: push %d into stack\n", 0);
 #endif
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -1189,7 +1183,8 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 
                     label_aload_0:
                     case op_aload_0: {
-                        opCode = _op_aload_n(opCode, stack, localvar, runtime, 0);
+                        *(stack->sp++) = localvar[0];
+                        opCode++;
                         break;
                     }
 
@@ -1227,7 +1222,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                             jvm_printf("if_aload push arr[%llx].(%d)=%x:%d:%lf into stack\n", (u64) (intptr_t) arr, index,
                                        s, s, *(f32 *) &s);
 #endif
-                            opCode += 1;
+                            opCode++;
                         } else {
                             if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
@@ -1257,7 +1252,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                                        s, s, *(f64 *) &s);
 #endif
 
-                            opCode += 1;
+                            opCode++;
                         } else {
                             if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
@@ -1284,7 +1279,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                                        (s64) (intptr_t) s, (s64) (intptr_t) s);
 #endif
 
-                            opCode += 1;
+                            opCode++;
                         } else {
                             if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
@@ -1311,7 +1306,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                                        s, s, *(f32 *) &s);
 #endif
 
-                            opCode += 1;
+                            opCode++;
                         } else {
                             if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
@@ -1338,7 +1333,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                                        s, s, *(f32 *) &s);
 #endif
 
-                            opCode += 1;
+                            opCode++;
                         } else {
                             if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
@@ -1365,7 +1360,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                                        s, s, *(f32 *) &s);
 #endif
 
-                            opCode += 1;
+                            opCode++;
                         } else {
                             if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
@@ -1566,7 +1561,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                                        (s64) (intptr_t) jarr, index, i);
 #endif
 
-                            opCode += 1;
+                            opCode++;
                         } else {
                             if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
@@ -1595,7 +1590,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                                        (s64) (intptr_t) jarr, index, j);
 #endif
 
-                            opCode += 1;
+                            opCode++;
                         } else {
                             if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
@@ -1623,7 +1618,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                                        (s64) (intptr_t) jarr, index, (s64) (intptr_t) r);
 #endif
 
-                            opCode += 1;
+                            opCode++;
                         } else {
                             if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
@@ -1650,7 +1645,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                                        (s64) (intptr_t) jarr, index, i);
 #endif
 
-                            opCode += 1;
+                            opCode++;
                         } else {
                             if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
@@ -1678,7 +1673,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                                        (s64) (intptr_t) jarr, index, i);
 #endif
 
-                            opCode += 1;
+                            opCode++;
                         } else {
                             if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
@@ -1705,7 +1700,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                                        (s64) (intptr_t) jarr, index, i);
 #endif
 
-                            opCode += 1;
+                            opCode++;
                         } else {
                             if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
@@ -1725,7 +1720,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         invoke_deepth(runtime);
                         jvm_printf("pop\n");
 #endif
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -1740,7 +1735,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         invoke_deepth(runtime);
                         jvm_printf("pop2\n");
 #endif
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -1748,16 +1743,14 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 
                     label_dup:
                     case op_dup: {
-                        StackEntry entry;
-                        peek_entry(stack, &entry, stack_size(stack) - 1);
 
-                        push_entry(stack, &entry);
+                        push_entry(stack, stack->sp - 1);
 
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
                         invoke_deepth(runtime);
                         jvm_printf("dup\n");
 #endif
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -1777,7 +1770,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         invoke_deepth(runtime);
                         jvm_printf("dup_x1\n");
 #endif
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -1800,7 +1793,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         invoke_deepth(runtime);
                         jvm_printf("dup_x2 \n");
 #endif
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -1808,9 +1801,9 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                     label_dup2:
                     case op_dup2: {
                         StackEntry entry1;
-                        peek_entry(stack, &entry1, stack_size(stack) - 1);
+                        peek_entry(stack->sp - 1, &entry1);
                         StackEntry entry2;
-                        peek_entry(stack, &entry2, stack_size(stack) - 2);
+                        peek_entry(stack->sp - 2, &entry2);
 
                         push_entry(stack, &entry2);
                         push_entry(stack, &entry1);
@@ -1819,7 +1812,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         invoke_deepth(runtime);
                         jvm_printf("op_dup2\n");
 #endif
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -1844,7 +1837,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         invoke_deepth(runtime);
                         jvm_printf("dup2_x1\n");
 #endif
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -1871,7 +1864,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         invoke_deepth(runtime);
                         jvm_printf("dup2_x2\n");
 #endif
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -1892,7 +1885,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         invoke_deepth(runtime);
                         jvm_printf("swap\n");
 #endif
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -1909,7 +1902,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("iadd: %d + %d = %d\n", value1, value2, result);
 #endif
                         push_int(stack, result);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -1926,7 +1919,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("ladd: %lld + %lld = %lld\n", value2, value1, result);
 #endif
                         push_long(stack, result);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -1942,7 +1935,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("fadd: %lf + %lf = %lf\n", value2, value1, result);
 #endif
                         push_float(stack, result);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -1958,7 +1951,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("dadd: %lf + %lf = %lf\n", value1, value2, result);
 #endif
                         push_double(stack, result);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -1973,7 +1966,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("isub : %d - %d = %d\n", value1, value2, result);
 #endif
                         push_int(stack, result);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -1989,7 +1982,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("lsub: %lld - %lld = %lld\n", value2, value1, result);
 #endif
                         push_long(stack, result);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2005,7 +1998,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("fsub: %f - %f = %f\n", value2, value1, result);
 #endif
                         push_float(stack, result);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2022,7 +2015,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("dsub: %lf - %lf = %lf\n", value2, value1, result);
 #endif
                         push_double(stack, result);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2038,7 +2031,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("imul: %d * %d = %d\n", value1, value2, result);
 #endif
                         push_int(stack, result);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2054,7 +2047,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("lmul: %lld * %lld = %lld\n", value2, value1, result);
 #endif
                         push_long(stack, result);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2069,7 +2062,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("fmul: %f * %f = %f\n", value1, value2, result);
 #endif
                         push_float(stack, result);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2084,7 +2077,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("dmul: %lf * %lf = %lf\n", value1, value2, result);
 #endif
                         push_double(stack, result);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2112,7 +2105,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         } else {
                             s32 result = value2 / value1;
                             push_int(stack, result);
-                            opCode += 1;
+                            opCode++;
                         }
 
                         break;
@@ -2139,7 +2132,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         } else {
                             s64 result = value2 / value1;
                             push_long(stack, result);
-                            opCode += 1;
+                            opCode++;
                         }
 
                         break;
@@ -2156,7 +2149,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("fdiv: %f / %f = %f\n", value2, value1, result);
 #endif
                         push_float(stack, result);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2171,7 +2164,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("ddiv: %f / %f = %f\n", value2, value1, result);
 #endif
                         push_double(stack, result);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2187,7 +2180,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("irem: %d % %d = %d\n", value2, value1, result);
 #endif
                         push_int(stack, result);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2203,7 +2196,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("lrem: %lld mod %lld = %lld\n", value2, value1, result);
 #endif
                         push_long(stack, result);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2218,7 +2211,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("frem: %f % %f = %f\n", value2, value1, result);
 #endif
                         push_float(stack, result);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2234,7 +2227,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("drem: %lf mod %lf = %lf\n", value2, value1, result);
 #endif
                         push_double(stack, result);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2248,7 +2241,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("ineg: -(%d) = %d\n", value1, -value1);
 #endif
                         push_int(stack, -value1);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2262,7 +2255,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("lneg: -(%lld) = %lld\n", value1, -value1);
 #endif
                         push_long(stack, -value1);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2277,7 +2270,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("fneg: -(%f) = %f\n", value1, -value1);
 #endif
                         push_float(stack, -value1);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2292,7 +2285,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("dneg: -(%lf) = %lf\n", value1, -value1);
 #endif
                         push_double(stack, -value1);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2307,7 +2300,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("ishl: %x << %x =%x \n", value2, value1, value2 << value1);
 #endif
                         push_int(stack, value2 << value1);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2322,7 +2315,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("lshl: %llx << %x =%llx \n", value2, value1, (value2 << value1));
 #endif
                         push_long(stack, value2 << value1);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2337,7 +2330,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("ishr: %x >> %x =%x \n", value2, value1, value2 >> value1);
 #endif
                         push_int(stack, value2 >> value1);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2352,7 +2345,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("lshr: %llx >> %x =%llx \n", value2, value1, value2 >> value1);
 #endif
                         push_long(stack, value2 >> value1);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2367,7 +2360,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("iushr: %x >>> %x =%x \n", value2, value1, value2 >> value1);
 #endif
                         push_int(stack, value2 >> value1);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2382,7 +2375,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("lushr: %llx >>> %x =%llx \n", value2, value1, value2 >> value1);
 #endif
                         push_long(stack, value2 >> value1);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2397,7 +2390,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("iand: %x & %x =%x \n", value2, value1, value2 & value1);
 #endif
                         push_int(stack, value2 & value1);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2412,7 +2405,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("land: %llx  &  %llx =%llx \n", value2, value1, value2 & value1);
 #endif
                         push_long(stack, value2 & value1);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2428,7 +2421,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("ior: %x & %x =%x \n", value2, value1, value2 | value1);
 #endif
                         push_int(stack, value2 | value1);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2443,7 +2436,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("lor: %llx  |  %llx =%llx \n", value2, value1, value2 | value1);
 #endif
                         push_long(stack, value2 | value1);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2459,7 +2452,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("ixor: %x ^ %x =%x \n", value2, value1, value2 ^ value1);
 #endif
                         push_int(stack, value2 ^ value1);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2474,7 +2467,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("lxor: %llx  ^  %llx =%llx \n", value2, value1, value2 ^ value1);
 #endif
                         push_long(stack, value2 ^ value1);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2515,7 +2508,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("i2l: %d --> %lld\n", (s32) value, (s64) value);
 #endif
                         push_long(stack, (s64) value);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2529,7 +2522,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("i2f: %d --> %f\n", (s32) value, result);
 #endif
                         push_float(stack, result);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2543,7 +2536,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("i2d: %d --> %lf\n", (s32) value, result);
 #endif
                         push_double(stack, result);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2557,7 +2550,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("l2i: %d <-- %lld\n", (s32) value, value);
 #endif
                         push_int(stack, (s32) value);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2571,7 +2564,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("l2f: %f <-- %lld\n", (f32) value, value);
 #endif
                         push_float(stack, (f32) value);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2585,7 +2578,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("l2d: %lf <-- %lld\n", (f64) value, value);
 #endif
                         push_double(stack, (f64) value);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2600,7 +2593,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("f2i: %d <-- %f\n", result, value1);
 #endif
                         push_int(stack, result);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2614,7 +2607,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("f2l: %lld <-- %f\n", result, value1);
 #endif
                         push_long(stack, result);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2628,7 +2621,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("f2d: %f <-- %f\n", result, value1);
 #endif
                         push_double(stack, result);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2643,7 +2636,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("d2i: %d <-- %lf\n", result, value1);
 #endif
                         push_int(stack, result);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2657,7 +2650,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("d2l: %lld <-- %lf\n", result, value1);
 #endif
                         push_long(stack, result);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2671,7 +2664,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("d2f: %f <-- %lf\n", result, value1);
 #endif
                         push_float(stack, result);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2685,7 +2678,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("i2b: %d --> %d\n", (s8) value, value);
 #endif
                         push_int(stack, (s8) value);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2702,7 +2695,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("i2s(c): %d --> %d\n", (s16) value, value);
 #endif
                         push_int(stack, (u16) value);
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2719,7 +2712,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 #endif
                         push_int(stack, result);
 
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2737,7 +2730,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 #endif
                         push_int(stack, result);
 
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2754,7 +2747,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 #endif
                         push_int(stack, result);
 
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2771,7 +2764,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 #endif
                         push_int(stack, result);
 
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -2788,7 +2781,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 #endif
                         push_int(stack, result);
 
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -3234,7 +3227,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
 
                         StackEntry entry;
-                        peek_entry(stack, &entry, stack_size(stack) - 1);
+                        peek_entry(stack->sp - 1, &entry);
                         invoke_deepth(runtime);
                         jvm_printf("ld_return=[%x]/%d/[%llx]\n", entry_2_int(&entry), entry_2_int(&entry), entry_2_long(&entry));
 #endif
@@ -3318,7 +3311,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
                         invoke_deepth(runtime);
                         StackEntry entry;
-                        peek_entry(stack, &entry, stack_size(stack) - 1);
+                        peek_entry(stack->sp - 1, &entry);
                         s64 v = entry_2_long(&entry);
                         jvm_printf("%s: push %s.%s[%llx]\n", "getstatic", utf8_cstr(clazz->name), utf8_cstr(fi->name), (s64) (intptr_t) ptr, v);
 #endif
@@ -3343,7 +3336,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
                         StackEntry entry;
-                        peek_entry(stack, &entry, stack_size(stack) - 1);
+                        peek_entry(stack->sp - 1, &entry);
                         invoke_deepth(runtime);
                         jvm_printf("%s  save:%s.%s[%llx]=[%llx]  \n", "putstatic", utf8_cstr(clazz->name), utf8_cstr(fi->name), (s64) (intptr_t) ptr, entry_2_long(&entry));
 #endif
@@ -3436,7 +3429,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
                             invoke_deepth(runtime);
                             StackEntry entry;
-                            peek_entry(stack, &entry, stack_size(stack) - 1);
+                            peek_entry(stack->sp - 1, &entry);
                             s64 v = entry_2_long(&entry);
                             jvm_printf("%s: push %s.%s[%llx]\n", "getfield", utf8_cstr(clazz->name), utf8_cstr(fi->name), (s64) (intptr_t) ptr, v);
 #endif
@@ -3527,7 +3520,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         //此cmr所描述的方法，对于不同的实例，有不同的method
                         ConstantMethodRef *cmr = class_get_constant_method_ref(clazz, s2c.us);
 
-                        Instance *ins = getInstanceInStack(clazz, cmr, stack);
+                        Instance *ins = getInstanceInStack(cmr, stack);
                         if (ins == NULL) {
                             Instance *exception = exception_create(JVM_EXCEPTION_NULLPOINTER, runtime);
                             push_ref(stack, (__refer) exception);
@@ -3683,7 +3676,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         s32 paraCount = (u8) opCode[3];
 
                         ConstantMethodRef *cmr = class_get_constant_method_ref(clazz, s2c.us);
-                        Instance *ins = getInstanceInStack(clazz, cmr, stack);
+                        Instance *ins = getInstanceInStack(cmr, stack);
                         if (ins == NULL) {
                             Instance *exception = exception_create(JVM_EXCEPTION_NULLPOINTER, runtime);
                             push_ref(stack, (__refer) exception);
@@ -3993,7 +3986,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                             }
                         } else {
                             push_int(stack, arr_ref->arr_length);
-                            opCode += 1;
+                            opCode++;
                         }
                         break;
                     }
@@ -4117,7 +4110,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         invoke_deepth(runtime);
                         jvm_printf("monitorenter  [%llx] %s  \n", (s64) (intptr_t) ins, ins ? utf8_cstr(ins->mb.clazz->name) : "null");
 #endif
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -4130,7 +4123,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         invoke_deepth(runtime);
                         jvm_printf("monitorexit  [%llx] %s  \n", (s64) (intptr_t) ins, ins ? utf8_cstr(ins->mb.clazz->name) : "null");
 #endif
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -4143,7 +4136,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("wide  \n");
 #endif
                         runtime->wideMode = 1;
-                        opCode += 1;
+                        opCode++;
 
                         break;
                     }
@@ -4292,7 +4285,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                 }
                 case 1: { // F I R
                     StackEntry entry;
-                    peek_entry(stack, &entry, stack_size(stack) - method->return_slots);
+                    peek_entry(stack->sp - method->return_slots, &entry);
                     localvar_dispose(runtime);
                     push_entry(stack, &entry);
                     break;
@@ -4306,7 +4299,6 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
             }
         }
     }
-
 
 
 #if _JVM_DEBUG_BYTECODE_DETAIL > 3

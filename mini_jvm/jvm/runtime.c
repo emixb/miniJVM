@@ -105,8 +105,8 @@ __refer entry_2_refer_jni(StackEntry *entry) {
     return entry_2_refer(entry);
 }
 
-void peek_entry_jni(RuntimeStack *stack, StackEntry *entry, int index) {
-    peek_entry(stack, entry, index);
+void peek_entry_jni(StackEntry *src, StackEntry *dst) {
+    peek_entry(src, dst);
 }
 
 

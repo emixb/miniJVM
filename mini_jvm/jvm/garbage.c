@@ -267,7 +267,7 @@ void garbage_dump_runtime() {
         StackEntry entry;
         RuntimeStack *stack = runtime->stack;
         for (j = 0; j < stack_size(stack); j++) {
-            peek_entry(stack, &entry, j);
+            peek_entry(stack->store + j, &entry);
             if (is_ref(&entry)) {
                 __refer ref = entry_2_refer(&entry);
                 if (ref) {
@@ -615,7 +615,7 @@ s32 _garbage_copy_refer_thread(Runtime *pruntime) {
     Runtime *runtime = pruntime;
     RuntimeStack *stack = runtime->stack;
     for (i = 0; i < stack_size(stack); i++) {
-        peek_entry(stack, &entry, i);
+        peek_entry(stack->store + i, &entry);
         if (is_ref(&entry)) {
             __refer ref = entry_2_refer(&entry);
             if (ref) {

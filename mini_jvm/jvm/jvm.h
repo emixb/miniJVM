@@ -973,7 +973,7 @@ void pop_empty_jni(RuntimeStack *stack);
 
 s32 entry_2_int_jni(StackEntry *entry);
 
-void peek_entry_jni(RuntimeStack *stack, StackEntry *entry, int index);
+void peek_entry_jni(StackEntry *src, StackEntry *dst);
 
 s64 entry_2_long_jni(StackEntry *entry);
 
@@ -1076,11 +1076,8 @@ static inline void pop_empty(RuntimeStack *stack) {
 }
 
 
-static inline void peek_entry(RuntimeStack *stack, StackEntry *entry, int index) {
-    //memcpy(entry, &stack->store[index].lvalue, sizeof(StackEntry));
-    StackEntry *ptr = &stack->store[index];
-    entry->lvalue = ptr->lvalue;
-    entry->type = ptr->type;
+static inline void peek_entry(StackEntry *src, StackEntry *dst) {
+    *dst = *src;
 }
 
 
@@ -1293,7 +1290,7 @@ struct _JNIENV {
 
     s32 (*entry_2_int)(StackEntry *entry);
 
-    void (*peek_entry)(RuntimeStack *stack, StackEntry *entry, int index);
+    void (*peek_entry)(StackEntry *src, StackEntry *dst);
 
     s64 (*entry_2_long)(StackEntry *entry);
 

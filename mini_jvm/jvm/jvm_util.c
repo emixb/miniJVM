@@ -1050,7 +1050,7 @@ void instance_init_methodtype(Instance *ins, Runtime *runtime, c8 *methodtype, R
             s32 i;
             for (i = 0; i < stack_size(para); i++) {
                 StackEntry entry;
-                peek_entry(para, &entry, i);
+                peek_entry(para->store + i, &entry);
                 push_entry(runtime->stack, &entry);
             }
         }
