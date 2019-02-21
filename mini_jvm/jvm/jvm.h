@@ -1058,16 +1058,14 @@ static inline __refer pop_ref(RuntimeStack *stack) {
 
 
 static inline void push_entry(RuntimeStack *stack, StackEntry *entry) {
-    stack->sp->type = entry->type;
-    stack->sp->lvalue = entry->lvalue;
+    *stack->sp = *entry;
     stack->sp++;
 }
 
 /* Pop Stack Entry */
 static inline void pop_entry(RuntimeStack *stack, StackEntry *entry) {
     stack->sp--;
-    entry->type = stack->sp->type;
-    entry->lvalue = stack->sp->lvalue;
+    *entry = *stack->sp;
 
 }
 
