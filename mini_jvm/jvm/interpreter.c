@@ -212,8 +212,8 @@ enum {
     /* 0xC5 */ op_multianewarray,
     /* 0xC6 */ op_ifnull,
     /* 0xC7 */ op_ifnonnull,
-    /* 0xC8 */ op_0xc8,
-    /* 0xC9 */ op_0xc9,
+    /* 0xC8 */ op_goto_w,
+    /* 0xC9 */ op_jsr_w,
     /* 0xCA */ op_breakpoint,
 };
 
@@ -674,8 +674,8 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
             GET_LABEL_ADDRESS(label_multianewarray),
             GET_LABEL_ADDRESS(label_ifnull),
             GET_LABEL_ADDRESS(label_ifnonnull),
-            GET_LABEL_ADDRESS(label_0xc8),
-            GET_LABEL_ADDRESS(label_0xc9),
+            GET_LABEL_ADDRESS(label_goto_w),
+            GET_LABEL_ADDRESS(label_jsr_w),
             GET_LABEL_ADDRESS(label_breakpoint)
     };
 
@@ -4169,8 +4169,46 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                     }
 
 
-                    label_0xc8:
-                    label_0xc9:
+                    label_goto_w:
+                    case op_goto_w: {
+                        Int2Float i2f;
+                        i2f.c3 = opCode[1];
+                        i2f.c2 = opCode[2];
+                        i2f.c1 = opCode[3];
+                        i2f.c0 = opCode[4];
+
+                        s32 branchoffset = i2f.i;
+
+#if _JVM_DEBUG_BYTECODE_DETAIL > 5
+                        invoke_deepth(runtime);
+                        jvm_printf("goto: %d\n", branchoffset);
+#endif
+                        opCode += branchoffset;
+
+
+                        break;
+                    }
+
+                    label_jsr_w:
+                    case op_jsr_w: {
+                        Int2Float i2f;
+                        i2f.c3 = opCode[1];
+                        i2f.c2 = opCode[2];
+                        i2f.c1 = opCode[3];
+                        i2f.c0 = opCode[4];
+
+                        s32 branchoffset = i2f.i;
+                        push_ref(stack, (__refer) (opCode + 3));
+#if _JVM_DEBUG_BYTECODE_DETAIL > 5
+                        invoke_deepth(runtime);
+                        jvm_printf("jsr_w: %d\n", branchoffset);
+#endif
+                        opCode += branchoffset;
+
+
+                        break;
+                    }
+
                     default:
                         jvm_printf("instruct %x not found\n", cur_inst);
                 }
