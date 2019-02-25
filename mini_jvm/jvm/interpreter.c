@@ -704,10 +704,14 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
         if (ca) {
             if (ca->code_length == 1 && *ca->code == op_return) {//empty method, do nothing
                 s32 paras = method->para_slots;
-                switch (*pruntime->pc) {
-                    case op_invokevirtual: 
+                switch (*pruntime->pc) {//only static and special can be optimize , invokevirtual may call by diff instance
+                    case op_invokestatic:
                     case op_invokespecial: {
-                        if (paras == 1) {
+                        if (paras == 0) {
+                            *pruntime->pc = op_nop;
+                            *(pruntime->pc + 1) = op_nop;
+                            *(pruntime->pc + 2) = op_nop;
+                        } else if (paras == 1) {
                             *pruntime->pc = op_pop;
                             *(pruntime->pc + 1) = op_nop;
                             *(pruntime->pc + 2) = op_nop;
