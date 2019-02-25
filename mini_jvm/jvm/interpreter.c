@@ -702,6 +702,24 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
     if (!(method->access_flags & ACC_NATIVE)) {
         CodeAttribute *ca = method->converted_code;
         if (ca) {
+            if (ca->code_length == 1 && *ca->code == op_return) {//empty method, do nothing
+                s32 paras = method->para_slots;
+                switch (*pruntime->pc) {
+                    case op_invokevirtual: 
+                    case op_invokespecial: {
+                        if (paras == 1) {
+                            *pruntime->pc = op_pop;
+                            *(pruntime->pc + 1) = op_nop;
+                            *(pruntime->pc + 2) = op_nop;
+                        } else if (paras == 2) {
+                            *pruntime->pc = op_pop2;
+                            *(pruntime->pc + 1) = op_nop;
+                            *(pruntime->pc + 2) = op_nop;
+                        }
+                        break;
+                    }
+                }
+            }
             if (stack->max_size < stack->sp - stack->store) {
                 if (!stack_expand(stack)) {
                     Utf8String *ustr = utf8_create();
@@ -746,14 +764,14 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                 }
 
 #if _JVM_DEBUG_PROFILE
-                s64 spent = 0;
-                s64 start_at = nanoTime();
+                    s64 spent = 0;
+                    s64 start_at = nanoTime();
 #endif
 
 
-                /* ==================================opcode start =============================*/
+                    /* ==================================opcode start =============================*/
 #ifdef __JVM_DEBUG__
-                s64 inst_pc = runtime->pc - ca->code;
+                    s64 inst_pc = runtime->pc - ca->code;
 #endif
                 JUMP_TO_IP(cur_inst);
                 switch (cur_inst) {
