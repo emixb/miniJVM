@@ -938,7 +938,6 @@ struct _Runtime {
     };
 
     JniEnv *jnienv;
-    u8 wideMode;
 };
 
 //======================= stack =============================

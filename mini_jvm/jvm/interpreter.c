@@ -768,14 +768,14 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                 }
 
 #if _JVM_DEBUG_PROFILE
-                    s64 spent = 0;
-                    s64 start_at = nanoTime();
+                s64 spent = 0;
+                s64 start_at = nanoTime();
 #endif
 
 
-                    /* ==================================opcode start =============================*/
+                /* ==================================opcode start =============================*/
 #ifdef __JVM_DEBUG__
-                    s64 inst_pc = runtime->pc - ca->code;
+                s64 inst_pc = runtime->pc - ca->code;
 #endif
                 JUMP_TO_IP(cur_inst);
                 switch (cur_inst) {
@@ -974,34 +974,16 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                     case op_fload:
                     label_aload:
                     case op_aload: {
-                        Short2Char s2c;
-                        if (runtime->wideMode) {
-                            s2c.c1 = opCode[1];
-                            s2c.c0 = opCode[2];
-                            opCode += 3;
-                            runtime->wideMode = 0;
-                        } else {
-                            s2c.us = (u8) opCode[1];
-                            opCode += 2;
-                        }
-                        _op_load_1_slot(stack, localvar, runtime, s2c.us);
+                        _op_load_1_slot(stack, localvar, runtime, (u8) opCode[1]);
+                        opCode += 2;
                         break;
                     }
                     label_lload:
                     label_dload:
                     case op_lload:
                     case op_dload: {
-                        Short2Char s2c;
-                        if (runtime->wideMode) {
-                            s2c.c1 = opCode[1];
-                            s2c.c0 = opCode[2];
-                            opCode += 3;
-                            runtime->wideMode = 0;
-                        } else {
-                            s2c.us = (u8) opCode[1];
-                            opCode += 2;
-                        }
-                        _op_load_2_slot(stack, localvar, runtime, s2c.us);
+                        _op_load_2_slot(stack, localvar, runtime, (u8) opCode[1]);
+                        opCode += 2;
                         break;
                     }
 
@@ -1318,19 +1300,8 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                     case op_fstore:
                     label_astore:
                     case op_astore: {
-                        Short2Char s2c;
-                        if (runtime->wideMode) {
-                            s2c.c1 = opCode[1];
-                            s2c.c0 = opCode[2];
-                            opCode += 3;
-                            runtime->wideMode = 0;
-                        } else {
-                            s2c.us = (u8) opCode[1];
-                            opCode += 2;
-                        }
-
-                        _op_store_1_slot(stack, localvar, runtime, s2c.us);
-
+                        _op_store_1_slot(stack, localvar, runtime, (u8) opCode[1]);
+                        opCode += 2;
                         break;
                     }
 
@@ -1339,18 +1310,8 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                     case op_lstore:
                     label_dstore:
                     case op_dstore: {
-                        Short2Char s2c;
-                        if (runtime->wideMode) {
-                            s2c.c1 = opCode[1];
-                            s2c.c0 = opCode[2];
-                            opCode += 3;
-                            runtime->wideMode = 0;
-                        } else {
-                            s2c.us = (u8) opCode[1];
-                            opCode += 2;
-                        }
-
-                        _op_store_2_slot(stack, localvar, runtime, s2c.us);
+                        _op_store_2_slot(stack, localvar, runtime, (u8) opCode[1]);
+                        opCode += 2;
 
                         break;
                     }
@@ -2428,26 +2389,11 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 
                     label_iinc:
                     case op_iinc: {
-                        Short2Char s2c1, s2c2;
-
-                        if (runtime->wideMode) {
-                            s2c1.c1 = opCode[1];
-                            s2c1.c0 = opCode[2];
-                            s2c2.c1 = opCode[3];
-                            s2c2.c0 = opCode[4];
-                            opCode += 5;
-                            runtime->wideMode = 0;
-                        } else {
-                            s2c1.s = (u8) opCode[1];
-                            s2c2.s = (s8) opCode[2];
-                            opCode += 3;
-                        }
-
-                        s32 oldv = localvar_getInt(localvar, (u16) s2c1.s);
-                        localvar_setInt(localvar, (u16) s2c1.s, oldv + s2c2.s);
+                        localvar[(u8) opCode[1]].ivalue += (s8) opCode[2];
+                        opCode += 3;
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
                         invoke_deepth(runtime);
-                        jvm_printf("iinc: localvar(%d) = %d + %d\n", s2c1.s, oldv, s2c2.s);
+                        jvm_printf("iinc: localvar(%d) = %d + %d\n", (u8) opCode[1], oldv, (s8) opCode[2]);
 #endif
 
                         break;
@@ -3061,16 +3007,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 
                     label_ret:
                     case op_ret: {
-                        Short2Char s2c;
-                        if (runtime->wideMode) {
-                            s2c.c1 = opCode[1];
-                            s2c.c0 = opCode[2];
-                            runtime->wideMode = 0;
-                        } else {
-                            s2c.us = (u8) opCode[1];
-                        }
-
-                        __refer addr = localvar_getRefer(localvar, (u16) s2c.us);
+                        __refer addr = localvar_getRefer(localvar, (u8) opCode[1]);
 
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
                         invoke_deepth(runtime);
@@ -4082,16 +4019,88 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         break;
                     }
 
+                    label_wide:
                     case op_wide: {
-                        label_wide:
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
 
                         invoke_deepth(runtime);
                         jvm_printf("wide  \n");
 #endif
-                        runtime->wideMode = 1;
                         opCode++;
 
+                        runtime->pc = opCode;
+                        cur_inst = *opCode;
+                        switch (cur_inst) {
+                            case op_iload:
+                            case op_fload:
+                            case op_aload: {
+                                Short2Char s2c;
+                                s2c.c1 = opCode[1];
+                                s2c.c0 = opCode[2];
+                                _op_load_1_slot(stack, localvar, runtime, s2c.us);
+                                opCode += 3;
+                                break;
+                            }
+                            case op_lload:
+                            case op_dload: {
+                                Short2Char s2c;
+                                s2c.c1 = opCode[1];
+                                s2c.c0 = opCode[2];
+                                _op_load_2_slot(stack, localvar, runtime, s2c.us);
+                                opCode += 3;
+                                break;
+                            }
+                            case op_istore:
+                            case op_fstore:
+                            case op_astore: {
+                                Short2Char s2c;
+                                s2c.c1 = opCode[1];
+                                s2c.c0 = opCode[2];
+                                _op_store_1_slot(stack, localvar, runtime, s2c.us);
+                                opCode += 3;
+                                break;
+                            }
+                            case op_lstore:
+                            case op_dstore: {
+                                Short2Char s2c;
+                                s2c.c1 = opCode[1];
+                                s2c.c0 = opCode[2];
+                                _op_store_2_slot(stack, localvar, runtime, s2c.us);
+                                opCode += 3;
+                                break;
+                            }
+                            case op_ret: {
+                                Short2Char s2c;
+                                s2c.c1 = opCode[1];
+                                s2c.c0 = opCode[2];
+                                __refer addr = localvar_getRefer(localvar, s2c.us);
+
+#if _JVM_DEBUG_BYTECODE_DETAIL > 5
+                                invoke_deepth(runtime);
+                        jvm_printf("wide ret: %x\n", (s64) (intptr_t) addr);
+#endif
+                                opCode = (u8 *) addr;
+                                break;
+                            }
+                            case op_iinc    : {
+                                Short2Char s2c1, s2c2;
+
+                                s2c1.c1 = opCode[1];
+                                s2c1.c0 = opCode[2];
+                                s2c2.c1 = opCode[3];
+                                s2c2.c0 = opCode[4];
+
+                                localvar[s2c1.us].ivalue += s2c2.s;
+#if _JVM_DEBUG_BYTECODE_DETAIL > 5
+                                invoke_deepth(runtime);
+                        jvm_printf("wide iinc: localvar(%d) = %d + %d\n", s2c1.s, oldv, s2c2.s);
+#endif
+                                opCode += 5;
+                                break;
+                            }
+                            default:
+                                jvm_printf("instruct wide %x not found\n", cur_inst);
+                        }
                         break;
                     }
 
