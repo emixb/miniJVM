@@ -18,6 +18,7 @@
 #include "jvm/garbage.h"
 
 
+
 /*
  *
  */
@@ -64,7 +65,7 @@ int main(int argc, char **argv) {
 //        classpath = "../../binary/lib/minijvm_rt.jar;../../binary/lib/glfw_gui.jar;./";
 //        main_name = "test/Gears";
 //        main_name = "test/TestGL";
-//        main_name = "test/GuiTest";
+//        main_name = "test/AppManagerTest";
 //        main_name = "test/RenderTexure";
 //        main_name = "test/Alpha";
 //        main_name = "test/Light";
@@ -84,6 +85,7 @@ int main(int argc, char **argv) {
 //        main_name = "test/Foo1";
 //        main_name = "test/Foo2";
         main_name = "test/Foo3";
+//        main_name = "test/SpecTest";
 //        main_name = "test/MultiThread";
 //        main_name = "test/ExecuteSpeed";
 //        main_name = "test/TestFile";

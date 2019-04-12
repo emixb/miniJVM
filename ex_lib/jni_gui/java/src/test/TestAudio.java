@@ -3,9 +3,9 @@ package test;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import org.mini.media.AudioCallback;
 import org.mini.media.AudioDevice;
 import org.mini.media.AudioMgr;
-import org.mini.media.AudioMgrCallback;
 
 class TestAudio {
 
@@ -36,13 +36,13 @@ class TestAudio {
         int ratio = 22050;
 
         
-        AudioMgrCallback callback=new AudioMgrCallback() {
+        AudioCallback callback=new AudioCallback() {
             @Override
             public void onCapture(int millSecond, byte[] data) {
             }
 
             @Override
-            public void onPlay(int millSecond, byte[] data) {
+            public void onPlayback(int millSecond, byte[] data) {
             }
 
             @Override
