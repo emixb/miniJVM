@@ -505,13 +505,15 @@ class PrivateOutputStream extends OutputStream {
             return;
         }
 
-        // Check for array index out of bounds, and NullPointerException,
-        // so that the native code doesn't need to do it
-        int test = b[off] + b[off + len - 1];
-
-        int n = 0;
+        int n = 0, w;
         while (true) {
-            n += SocketNative.write(parent.handle, b, off + n, len - n);
+            w = SocketNative.write(parent.handle, b, off + n, len - n);
+            if (w == -1) {
+                throw new IOException("socket write error");
+            } else if (w == -2) {
+                throw new SocketTimeoutException();
+            }
+            n += w;
             if (n == len) {
                 break;
             }
