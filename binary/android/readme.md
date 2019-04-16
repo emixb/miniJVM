@@ -1,0 +1,1 @@
+ build it from /mobile/androidapp/
