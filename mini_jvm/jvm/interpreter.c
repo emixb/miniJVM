@@ -725,14 +725,10 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                 }
             }
             if (stack->max_size < stack->sp - stack->store) {
-                if (!stack_expand(stack)) {
-                    Utf8String *ustr = utf8_create();
-                    getRuntimeStack(runtime, ustr);
-                    jvm_printf("Stack overflow :\n %s\n", utf8_cstr(ustr));
-                    exit(1);
-                } else {
-                    jvm_printf("expand stack to %d\n", stack->max_size);
-                }
+                Utf8String *ustr = utf8_create();
+                getRuntimeStack(runtime, ustr);
+                jvm_printf("Stack overflow :\n %s\n", utf8_cstr(ustr));
+                exit(1);
             }
             localvar_init(runtime, ca->max_locals, method->para_slots);
             LocalVarItem *localvar = runtime->localvar;
@@ -2393,7 +2389,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         opCode += 3;
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
                         invoke_deepth(runtime);
-                        jvm_printf("iinc: localvar(%d) = %d + %d\n", (u8) opCode[1], oldv, (s8) opCode[2]);
+                        jvm_printf("iinc: localvar(%d) = %d , inc %d\n", (u8) opCode[1], localvar[(u8) opCode[1]].ivalue, (s8) opCode[2]);
 #endif
 
                         break;
@@ -4077,7 +4073,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
                                 invoke_deepth(runtime);
-                        jvm_printf("wide ret: %x\n", (s64) (intptr_t) addr);
+                                jvm_printf("wide ret: %x\n", (s64) (intptr_t) addr);
 #endif
                                 opCode = (u8 *) addr;
                                 break;
@@ -4093,7 +4089,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                                 localvar[s2c1.us].ivalue += s2c2.s;
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
                                 invoke_deepth(runtime);
-                        jvm_printf("wide iinc: localvar(%d) = %d + %d\n", s2c1.s, oldv, s2c2.s);
+                                jvm_printf("wide iinc: localvar(%d) = %d , inc %d\n", s2c1.s, localvar[s2c1.us].ivalue, s2c2.s);
 #endif
                                 opCode += 5;
                                 break;
