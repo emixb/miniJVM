@@ -905,7 +905,6 @@ int org_mini_glfw_Glfw_glfwCreateWindow(Runtime *runtime, JClass *clazz) {
     GLFWwindow *window = glfwCreateWindow(width, height, title, monitor, share);
     if (!window) {
         fprintf(stderr, "Failed to open GLFW window\n");
-        glfwTerminate();
     }
     //
     env->push_long(runtime->stack, (s64) (intptr_t) window);

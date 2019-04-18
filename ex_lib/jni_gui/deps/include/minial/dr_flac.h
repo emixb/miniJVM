@@ -142,8 +142,10 @@ typedef drflac_uint32    drflac_bool32;
 #define DRFLAC_DEPRECATED   __declspec(deprecated)
 #elif (defined(__GNUC__) && __GNUC__ >= 4)
 #define DRFLAC_DEPRECATED   __attribute__((deprecated))
-#elif (defined(__clang__) && __has_feature(attribute_deprecated))
+#elif (defined(__clang__))
+#if __has_feature(attribute_deprecated)
 #define DRFLAC_DEPRECATED   __attribute__((deprecated))
+#endif
 #else
 #define DRFLAC_DEPRECATED
 #endif
