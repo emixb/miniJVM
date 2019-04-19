@@ -283,7 +283,7 @@ void class_clinit(JClass *clazz, Runtime *runtime) {
         for (i = 0; i < clazz->fieldPool.field_used; i++) {
 
             FieldInfo *fi = &clazz->fieldPool.field[i];
-            if (fi->const_value_item) {
+            if (fi->const_value_item && (fi->access_flags & ACC_STATIC)) { //except no static field of class: final int a=3;
                 c8 *ptr = getStaticFieldPtr(fi);
                 // check variable type to determain long/s32/f64/f32
                 s32 datatype = fi->datatype_idx;
