@@ -19,23 +19,10 @@
 
 //==================================================================================
 
-void thread_lock_init(ThreadLock *lock) {
-    if (lock) {
-        cnd_init(&lock->thread_cond);
-//        pthread_mutexattr_init(&lock->lock_attr);
-//        pthread_mutexattr_settype(&lock->lock_attr, PTHREAD_MUTEX_RECURSIVE);
-        mtx_init(&lock->mutex_lock, mtx_recursive);
-    }
-}
 
-void thread_lock_dispose(ThreadLock *lock) {
-    if (lock) {
-        cnd_destroy(&lock->thread_cond);
-//        pthread_mutexattr_destroy(&lock->lock_attr);
-        mtx_destroy(&lock->mutex_lock);
-    }
-}
-
+/**
+ * =============================== JClass ==============================
+ */
 
 JClass *classes_get_c(c8 *clsName) {
     Utf8String *ustr = utf8_create_c(clsName);
@@ -201,6 +188,9 @@ JClass *array_class_get_by_name(Runtime *runtime, Utf8String *name) {
     }
     return clazz;
 }
+/**
+ * =============================== threadlist ==============================
+ */
 
 Runtime *threadlist_get(s32 i) {
     Runtime *r = NULL;
@@ -234,6 +224,43 @@ s32 threadlist_count_none_daemon() {
     return count;
 }
 
+void thread_stop_all() {
+    garbage_thread_lock();
+    s32 i;
+    for (i = 0; i < thread_list->length; i++) {
+        Runtime *r = threadlist_get(i);
+
+        r->threadInfo->suspend_count = 1;
+        r->threadInfo->no_pause = 1;
+        r->threadInfo->is_interrupt = 1;
+        jthread_lock(r->threadInfo->curThreadLock, r);
+        jthread_notify(r->threadInfo->curThreadLock, r);
+        jthread_unlock(r->threadInfo->curThreadLock, r);
+
+    }
+    garbage_thread_unlock();
+}
+
+
+void thread_lock_init(ThreadLock *lock) {
+    if (lock) {
+        cnd_init(&lock->thread_cond);
+//        pthread_mutexattr_init(&lock->lock_attr);
+//        pthread_mutexattr_settype(&lock->lock_attr, PTHREAD_MUTEX_RECURSIVE);
+        mtx_init(&lock->mutex_lock, mtx_recursive);
+    }
+}
+
+void thread_lock_dispose(ThreadLock *lock) {
+    if (lock) {
+        cnd_destroy(&lock->thread_cond);
+//        pthread_mutexattr_destroy(&lock->lock_attr);
+        mtx_destroy(&lock->mutex_lock);
+    }
+}
+/**
+ * =============================== utf8 ==============================
+ */
 /**
  * 把utf字符串转为 java unicode 双字节串
  * @param ustr in

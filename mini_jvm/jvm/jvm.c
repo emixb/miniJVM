@@ -246,17 +246,11 @@ void jvm_destroy(StaticLibRegFunc unRegFunc) {
     //waiting for daemon thread terminate
     s32 i;
     while (thread_list->length) {
+        thread_stop_all();
         for (i = 0; i < thread_list->length; i++) {
             Runtime *r = threadlist_get(i);
             if (!r->son) {//未在执行jvm指令
                 thread_unboundle(r);//
-            } else {
-                r->threadInfo->suspend_count = 1;
-                r->threadInfo->no_pause = 1;
-                r->threadInfo->is_interrupt = 1;
-                jthread_lock(r->threadInfo->curThreadLock, r);
-                jthread_notify(r->threadInfo->curThreadLock, r);
-                jthread_unlock(r->threadInfo->curThreadLock, r);
             }
         }
         threadSleep(20);
@@ -349,7 +343,7 @@ s32 call_method_main(c8 *p_mainclass, c8 *p_methodname, c8 *p_methodtype, ArrayL
             runtime->method = NULL;
             runtime->clazz = clazz;
             ret = execute_method(m, runtime);
-            if (ret != RUNTIME_STATUS_NORMAL) {
+            if (ret != RUNTIME_STATUS_NORMAL && ret != RUNTIME_STATUS_INTERRUPT) {
                 print_exception(runtime);
             }
 

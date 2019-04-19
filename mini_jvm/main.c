@@ -62,10 +62,10 @@ int main(int argc, char **argv) {
             }
         }
     } else {
-//        classpath = "../../binary/lib/minijvm_rt.jar;../../binary/lib/glfw_gui.jar;./";
+        classpath = "../../binary/lib/minijvm_rt.jar;../../binary/lib/glfw_gui.jar;./";
 //        main_name = "test/Gears";
 //        main_name = "test/TestGL";
-//        main_name = "test/AppManagerTest";
+        main_name = "test/AppManagerTest";
 //        main_name = "test/RenderTexure";
 //        main_name = "test/Alpha";
 //        main_name = "test/Light";
@@ -80,11 +80,11 @@ int main(int argc, char **argv) {
 //        main_name = "Sample";
 
 
-        classpath = "../../binary/lib/minijvm_rt.jar;../../binary/lib/minijvm_test.jar;./";
+//        classpath = "../../binary/lib/minijvm_rt.jar;../../binary/lib/minijvm_test.jar;./";
 //        main_name = "test/HelloWorld";
 //        main_name = "test/Foo1";
 //        main_name = "test/Foo2";
-        main_name = "test/Foo3";
+//        main_name = "test/Foo3";
 //        main_name = "test/SpecTest";
 //        main_name = "test/MultiThread";
 //        main_name = "test/ExecuteSpeed";

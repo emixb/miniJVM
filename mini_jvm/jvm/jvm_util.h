@@ -244,6 +244,8 @@ s32 threadlist_count_none_daemon();
 
 void threadinfo_destory(JavaThreadInfo *threadInfo);
 
+void thread_stop_all();
+
 JavaThreadInfo *threadinfo_create(void);
 
 struct _JavaThreadInfo {
