@@ -3,8 +3,10 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/Users/Gust/Documents/GitHub/mini_jvm/ex_lib/jni_gui/java/src/test/TestAudio.java</file>
-            <file>file:/Users/Gust/Documents/GitHub/mini_jvm/ex_lib/jni_gui/java/src/org/mini/nanovg/Gutil.java</file>
+            <file>file:/Users/Gust/Documents/GitHub/mini_jvm/ex_lib/jni_gui/java/src/org/mini/gui/GPanel.java</file>
+            <file>file:/Users/Gust/Documents/GitHub/mini_jvm/ex_lib/jni_gui/java/src/org/mini/gui/GObject.java</file>
+            <file>file:/Users/Gust/Documents/GitHub/mini_jvm/ex_lib/jni_gui/java/src/org/mini/glfw/GlfwCallBackImpl.java</file>
+            <file>file:/Users/Gust/Documents/GitHub/mini_jvm/ex_lib/jni_gui/java/src/org/mini/gui/GApplication.java</file>
         </group>
     </open-files>
 </project-private>
