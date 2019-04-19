@@ -4,3 +4,5 @@
 
 echo execute BpDeepTest
 ./mini_jvm -cp ../lib/minijvm_rt.jar:../res/ BpDeepTest
+
+./mini_jvm -cp ../lib/minijvm_rt.jar:../lib/luaj.jar Sample
