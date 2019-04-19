@@ -6,4 +6,8 @@ mini_jvm -cp ../lib/minijvm_rt.jar;../lib/janino.jar;../lib/commons-compiler.jar
 
 @echo execute BpDeepTest
 mini_jvm -cp ../lib/minijvm_rt.jar;../res/ BpDeepTest
+
+mini_jvm -cp ../lib/minijvm_rt.jar;../lib/luaj.jar Sample
+
+
 pause
