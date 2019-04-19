@@ -290,9 +290,15 @@ void class_clinit(JClass *clazz, Runtime *runtime) {
                 //非引用类型
                 switch (datatype) {
                     case DATATYPE_BOOLEAN:
-                    case DATATYPE_BYTE:
+                    case DATATYPE_BYTE: {
+                        setFieldByte(ptr, (s8) ((ConstantInteger *) fi->const_value_item)->value);
+                        break;
+                    }
                     case DATATYPE_SHORT:
-                    case DATATYPE_JCHAR:
+                    case DATATYPE_JCHAR: {
+                        setFieldShort(ptr, (s16) ((ConstantInteger *) fi->const_value_item)->value);
+                        break;
+                    }
                     case DATATYPE_INT: {
                         setFieldInt(ptr, ((ConstantInteger *) fi->const_value_item)->value);
                         break;
@@ -302,11 +308,11 @@ void class_clinit(JClass *clazz, Runtime *runtime) {
                         break;
                     }
                     case DATATYPE_LONG: {
-                        setFieldFloat(ptr, ((ConstantLong *) fi->const_value_item)->value);
+                        setFieldLong(ptr, ((ConstantLong *) fi->const_value_item)->value);
                         break;
                     }
                     case DATATYPE_DOUBLE: {
-                        setFieldFloat(ptr, ((ConstantDouble *) fi->const_value_item)->value);
+                        setFieldDouble(ptr, ((ConstantDouble *) fi->const_value_item)->value);
                         break;
                     }
                     default: {
