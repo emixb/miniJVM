@@ -607,6 +607,7 @@ struct _FieldInfo {
     u16 attributes_count;
     AttributeInfo *attributes;
     //link
+    ConstantItem *const_value_item;
     Utf8String *name;
     Utf8String *descriptor;
     JClass *_this_class;

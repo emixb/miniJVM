@@ -280,6 +280,45 @@ void class_clinit(JClass *clazz, Runtime *runtime) {
             cutf->jstr = jstr;
         }
 
+        for (i = 0; i < clazz->fieldPool.field_used; i++) {
+
+            FieldInfo *fi = &clazz->fieldPool.field[i];
+            if (fi->const_value_item) {
+                c8 *ptr = getStaticFieldPtr(fi);
+                // check variable type to determain long/s32/f64/f32
+                s32 datatype = fi->datatype_idx;
+                //非引用类型
+                switch (datatype) {
+                    case DATATYPE_BOOLEAN:
+                    case DATATYPE_BYTE:
+                    case DATATYPE_SHORT:
+                    case DATATYPE_JCHAR:
+                    case DATATYPE_INT: {
+                        setFieldInt(ptr, ((ConstantInteger *) fi->const_value_item)->value);
+                        break;
+                    }
+                    case DATATYPE_FLOAT: {
+                        setFieldFloat(ptr, ((ConstantFloat *) fi->const_value_item)->value);
+                        break;
+                    }
+                    case DATATYPE_LONG: {
+                        setFieldFloat(ptr, ((ConstantLong *) fi->const_value_item)->value);
+                        break;
+                    }
+                    case DATATYPE_DOUBLE: {
+                        setFieldFloat(ptr, ((ConstantDouble *) fi->const_value_item)->value);
+                        break;
+                    }
+                    default: {
+                        if (utf8_equals_c(fi->descriptor, STR_INS_JAVA_LANG_STRING)) {//垃圾回收标识
+                            setFieldRefer(ptr, class_get_constant_utf8(fi->_this_class, ((ConstantStringRef *) fi->const_value_item)->stringIndex)->jstr);
+                        } else {
+                        }
+                    }
+
+                }
+            }
+        }
 
         //优先初始化基类
         JClass *superclass = getSuperClass(clazz);

@@ -900,22 +900,36 @@ void _class_optimize(JClass *clazz) {
     }
 
     for (i = 0; i < clazz->fieldPool.field_used; i++) {
-        FieldInfo *ptr = &clazz->fieldPool.field[i];
-        ptr->name = class_get_utf8_string(clazz, ptr->name_index);
-        ptr->descriptor = class_get_utf8_string(clazz, ptr->descriptor_index);
-        ptr->datatype_idx = getDataTypeIndex(utf8_char_at(ptr->descriptor, 0));
-        ptr->isrefer = isDataReferByIndex(ptr->datatype_idx);
-        ptr->datatype_bytes = data_type_bytes[ptr->datatype_idx];
-        ptr->isvolatile = ptr->access_flags & ACC_VOLATILE;
+        FieldInfo *fi = &clazz->fieldPool.field[i];
+        fi->name = class_get_utf8_string(clazz, fi->name_index);
+        fi->descriptor = class_get_utf8_string(clazz, fi->descriptor_index);
+        fi->datatype_idx = getDataTypeIndex(utf8_char_at(fi->descriptor, 0));
+        fi->isrefer = isDataReferByIndex(fi->datatype_idx);
+        fi->datatype_bytes = data_type_bytes[fi->datatype_idx];
+        fi->isvolatile = fi->access_flags & ACC_VOLATILE;
 
         //for gc iterator fast
-        if (isDataReferByIndex(ptr->datatype_idx)) {
-            if (ptr->access_flags & ACC_STATIC) {
+        if (isDataReferByIndex(fi->datatype_idx)) {
+            if (fi->access_flags & ACC_STATIC) {
                 arraylist_push_back_unsafe(clazz->staticFieldPtrIndex, (__refer) (intptr_t) i);
             } else {
                 arraylist_push_back_unsafe(clazz->insFieldPtrIndex, (__refer) (intptr_t) i);
             }
         }
+
+        //for static final
+        s32 j;
+        for (j = 0; j < fi->attributes_count; j++) {
+            AttributeInfo *att = &fi->attributes[j];
+            Utf8String *attName = class_get_constant_utf8(clazz, att->attribute_name_index)->utfstr;
+            if (utf8_equals_c(attName, "ConstantValue")) {
+                Short2Char s2c;
+                s2c.c1 = att->info[0];
+                s2c.c0 = att->info[1];
+                fi->const_value_item = class_get_constant_item(clazz, s2c.us);
+            }
+        }
+
     }
     for (i = 0; i < clazz->methodPool.method_used; i++) {
         MethodInfo *ptr = &clazz->methodPool.method[i];

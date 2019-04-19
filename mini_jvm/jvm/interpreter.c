@@ -920,7 +920,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         invoke_deepth(runtime);
                         jvm_printf("sipush value %d\n", s2c.s);
 #endif
-                        push_int(stack, s2c.us);
+                        push_int(stack, s2c.s);
                         opCode += 3;
 
                         break;
@@ -2293,8 +2293,8 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 
                     label_iand:
                     case op_iand: {
-                        u32 value1 = pop_int(stack);
-                        u32 value2 = pop_int(stack);
+                        s32 value1 = pop_int(stack);
+                        s32 value2 = pop_int(stack);
 
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
                         invoke_deepth(runtime);
@@ -2581,9 +2581,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 
 
                     label_i2c:
-                    label_i2s:
-                    case op_i2c:
-                    case op_i2s: {
+                    case op_i2c: {
                         s32 value = pop_int(stack);
 
 #if _JVM_DEBUG_BYTECODE_DETAIL > 5
@@ -2591,6 +2589,19 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("i2s(c): %d --> %d\n", (s16) value, value);
 #endif
                         push_int(stack, (u16) value);
+                        opCode++;
+
+                        break;
+                    }
+                    label_i2s:
+                    case op_i2s: {
+                        s32 value = pop_int(stack);
+
+#if _JVM_DEBUG_BYTECODE_DETAIL > 5
+                        invoke_deepth(runtime);
+                        jvm_printf("i2s(c): %d --> %d\n", (s16) value, value);
+#endif
+                        push_int(stack, (s16) value);
                         opCode++;
 
                         break;
