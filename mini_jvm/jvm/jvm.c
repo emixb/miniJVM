@@ -179,6 +179,7 @@ int get_jvm_state() {
 void _on_jvm_sig(int no) {
 
     jvm_printf("jvm signo:%d  errno: %d , %s\n", no, errno, strerror(errno));
+    exit(no);
 }
 
 void jvm_init(c8 *p_classpath, StaticLibRegFunc regFunc) {

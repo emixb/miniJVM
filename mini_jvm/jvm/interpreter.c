@@ -3447,7 +3447,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                             jvm_printf("}\n");
 #endif
                         }
-                        if (ret) {
+                        if (ret == RUNTIME_STATUS_EXCEPTION) {
                             if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
@@ -3495,7 +3495,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("}\n");
 #endif
 
-                        if (ret) {
+                        if (ret == RUNTIME_STATUS_EXCEPTION) {
                             if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
@@ -3540,7 +3540,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         jvm_printf("}\n");
 #endif
 
-                        if (ret) {
+                        if (ret == RUNTIME_STATUS_EXCEPTION) {
                             if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
@@ -3603,7 +3603,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 #endif
 
                         }
-                        if (ret) {
+                        if (ret == RUNTIME_STATUS_EXCEPTION) {
                             if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
@@ -3740,7 +3740,7 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                         invoke_deepth(runtime);
                         jvm_printf("}\n");
 #endif
-                        if (ret) {
+                        if (ret == RUNTIME_STATUS_EXCEPTION) {
                             if (exception_handle(stack, runtime)) {
                                 exit_exec = 1;
                             } else {
